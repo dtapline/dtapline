@@ -1,13 +1,23 @@
-import { ThemeProvider } from "@/components/theme-provider"
-import ProjectSettingsPage from "@/pages/ProjectSettingsPage"
-import './App.css'
+import { ThemeProvider } from "@/components/theme-provider";
+import { createRouter, RouterProvider } from "@tanstack/react-router";
+import { routeTree } from "./routeTree.gen";
 
-function App() {
-  return (
-    <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-      <ProjectSettingsPage />
-    </ThemeProvider>
-  )
+import './App.css';
+
+// Create a new router instance
+const router = createRouter({ routeTree })
+
+// Register the router instance for type safety
+declare module '@tanstack/react-router' {
+  interface Register {
+    router: typeof router
+  }
 }
 
-export default App
+export default function App() {
+  return (
+    <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+      <RouterProvider router={router} />
+    </ThemeProvider>
+  );
+}
