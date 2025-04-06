@@ -5,7 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function ProjectSettingsPage() {
   return (
-    <div className="p-8 max-w-4xl mx-auto">
+    <div className="p-8 max-w-4xl container mx-auto">
       <h1 className="text-3xl font-bold mb-6">Project Settings</h1>
 
       <Card className="mb-6">
