@@ -44,11 +44,12 @@ export function ApiKeysList({ projectId }: ApiKeysListProps) {
     }
   }
 
-  const formatDate = (date: Date) => {
+  const formatDate = (date: Date | string) => {
+    const dateObj = typeof date === "string" ? new Date(date) : date
     return new Intl.DateTimeFormat("en-US", {
       dateStyle: "medium",
       timeStyle: "short"
-    }).format(date)
+    }).format(dateObj)
   }
 
   if (isLoading) {
