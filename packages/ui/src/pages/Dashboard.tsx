@@ -1,28 +1,41 @@
-import { DeploymentMatrix } from "@/components/DeploymentMatrix"
+import { AggregatedDeploymentMatrix } from "@/components/AggregatedDeploymentMatrix"
 import { ProjectDialog } from "@/components/dialogs/ProjectDialog"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
-import { useProjectMatrix, useProjects } from "@/lib/hooks/use-projects"
-import { ChevronDown, ChevronRight, Plus } from "lucide-react"
+import { projectsApi } from "@/lib/api"
+import { useProjects } from "@/lib/hooks/use-projects"
+import { useQueries } from "@tanstack/react-query"
+import { Plus } from "lucide-react"
 import { useState } from "react"
 
 export default function Dashboard() {
   const { data: projects, error, isLoading } = useProjects()
   const [isProjectDialogOpen, setIsProjectDialogOpen] = useState(false)
-  const [openProjects, setOpenProjects] = useState<Set<string>>(new Set())
 
-  const toggleProject = (projectId: string) => {
-    setOpenProjects((prev) => {
-      const newSet = new Set(prev)
-      if (newSet.has(projectId)) {
-        newSet.delete(projectId)
-      } else {
-        newSet.add(projectId)
+  // Fetch matrices for all projects using useQueries
+  const matrixQueries = useQueries({
+    queries: projects?.map((project) => ({
+      queryKey: ["projects", project.id, "matrix"],
+      queryFn: () => projectsApi.getMatrix(project.id)
+    })) || []
+  })
+
+  const isLoadingAny = isLoading || matrixQueries.some((q) => q.isLoading)
+
+  // Prepare aggregated matrix data
+  const aggregatedData = projects
+    ?.map((project, index) => {
+      const matrixData = matrixQueries[index]?.data
+      if (!matrixData) return null
+      return {
+        projectId: project.id,
+        projectName: project.name,
+        environments: matrixData.environments,
+        services: matrixData.services,
+        deployments: matrixData.deployments
       }
-      return newSet
     })
-  }
+    .filter((item): item is NonNullable<typeof item> => item !== null)
 
   if (isLoading) {
     return (
@@ -50,7 +63,7 @@ export default function Dashboard() {
         <div>
           <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
           <p className="text-muted-foreground">
-            View deployment matrices across all your projects
+            View all deployments across projects and environments
           </p>
         </div>
         <Button onClick={() => setIsProjectDialogOpen(true)}>
@@ -72,16 +85,10 @@ export default function Dashboard() {
           </Card>
         ) :
         (
-          <div className="space-y-4">
-            {projects.map((project) => (
-              <ProjectMatrixSection
-                key={project.id}
-                project={project}
-                isOpen={openProjects.has(project.id)}
-                onToggle={() => toggleProject(project.id)}
-              />
-            ))}
-          </div>
+          <AggregatedDeploymentMatrix
+            projectMatrices={aggregatedData || []}
+            isLoading={isLoadingAny}
+          />
         )}
 
       <ProjectDialog
@@ -92,72 +99,5 @@ export default function Dashboard() {
         }}
       />
     </div>
-  )
-}
-
-interface ProjectMatrixSectionProps {
-  project: { id: string; name: string; description?: string }
-  isOpen: boolean
-  onToggle: () => void
-}
-
-function ProjectMatrixSection({ isOpen, onToggle, project }: ProjectMatrixSectionProps) {
-  const { data: matrix, isLoading } = useProjectMatrix(project.id)
-
-  return (
-    <Card>
-      <Collapsible open={isOpen} onOpenChange={onToggle}>
-        <CollapsibleTrigger asChild>
-          <button
-            className="w-full px-6 py-4 flex items-center justify-between hover:bg-muted/50 transition-colors"
-            onClick={onToggle}
-          >
-            <div className="flex items-center gap-3">
-              {isOpen ?
-                <ChevronDown className="h-5 w-5 text-muted-foreground" /> :
-                <ChevronRight className="h-5 w-5 text-muted-foreground" />}
-              <div className="text-left">
-                <h3 className="text-lg font-semibold">{project.name}</h3>
-                {project.description && <p className="text-sm text-muted-foreground">{project.description}</p>}
-              </div>
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={(e) => {
-                e.stopPropagation()
-                window.location.href = `/project/${project.id}`
-              }}
-            >
-              View Details →
-            </Button>
-          </button>
-        </CollapsibleTrigger>
-        <CollapsibleContent>
-          <div className="px-6 pb-6">
-            {isLoading ?
-              (
-                <div className="flex items-center justify-center py-8">
-                  <p className="text-muted-foreground">Loading matrix...</p>
-                </div>
-              ) :
-              matrix ?
-              (
-                <DeploymentMatrix
-                  environments={matrix.environments}
-                  services={matrix.services}
-                  deployments={matrix.deployments}
-                  isLoading={false}
-                />
-              ) :
-              (
-                <div className="rounded-lg border border-dashed p-8 text-center">
-                  <p className="text-muted-foreground">No deployment data available</p>
-                </div>
-              )}
-          </div>
-        </CollapsibleContent>
-      </Collapsible>
-    </Card>
   )
 }
