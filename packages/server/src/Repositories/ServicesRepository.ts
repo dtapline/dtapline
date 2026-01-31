@@ -8,13 +8,14 @@ import type { ProjectId } from "@cloud-matrix/domain/Project"
 import type { CreateServiceInput, Service, UpdateServiceInput } from "@cloud-matrix/domain/Service"
 import { ServiceId } from "@cloud-matrix/domain/Service"
 import { Context, Effect, Layer, Schema } from "effect"
+import { ObjectId } from "mongodb"
 import { MongoDatabase } from "../MongoDB.js"
 
 /**
  * MongoDB document type for Service
  */
 interface ServiceDocument {
-  id: string
+  _id: ObjectId
   projectId: string
   name: string
   displayName: string
@@ -79,7 +80,7 @@ export class ServicesRepository extends Context.Tag("ServicesRepository")<
  * Helper to convert MongoDB document to Service
  */
 const docToService = (doc: ServiceDocument): any => ({
-  id: Schema.decodeSync(ServiceId)(doc.id),
+  id: Schema.decodeSync(ServiceId)(doc._id.toHexString()),
   projectId: doc.projectId as unknown as ProjectId,
   name: doc.name,
   displayName: doc.displayName,
@@ -121,8 +122,7 @@ export const ServicesRepositoryLive = Layer.effect(
             )
           }
 
-          const serviceDoc: ServiceDocument = {
-            id: crypto.randomUUID(),
+          const serviceDoc: Omit<ServiceDocument, "_id"> = {
             projectId,
             name: input.name,
             displayName: input.displayName,
@@ -131,8 +131,8 @@ export const ServicesRepositoryLive = Layer.effect(
             createdAt: new Date()
           }
 
-          yield* Effect.tryPromise({
-            try: () => collection.insertOne(serviceDoc),
+          const result = yield* Effect.tryPromise({
+            try: () => collection.insertOne(serviceDoc as any),
             catch: (error) =>
               new DatabaseError({
                 operation: "insertOne",
@@ -141,13 +141,22 @@ export const ServicesRepositoryLive = Layer.effect(
               })
           })
 
-          return docToService(serviceDoc)
+          return docToService({ _id: result.insertedId, ...serviceDoc })
         }),
 
       findById: (serviceId) =>
         Effect.gen(function*() {
+          if (!ObjectId.isValid(serviceId)) {
+            return yield* Effect.fail(
+              new ServiceNotFound({
+                serviceId,
+                message: `Invalid service ID format: ${serviceId}`
+              })
+            )
+          }
+
           const result = yield* Effect.tryPromise({
-            try: () => collection.findOne({ id: serviceId }),
+            try: () => collection.findOne({ _id: new ObjectId(serviceId) }),
             catch: (error) =>
               new DatabaseError({
                 operation: "findOne",
@@ -221,8 +230,7 @@ export const ServicesRepositoryLive = Layer.effect(
           }
 
           // Create new service with auto-generated display name if needed
-          const serviceDoc: ServiceDocument = {
-            id: crypto.randomUUID(),
+          const serviceDoc: Omit<ServiceDocument, "_id"> = {
             projectId,
             name,
             displayName: displayName ?? name.charAt(0).toUpperCase() + name.slice(1),
@@ -231,8 +239,8 @@ export const ServicesRepositoryLive = Layer.effect(
             createdAt: new Date()
           }
 
-          yield* Effect.tryPromise({
-            try: () => collection.insertOne(serviceDoc),
+          const result = yield* Effect.tryPromise({
+            try: () => collection.insertOne(serviceDoc as any),
             catch: (error) =>
               new DatabaseError({
                 operation: "insertOne",
@@ -241,11 +249,20 @@ export const ServicesRepositoryLive = Layer.effect(
               })
           })
 
-          return docToService(serviceDoc)
+          return docToService({ _id: result.insertedId, ...serviceDoc })
         }),
 
       update: (serviceId, input) =>
         Effect.gen(function*() {
+          if (!ObjectId.isValid(serviceId)) {
+            return yield* Effect.fail(
+              new ServiceNotFound({
+                serviceId,
+                message: `Invalid service ID format: ${serviceId}`
+              })
+            )
+          }
+
           const updateFields: Record<string, any> = {}
 
           if (input.displayName !== undefined) updateFields.displayName = input.displayName
@@ -254,7 +271,7 @@ export const ServicesRepositoryLive = Layer.effect(
           const result = yield* Effect.tryPromise({
             try: () =>
               collection.findOneAndUpdate(
-                { id: serviceId },
+                { _id: new ObjectId(serviceId) },
                 { $set: updateFields },
                 { returnDocument: "after" }
               ),
@@ -280,10 +297,19 @@ export const ServicesRepositoryLive = Layer.effect(
 
       archive: (serviceId) =>
         Effect.gen(function*() {
+          if (!ObjectId.isValid(serviceId)) {
+            return yield* Effect.fail(
+              new ServiceNotFound({
+                serviceId,
+                message: `Invalid service ID format: ${serviceId}`
+              })
+            )
+          }
+
           const result = yield* Effect.tryPromise({
             try: () =>
               collection.findOneAndUpdate(
-                { id: serviceId },
+                { _id: new ObjectId(serviceId) },
                 { $set: { archived: true } },
                 { returnDocument: "after" }
               ),
@@ -307,6 +333,15 @@ export const ServicesRepositoryLive = Layer.effect(
 
       hardDelete: (serviceId) =>
         Effect.gen(function*() {
+          if (!ObjectId.isValid(serviceId)) {
+            return yield* Effect.fail(
+              new ServiceNotFound({
+                serviceId,
+                message: `Invalid service ID format: ${serviceId}`
+              })
+            )
+          }
+
           // Check if service has any deployments
           const deploymentsCollection = db.collection("deployments")
           const deploymentCount = yield* Effect.tryPromise({
@@ -330,7 +365,7 @@ export const ServicesRepositoryLive = Layer.effect(
           }
 
           const result = yield* Effect.tryPromise({
-            try: () => collection.deleteOne({ id: serviceId }),
+            try: () => collection.deleteOne({ _id: new ObjectId(serviceId) }),
             catch: (error) =>
               new DatabaseError({
                 operation: "deleteOne",
