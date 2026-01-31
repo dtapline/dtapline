@@ -8,7 +8,6 @@ import { detectCICD } from "./cicd-detect.js"
 /**
  * CloudMatrix CLI
  * Reports deployment information to CloudMatrix server via webhook
- * Now using lint-staged for efficient pre-commit linting
  */
 
 // Response schema for type safety
