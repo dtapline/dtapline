@@ -1,4 +1,4 @@
-import type { Service, CreateServiceInput, UpdateServiceInput } from "@cloud-matrix/domain/Service"
+import type { CreateServiceInput, Service, UpdateServiceInput } from "@cloud-matrix/domain/Service"
 import { apiClient } from "./client"
 
 /**
@@ -10,7 +10,7 @@ export const servicesApi = {
    */
   list: (projectId: string, includeArchived = false) => {
     const query = includeArchived ? "?includeArchived=true" : ""
-    return apiClient.get<{ services: Service[] }>(
+    return apiClient.get<{ services: Array<Service> }>(
       `/api/v1/projects/${projectId}/services${query}`
     )
   },
@@ -47,5 +47,5 @@ export const servicesApi = {
    * Permanently delete a service
    */
   hardDelete: (projectId: string, serviceId: string) =>
-    apiClient.delete(`/api/v1/projects/${projectId}/services/${serviceId}/hard`),
+    apiClient.delete(`/api/v1/projects/${projectId}/services/${serviceId}/hard`)
 }

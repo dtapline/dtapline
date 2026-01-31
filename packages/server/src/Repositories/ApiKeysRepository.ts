@@ -19,8 +19,8 @@ interface ApiKeyDocument {
   name: string
   scopes: Array<ApiKeyScope>
   createdAt: Date
-  lastUsedAt: Date | undefined
-  expiresAt: Date | undefined
+  lastUsedAt?: Date | null
+  expiresAt?: Date | null
 }
 
 /**
@@ -76,8 +76,8 @@ const docToApiKey = (doc: ApiKeyDocument): any => ({
   name: doc.name,
   scopes: doc.scopes,
   createdAt: doc.createdAt,
-  lastUsedAt: doc.lastUsedAt,
-  expiresAt: doc.expiresAt
+  lastUsedAt: doc.lastUsedAt ?? undefined,
+  expiresAt: doc.expiresAt ?? undefined
 })
 
 /**
@@ -135,8 +135,8 @@ export const ApiKeysRepositoryLive = Layer.effect(
             name: input.name,
             scopes: (input.scopes ?? ["deployments:write"]) as Array<ApiKeyScope>,
             createdAt: new Date(),
-            lastUsedAt: undefined,
-            expiresAt: undefined
+            lastUsedAt: null,
+            expiresAt: null
           }
 
           yield* Effect.tryPromise({

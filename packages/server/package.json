@@ -10,6 +10,8 @@
     "directory": "packages/server"
   },
   "scripts": {
+    "dev": "tsx src/server.ts",
+    "check-mongo": "node scripts/check-mongo.mjs",
     "codegen": "build-utils prepare-v2",
     "build": "pnpm build-esm && pnpm build-annotate && pnpm build-cjs && build-utils pack-v2",
     "build-esm": "tsc -b tsconfig.build.json",
@@ -23,11 +25,17 @@
     "@cloud-matrix/domain": "workspace:^",
     "@effect-aws/lambda": "^1.5.1",
     "@effect-aws/powertools-logger": "^1.5.1",
-    "@effect/platform": "latest",
-    "@effect/platform-node": "latest",
+    "@effect/cluster": "^0.56.1",
+    "@effect/experimental": "^0.58.0",
+    "@effect/platform": "^0.94.2",
+    "@effect/platform-node": "^0.104.1",
+    "@effect/rpc": "^0.73.0",
+    "@effect/sql": "^0.49.0",
     "bcryptjs": "^3.0.3",
-    "effect": "latest",
-    "mongodb": "^7.0.0"
+    "dotenv": "^17.2.3",
+    "effect": "^3.19.15",
+    "mongodb": "^7.0.0",
+    "socks": "^2.8.7"
   },
   "effect": {
     "generateExports": {

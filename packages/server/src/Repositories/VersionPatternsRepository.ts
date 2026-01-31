@@ -12,7 +12,7 @@ interface VersionPatternDocument {
   id: string
   projectId: string
   defaultPattern: string
-  servicePatterns: Record<string, string> | undefined
+  servicePatterns?: Record<string, string> | null
   updatedAt: Date
 }
 
@@ -54,7 +54,7 @@ const docToVersionPattern = (doc: VersionPatternDocument): any => ({
   id: Schema.decodeSync(VersionPatternId)(doc.id),
   projectId: doc.projectId as unknown as ProjectId,
   defaultPattern: doc.defaultPattern,
-  servicePatterns: doc.servicePatterns,
+  servicePatterns: doc.servicePatterns ?? undefined,
   updatedAt: doc.updatedAt
 })
 
@@ -90,7 +90,7 @@ export const VersionPatternsRepositoryLive = Layer.effect(
             id: crypto.randomUUID(),
             projectId,
             defaultPattern: DEFAULT_VERSION_PATTERN,
-            servicePatterns: undefined,
+            servicePatterns: null,
             updatedAt: new Date()
           }
 
@@ -146,7 +146,7 @@ export const VersionPatternsRepositoryLive = Layer.effect(
               id: crypto.randomUUID(),
               projectId,
               defaultPattern: input.defaultPattern ?? DEFAULT_VERSION_PATTERN,
-              servicePatterns: input.servicePatterns,
+              servicePatterns: input.servicePatterns ?? null,
               updatedAt: new Date()
             }
 

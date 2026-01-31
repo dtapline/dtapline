@@ -12,8 +12,8 @@ interface ProjectDocument {
   id: string
   userId: string
   name: string
-  description: string | undefined
-  gitRepoUrl: string | undefined
+  description?: string | null
+  gitRepoUrl?: string | null
   tier: "free" | "pro" | "enterprise"
   createdAt: Date
   updatedAt: Date
@@ -61,8 +61,8 @@ const docToProject = (doc: ProjectDocument): any => ({
   id: Schema.decodeSync(ProjectId)(doc.id),
   userId: doc.userId as unknown as UserId,
   name: doc.name,
-  description: doc.description,
-  gitRepoUrl: doc.gitRepoUrl,
+  description: doc.description ?? undefined,
+  gitRepoUrl: doc.gitRepoUrl ?? undefined,
   tier: doc.tier,
   createdAt: doc.createdAt,
   updatedAt: doc.updatedAt
@@ -101,12 +101,12 @@ export const ProjectsRepositoryLive = Layer.effect(
           }
 
           const now = new Date()
-          const projectDoc = {
+          const projectDoc: ProjectDocument = {
             id: crypto.randomUUID(),
             userId,
             name: input.name,
-            description: input.description,
-            gitRepoUrl: input.gitRepoUrl,
+            description: input.description ?? null,
+            gitRepoUrl: input.gitRepoUrl ?? null,
             tier: "free" as const,
             createdAt: now,
             updatedAt: now

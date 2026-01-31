@@ -18,7 +18,7 @@ interface ServiceDocument {
   projectId: string
   name: string
   displayName: string
-  repositoryUrl: string | undefined
+  repositoryUrl?: string | null
   archived: boolean
   createdAt: Date
 }
@@ -83,7 +83,7 @@ const docToService = (doc: ServiceDocument): any => ({
   projectId: doc.projectId as unknown as ProjectId,
   name: doc.name,
   displayName: doc.displayName,
-  repositoryUrl: doc.repositoryUrl,
+  repositoryUrl: doc.repositoryUrl ?? undefined,
   archived: doc.archived,
   createdAt: doc.createdAt
 })
@@ -121,12 +121,12 @@ export const ServicesRepositoryLive = Layer.effect(
             )
           }
 
-          const serviceDoc = {
+          const serviceDoc: ServiceDocument = {
             id: crypto.randomUUID(),
             projectId,
             name: input.name,
             displayName: input.displayName,
-            repositoryUrl: input.repositoryUrl,
+            repositoryUrl: input.repositoryUrl ?? null,
             archived: false,
             createdAt: new Date()
           }
@@ -221,12 +221,12 @@ export const ServicesRepositoryLive = Layer.effect(
           }
 
           // Create new service with auto-generated display name if needed
-          const serviceDoc = {
+          const serviceDoc: ServiceDocument = {
             id: crypto.randomUUID(),
             projectId,
             name,
             displayName: displayName ?? name.charAt(0).toUpperCase() + name.slice(1),
-            repositoryUrl,
+            repositoryUrl: repositoryUrl ?? null,
             archived: false,
             createdAt: new Date()
           }
@@ -249,7 +249,7 @@ export const ServicesRepositoryLive = Layer.effect(
           const updateFields: Record<string, any> = {}
 
           if (input.displayName !== undefined) updateFields.displayName = input.displayName
-          if (input.repositoryUrl !== undefined) updateFields.repositoryUrl = input.repositoryUrl
+          if (input.repositoryUrl !== undefined) updateFields.repositoryUrl = input.repositoryUrl ?? null
 
           const result = yield* Effect.tryPromise({
             try: () =>

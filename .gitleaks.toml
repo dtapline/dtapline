@@ -1,0 +1,136 @@
+# Gitleaks Configuration
+# Prevents secrets from being committed to the repository
+# https://github.com/gitleaks/gitleaks
+
+title = "CloudMatrix Gitleaks Configuration"
+
+# ============================================================================
+# Global Settings
+# ============================================================================
+
+[extend]
+# Use default gitleaks config as base
+useDefault = true
+
+# ============================================================================
+# Custom Rules
+# ============================================================================
+
+# CloudMatrix API Keys
+[[rules]]
+id = "cloudmatrix-api-key"
+description = "CloudMatrix API Key"
+regex = '''cm_[a-zA-Z0-9]{32,}'''
+keywords = ["cm_"]
+
+# MongoDB Connection Strings
+[[rules]]
+id = "mongodb-connection-string"
+description = "MongoDB Connection String"
+regex = '''mongodb(\+srv)?://[^\s]+'''
+keywords = ["mongodb://", "mongodb+srv://"]
+
+# Generic API Keys (bearer tokens)
+[[rules]]
+id = "bearer-token"
+description = "Bearer Token"
+regex = '''(?i)bearer\s+[a-zA-Z0-9\-._~+/]+=*'''
+keywords = ["bearer"]
+
+# AWS Access Keys
+[[rules]]
+id = "aws-access-key"
+description = "AWS Access Key ID"
+regex = '''AKIA[0-9A-Z]{16}'''
+keywords = ["AKIA"]
+
+# Generic Secret Keys
+[[rules]]
+id = "generic-secret"
+description = "Generic Secret"
+regex = '''(?i)(secret|password|passwd|pwd|api[_-]?key|apikey|access[_-]?token)["\']?\s*[:=]\s*["'][^\s"']{8,}["']'''
+keywords = ["secret", "password", "api_key", "apikey", "access_token"]
+
+# Private Keys
+[[rules]]
+id = "private-key"
+description = "Private Key"
+regex = '''-----BEGIN (RSA |EC |DSA )?PRIVATE KEY-----'''
+keywords = ["PRIVATE KEY"]
+
+# JWT Tokens
+[[rules]]
+id = "jwt-token"
+description = "JWT Token"
+regex = '''eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}'''
+
+# ============================================================================
+# Allowlist - Files/Paths to Exclude
+# ============================================================================
+
+[allowlist]
+description = "Global allowlist"
+
+# Documentation and test files
+paths = [
+  # Gitleaks config itself
+  '''^\.gitleaks\.toml$''',
+  
+  # Documentation
+  '''\.md$''',
+  '''\.txt$''',
+  
+  # Test fixtures and examples
+  '''^.*/test/.*$''',
+  '''^.*/tests/.*$''',
+  '''^.*\.test\.ts$''',
+  '''^.*\.spec\.ts$''',
+  '''^.*/fixtures/.*$''',
+  '''^.*/examples/.*\.example$''',
+  
+  # Lock files and generated files
+  '''pnpm-lock\.yaml$''',
+  '''package-lock\.json$''',
+  '''yarn\.lock$''',
+  '''^.*\.lock$''',
+  
+  # Build artifacts
+  '''^.*/dist/.*$''',
+  '''^.*/build/.*$''',
+  '''^.*\.map$''',
+  
+  # Dependencies
+  '''^node_modules/.*$''',
+  '''^.*/node_modules/.*$''',
+]
+
+# Specific commits to skip (if needed in the future)
+commits = []
+
+# Regular expressions for false positives
+regexes = [
+  # Example placeholders
+  '''(example|sample|placeholder|test|fake|mock|dummy)''',
+  
+  # Common false positives
+  '''[a-f0-9]{32,}''', # MD5/SHA hashes in code
+  
+  # Variable declarations (const/let/var apiKey = ...)
+  '''(const|let|var)\s+\w*apiKey\w*\s*=''',
+]
+
+# Specific strings to allow
+stopwords = [
+  "example",
+  "sample", 
+  "test",
+  "fake",
+  "mock",
+  "dummy",
+  "placeholder",
+  "YOUR_API_KEY",
+  "your-api-key",
+  "cm_xxxxxxxxxxxxx",
+  "CLOUDMATRIX_API_KEY",
+  "mongodb://localhost",
+]

@@ -1,6 +1,6 @@
 /**
  * API Client for CloudMatrix
- * 
+ *
  * Simple fetch-based client for making requests to the CloudMatrix API.
  * Uses standard fetch API for easy integration with React Query.
  */
@@ -31,14 +31,14 @@ export function createApiClient(config: ApiConfig) {
     options?: RequestInit
   ): Promise<T> {
     const url = `${baseUrl}${endpoint}`
-    
+
     try {
       const response = await fetch(url, {
         ...options,
         headers: {
           "Content-Type": "application/json",
-          ...options?.headers,
-        },
+          ...options?.headers
+        }
       })
 
       if (!response.ok) {
@@ -67,23 +67,21 @@ export function createApiClient(config: ApiConfig) {
   }
 
   return {
-    get: <T>(endpoint: string) =>
-      request<T>(endpoint, { method: "GET" }),
+    get: <T>(endpoint: string) => request<T>(endpoint, { method: "GET" }),
 
     post: <T, B = unknown>(endpoint: string, body?: B) =>
       request<T>(endpoint, {
         method: "POST",
-        body: body ? JSON.stringify(body) : undefined,
+        body: body ? JSON.stringify(body) : undefined
       }),
 
     put: <T, B = unknown>(endpoint: string, body?: B) =>
       request<T>(endpoint, {
         method: "PUT",
-        body: body ? JSON.stringify(body) : undefined,
+        body: body ? JSON.stringify(body) : undefined
       }),
 
-    delete: (endpoint: string) =>
-      request<void>(endpoint, { method: "DELETE" }),
+    delete: (endpoint: string) => request<void>(endpoint, { method: "DELETE" })
   }
 }
 
@@ -92,5 +90,5 @@ export function createApiClient(config: ApiConfig) {
  * Configure the base URL from environment variables
  */
 export const apiClient = createApiClient({
-  baseUrl: import.meta.env.VITE_API_BASE_URL || "http://localhost:3000",
+  baseUrl: import.meta.env.VITE_API_BASE_URL || "http://localhost:3000"
 })

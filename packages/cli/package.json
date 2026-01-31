@@ -1,0 +1,31 @@
+{
+  "name": "@cloud-matrix/cli",
+  "version": "0.0.0",
+  "type": "module",
+  "license": "MIT",
+  "description": "CloudMatrix CLI for deployment reporting",
+  "repository": {
+    "type": "git",
+    "url": "<PLACEHOLDER>",
+    "directory": "packages/cli"
+  },
+  "bin": {
+    "cloudmatrix": "./bin/cloudmatrix.js"
+  },
+  "scripts": {
+    "build": "tsc -b tsconfig.build.json",
+    "check": "tsc -b tsconfig.json",
+    "dev": "tsx src/index.ts",
+    "test": "vitest"
+  },
+  "dependencies": {
+    "@cloud-matrix/domain": "workspace:^",
+    "@effect/cli": "^0.73.1",
+    "@effect/platform": "^0.94.2",
+    "@effect/platform-node": "^0.104.1",
+    "effect": "^3.19.15"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0"
+  }
+}

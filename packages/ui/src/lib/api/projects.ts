@@ -1,29 +1,16 @@
-import type { Project, CreateProjectInput, UpdateProjectInput } from "@cloud-matrix/domain/Project"
-import type { Environment } from "@cloud-matrix/domain/Environment"
-import type { Service } from "@cloud-matrix/domain/Service"
 import type { Deployment } from "@cloud-matrix/domain/Deployment"
+import type { Environment } from "@cloud-matrix/domain/Environment"
+import type { CreateProjectInput, Project, UpdateProjectInput } from "@cloud-matrix/domain/Project"
+import type { Service } from "@cloud-matrix/domain/Service"
 import { apiClient } from "./client"
 
 /**
- * Deployment Matrix Types
+ * Deployment Matrix Response from API
  */
-export interface MatrixCell {
-  environmentId: string
-  serviceId: string
-  version: string | null
-  deployedAt: Date | null
-  status: string | null
-  deployment: Deployment | null
-}
-
 export interface DeploymentMatrix {
-  project: {
-    id: string
-    name: string
-  }
-  environments: readonly Environment[]
-  services: readonly Service[]
-  matrix: MatrixCell[][]
+  environments: ReadonlyArray<Environment>
+  services: ReadonlyArray<Service>
+  deployments: Record<string, Record<string, Deployment | null>>
 }
 
 /**
@@ -33,20 +20,17 @@ export const projectsApi = {
   /**
    * List all projects
    */
-  list: () =>
-    apiClient.get<{ projects: Project[] }>("/api/v1/projects"),
+  list: () => apiClient.get<{ projects: Array<Project> }>("/api/v1/projects"),
 
   /**
    * Get a single project by ID
    */
-  get: (projectId: string) =>
-    apiClient.get<Project>(`/api/v1/projects/${projectId}`),
+  get: (projectId: string) => apiClient.get<Project>(`/api/v1/projects/${projectId}`),
 
   /**
    * Create a new project
    */
-  create: (input: typeof CreateProjectInput.Type) =>
-    apiClient.post<{ project: Project }>("/api/v1/projects", input),
+  create: (input: typeof CreateProjectInput.Type) => apiClient.post<{ project: Project }>("/api/v1/projects", input),
 
   /**
    * Update a project
@@ -57,14 +41,12 @@ export const projectsApi = {
   /**
    * Delete a project
    */
-  delete: (projectId: string) =>
-    apiClient.delete(`/api/v1/projects/${projectId}`),
+  delete: (projectId: string) => apiClient.delete(`/api/v1/projects/${projectId}`),
 
   /**
    * Get deployment matrix for a project
    */
-  getMatrix: (projectId: string) =>
-    apiClient.get<DeploymentMatrix>(`/api/v1/projects/${projectId}/matrix`),
+  getMatrix: (projectId: string) => apiClient.get<DeploymentMatrix>(`/api/v1/projects/${projectId}/matrix`),
 
   /**
    * List deployments with filters
@@ -99,5 +81,5 @@ export const projectsApi = {
   compare: (projectId: string, env1Id: string, env2Id: string) =>
     apiClient.get<any>( // TODO: Type this properly
       `/api/v1/projects/${projectId}/compare?env1=${env1Id}&env2=${env2Id}`
-    ),
+    )
 }

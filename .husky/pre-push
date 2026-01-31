@@ -1,0 +1,9 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+echo "🔍 Running Gitleaks to check for secrets..."
+pnpm gitleaks:staged || {
+  echo "❌ Gitleaks detected secrets! Push blocked."
+  echo "💡 Review the findings above and remove any secrets."
+  exit 1
+}
