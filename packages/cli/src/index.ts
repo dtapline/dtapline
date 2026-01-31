@@ -135,7 +135,18 @@ const deployCommand = Command.make(
       )
 
       const response: DeploymentResponse = yield* httpClient.execute(request).pipe(
-        Effect.flatMap((res) => res.json),
+        Effect.flatMap((res) => {
+          // Check for non-success status codes
+          if (res.status !== 200 && res.status !== 201) {
+            return Effect.gen(function*() {
+              const text = yield* res.text
+              yield* Console.error(`❌ Server returned status ${res.status}:`)
+              yield* Console.error(text)
+              return yield* Effect.fail(new Error(`Server error: ${res.status}`))
+            })
+          }
+          return res.json
+        }),
         Effect.flatMap((json) => Schema.decodeUnknown(DeploymentResponse)(json)),
         Effect.catchAll((error) =>
           Effect.gen(function*() {
