@@ -1,21 +1,34 @@
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { DeploymentMatrix } from "@/components/DeploymentMatrix"
 import { ProjectDialog } from "@/components/dialogs/ProjectDialog"
-import { useProjects } from "@/lib/hooks/use-projects"
-import { Link, useNavigate } from "@tanstack/react-router"
-import { Plus } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
+import { useProjectMatrix, useProjects } from "@/lib/hooks/use-projects"
+import { ChevronDown, ChevronRight, Plus } from "lucide-react"
+import { useState } from "react"
 
 export default function Dashboard() {
-  const { data: projects, isLoading, error } = useProjects()
+  const { data: projects, error, isLoading } = useProjects()
   const [isProjectDialogOpen, setIsProjectDialogOpen] = useState(false)
-  const navigate = useNavigate()
+  const [openProjects, setOpenProjects] = useState<Set<string>>(new Set())
+
+  const toggleProject = (projectId: string) => {
+    setOpenProjects((prev) => {
+      const newSet = new Set(prev)
+      if (newSet.has(projectId)) {
+        newSet.delete(projectId)
+      } else {
+        newSet.add(projectId)
+      }
+      return newSet
+    })
+  }
 
   if (isLoading) {
     return (
       <div className="p-8">
         <div className="flex items-center justify-center h-64">
-          <p className="text-muted-foreground">Loading projects...</p>
+          <p className="text-muted-foreground">Loading dashboard...</p>
         </div>
       </div>
     )
@@ -35,9 +48,9 @@ export default function Dashboard() {
     <div className="p-8">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Projects</h2>
+          <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
           <p className="text-muted-foreground">
-            Manage your deployment projects and view deployment matrices
+            View deployment matrices across all your projects
           </p>
         </div>
         <Button onClick={() => setIsProjectDialogOpen(true)}>
@@ -46,50 +59,105 @@ export default function Dashboard() {
         </Button>
       </div>
 
-      {!projects || projects.length === 0 ? (
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center h-64">
-            <p className="text-muted-foreground mb-4">No projects yet</p>
-            <Button onClick={() => setIsProjectDialogOpen(true)}>
-              <Plus className="mr-2 h-4 w-4" />
-              Create your first project
-            </Button>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {projects.map((project) => (
-            <Link
-              key={project.id}
-              to="/project/$projectId"
-              params={{ projectId: project.id }}
-            >
-              <Card className="hover:border-primary transition-colors cursor-pointer">
-                <CardHeader>
-                  <CardTitle>{project.name}</CardTitle>
-                  {project.description && (
-                    <CardDescription>{project.description}</CardDescription>
-                  )}
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground">
-                    View deployment matrix →
-                  </p>
-                </CardContent>
-              </Card>
-            </Link>
-          ))}
-        </div>
-      )}
+      {!projects || projects.length === 0 ?
+        (
+          <Card>
+            <CardContent className="flex flex-col items-center justify-center h-64">
+              <p className="text-muted-foreground mb-4">No projects yet</p>
+              <Button onClick={() => setIsProjectDialogOpen(true)}>
+                <Plus className="mr-2 h-4 w-4" />
+                Create your first project
+              </Button>
+            </CardContent>
+          </Card>
+        ) :
+        (
+          <div className="space-y-4">
+            {projects.map((project) => (
+              <ProjectMatrixSection
+                key={project.id}
+                project={project}
+                isOpen={openProjects.has(project.id)}
+                onToggle={() => toggleProject(project.id)}
+              />
+            ))}
+          </div>
+        )}
 
       <ProjectDialog
         open={isProjectDialogOpen}
         onOpenChange={setIsProjectDialogOpen}
         onSuccess={(project) => {
-          // Navigate to the newly created project
-          navigate({ to: "/project/$projectId", params: { projectId: project.id } })
+          window.location.href = `/project/${project.id}`
         }}
       />
     </div>
+  )
+}
+
+interface ProjectMatrixSectionProps {
+  project: { id: string; name: string; description?: string }
+  isOpen: boolean
+  onToggle: () => void
+}
+
+function ProjectMatrixSection({ isOpen, onToggle, project }: ProjectMatrixSectionProps) {
+  const { data: matrix, isLoading } = useProjectMatrix(project.id)
+
+  return (
+    <Card>
+      <Collapsible open={isOpen} onOpenChange={onToggle}>
+        <CollapsibleTrigger asChild>
+          <button
+            className="w-full px-6 py-4 flex items-center justify-between hover:bg-muted/50 transition-colors"
+            onClick={onToggle}
+          >
+            <div className="flex items-center gap-3">
+              {isOpen ?
+                <ChevronDown className="h-5 w-5 text-muted-foreground" /> :
+                <ChevronRight className="h-5 w-5 text-muted-foreground" />}
+              <div className="text-left">
+                <h3 className="text-lg font-semibold">{project.name}</h3>
+                {project.description && <p className="text-sm text-muted-foreground">{project.description}</p>}
+              </div>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation()
+                window.location.href = `/project/${project.id}`
+              }}
+            >
+              View Details →
+            </Button>
+          </button>
+        </CollapsibleTrigger>
+        <CollapsibleContent>
+          <div className="px-6 pb-6">
+            {isLoading ?
+              (
+                <div className="flex items-center justify-center py-8">
+                  <p className="text-muted-foreground">Loading matrix...</p>
+                </div>
+              ) :
+              matrix ?
+              (
+                <DeploymentMatrix
+                  environments={matrix.environments}
+                  services={matrix.services}
+                  deployments={matrix.deployments}
+                  isLoading={false}
+                />
+              ) :
+              (
+                <div className="rounded-lg border border-dashed p-8 text-center">
+                  <p className="text-muted-foreground">No deployment data available</p>
+                </div>
+              )}
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
+    </Card>
   )
 }

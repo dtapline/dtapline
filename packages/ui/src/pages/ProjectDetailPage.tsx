@@ -1,7 +1,6 @@
 import { useState } from "react"
 import { ApiKeysList } from "../components/ApiKeysList"
 import { DeploymentMatrix } from "../components/DeploymentMatrix"
-import { EnvironmentsList } from "../components/EnvironmentsList"
 import { ServicesList } from "../components/ServicesList"
 import { useProject, useProjectMatrix } from "../lib/hooks/use-projects"
 
@@ -9,7 +8,7 @@ interface ProjectDetailPageProps {
   projectId: string
 }
 
-type Tab = "matrix" | "environments" | "services" | "settings"
+type Tab = "matrix" | "services" | "settings"
 
 export function ProjectDetailPage({ projectId }: ProjectDetailPageProps) {
   const [activeTab, setActiveTab] = useState<Tab>("matrix")
@@ -37,9 +36,7 @@ export function ProjectDetailPage({ projectId }: ProjectDetailPageProps) {
       {/* Header */}
       <div className="border-b px-8 py-6">
         <h1 className="text-3xl font-bold">{project.name}</h1>
-        {project.description && (
-          <p className="mt-1 text-sm text-muted-foreground">{project.description}</p>
-        )}
+        {project.description && <p className="mt-1 text-sm text-muted-foreground">{project.description}</p>}
       </div>
 
       {/* Tabs */}
@@ -54,16 +51,6 @@ export function ProjectDetailPage({ projectId }: ProjectDetailPageProps) {
             }`}
           >
             Matrix View
-          </button>
-          <button
-            onClick={() => setActiveTab("environments")}
-            className={`border-b-2 px-1 py-4 text-sm font-medium transition-colors ${
-              activeTab === "environments"
-                ? "border-primary text-foreground"
-                : "border-transparent text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            Environments
           </button>
           <button
             onClick={() => setActiveTab("services")}
@@ -100,34 +87,22 @@ export function ProjectDetailPage({ projectId }: ProjectDetailPageProps) {
                 </p>
               </div>
             </div>
-            {matrix ? (
-              <DeploymentMatrix
-                environments={matrix.environments}
-                services={matrix.services}
-                deployments={matrix.deployments}
-                isLoading={matrixLoading}
-              />
-            ) : (
-              <div className="rounded-lg border border-dashed p-8 text-center">
-                <p className="text-muted-foreground">
-                  Loading deployment matrix...
-                </p>
-              </div>
-            )}
-          </div>
-        )}
-
-        {activeTab === "environments" && (
-          <div>
-            <div className="mb-6 flex items-center justify-between">
-              <div>
-                <h2 className="text-xl font-semibold">Environments</h2>
-                <p className="text-sm text-muted-foreground">
-                  Manage deployment environments
-                </p>
-              </div>
-            </div>
-            <EnvironmentsList projectId={projectId} />
+            {matrix ?
+              (
+                <DeploymentMatrix
+                  environments={matrix.environments}
+                  services={matrix.services}
+                  deployments={matrix.deployments}
+                  isLoading={matrixLoading}
+                />
+              ) :
+              (
+                <div className="rounded-lg border border-dashed p-8 text-center">
+                  <p className="text-muted-foreground">
+                    Loading deployment matrix...
+                  </p>
+                </div>
+              )}
           </div>
         )}
 
