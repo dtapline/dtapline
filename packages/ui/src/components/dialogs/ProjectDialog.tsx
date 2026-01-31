@@ -173,7 +173,7 @@ export function ProjectDialog({
                               style={{ backgroundColor: env.color }}
                             />
                           )}
-                          {env.displayName}
+                          {env.name}
                         </label>
                       </div>
                     ))}

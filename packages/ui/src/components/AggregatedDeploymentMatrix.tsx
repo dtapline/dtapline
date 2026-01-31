@@ -75,14 +75,14 @@ export function AggregatedDeploymentMatrix({
                 className="min-w-[150px] border bg-muted/50 p-3 text-left font-medium"
               >
                 <div className="flex flex-col gap-1">
-                  <span>{env.displayName}</span>
+                  <span>{env.name}</span>
                   {env.color && (
                     <span className="flex items-center gap-1 text-xs font-normal text-muted-foreground">
                       <span
                         className="inline-block h-2 w-2 rounded-full"
                         style={{ backgroundColor: env.color }}
                       />
-                      {env.name}
+                      {env.slug}
                     </span>
                   )}
                 </div>
@@ -166,26 +166,24 @@ function ProjectSection({ allEnvironments, projectMatrix }: ProjectSectionProps)
               {service.iconUrl && (
                 <img
                   src={service.iconUrl}
-                  alt={`${service.displayName} icon`}
+                  alt={`${service.name} icon`}
                   className="h-5 w-5"
                   onError={(e) => {
                     e.currentTarget.style.display = "none"
                   }}
                 />
               )}
-              <div className="flex flex-col gap-1">
-                <span>{service.displayName}</span>
-                {service.repositoryUrl && (
-                  <a
-                    href={service.repositoryUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-xs font-normal text-muted-foreground hover:underline"
-                  >
-                    {service.name}
-                  </a>
-                )}
-              </div>
+              <span>{service.name}</span>
+              {service.repositoryUrl && (
+                <a
+                  href={service.repositoryUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="ml-1 text-xs text-muted-foreground hover:text-foreground"
+                >
+                  {service.slug}
+                </a>
+              )}
             </div>
           </td>
           {allEnvironments.map((env) => {

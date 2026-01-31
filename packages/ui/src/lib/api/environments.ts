@@ -37,6 +37,15 @@ export const environmentsApi = {
     ),
 
   /**
+   * Reorder an environment atomically
+   */
+  reorder: (environmentId: string, newOrder: number) =>
+    apiClient.put(
+      `/api/v1/environments/${environmentId}/reorder`,
+      { newOrder }
+    ),
+
+  /**
    * Archive an environment (soft delete)
    */
   archive: (environmentId: string) => apiClient.delete(`/api/v1/environments/${environmentId}`),

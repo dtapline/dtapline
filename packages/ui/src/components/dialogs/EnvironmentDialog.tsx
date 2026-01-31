@@ -18,28 +18,47 @@ export function EnvironmentDialog({
   open
 }: EnvironmentDialogProps) {
   const [name, setName] = useState("")
-  const [displayName, setDisplayName] = useState("")
+  const [slug, setSlug] = useState("")
   const [color, setColor] = useState("#3b82f6")
   const [order, setOrder] = useState("0")
+  const [slugManuallyEdited, setSlugManuallyEdited] = useState(false)
 
   const createMutation = useCreateEnvironment()
   const updateMutation = useUpdateEnvironment()
 
   const isEditing = !!environment
 
+  // Auto-generate slug from name
+  const generateSlug = (text: string) => {
+    return text
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+  }
+
   useEffect(() => {
     if (environment) {
       setName(environment.name)
-      setDisplayName(environment.displayName)
+      setSlug(environment.slug)
       setColor(environment.color ?? "#3b82f6")
-      setOrder(environment.order.toString())
+      setSlugManuallyEdited(true) // Don't auto-generate when editing
+      // Order is managed via drag-and-drop, not editable in dialog
     } else {
       setName("")
-      setDisplayName("")
+      setSlug("")
       setColor("#3b82f6")
       setOrder("0")
+      setSlugManuallyEdited(false)
     }
   }, [environment])
+
+  // Auto-generate slug when name changes (only if slug hasn't been manually edited)
+  const handleNameChange = (value: string) => {
+    setName(value)
+    if (!isEditing && !slugManuallyEdited) {
+      setSlug(generateSlug(value))
+    }
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -49,9 +68,9 @@ export function EnvironmentDialog({
         {
           environmentId: environment.id,
           input: {
-            displayName,
-            color: color || undefined,
-            order: parseInt(order, 10)
+            name,
+            color: color || undefined
+            // Note: order is not editable - use drag-and-drop for reordering
           }
         },
         {
@@ -63,8 +82,8 @@ export function EnvironmentDialog({
     } else {
       createMutation.mutate(
         {
+          slug,
           name,
-          displayName,
           color: color || undefined,
           order: parseInt(order, 10)
         },
@@ -94,30 +113,33 @@ export function EnvironmentDialog({
               <Label htmlFor="name">Name</Label>
               <Input
                 id="name"
-                placeholder="production"
+                placeholder="Production"
                 value={name}
-                onChange={(e) => setName(e.target.value)}
+                onChange={(e) => handleNameChange(e.target.value)}
+                required
+                maxLength={100}
+              />
+              <p className="text-xs text-muted-foreground">
+                A human-readable name for display
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="slug">Slug</Label>
+              <Input
+                id="slug"
+                placeholder="production"
+                value={slug}
+                onChange={(e) => {
+                  setSlug(e.target.value)
+                  setSlugManuallyEdited(true)
+                }}
                 required
                 maxLength={50}
                 disabled={isEditing}
               />
               <p className="text-xs text-muted-foreground">
                 A short identifier (e.g., production, staging) {isEditing && "- cannot be changed"}
-              </p>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="displayName">Display Name</Label>
-              <Input
-                id="displayName"
-                placeholder="Production"
-                value={displayName}
-                onChange={(e) => setDisplayName(e.target.value)}
-                required
-                maxLength={100}
-              />
-              <p className="text-xs text-muted-foreground">
-                A human-readable name for display
               </p>
             </div>
 
@@ -145,20 +167,22 @@ export function EnvironmentDialog({
               </p>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="order">Display Order</Label>
-              <Input
-                id="order"
-                type="number"
-                value={order}
-                onChange={(e) => setOrder(e.target.value)}
-                min={0}
-                required
-              />
-              <p className="text-xs text-muted-foreground">
-                Controls the order in which environments are displayed
-              </p>
-            </div>
+            {!isEditing && (
+              <div className="space-y-2">
+                <Label htmlFor="order">Display Order</Label>
+                <Input
+                  id="order"
+                  type="number"
+                  value={order}
+                  onChange={(e) => setOrder(e.target.value)}
+                  min={0}
+                  required
+                />
+                <p className="text-xs text-muted-foreground">
+                  Controls the order in which environments are displayed. Use drag-and-drop to reorder later.
+                </p>
+              </div>
+            )}
           </div>
 
           <DialogFooter className="mt-6">

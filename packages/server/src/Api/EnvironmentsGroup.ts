@@ -34,8 +34,12 @@ export const EnvironmentsGroupLive = HttpApiBuilder.group(
             const environment = yield* environmentsRepo.update(environmentId, payload)
             return { environment }
           }))
+        // PUT /api/v1/environments/:environmentId/reorder
+        .handle("reorderEnvironment", ({ path: { environmentId }, payload }) =>
+          environmentsRepo.reorder(environmentId, payload.newOrder))
         // DELETE /api/v1/environments/:environmentId (soft delete/archive)
-        .handle("archiveEnvironment", ({ path: { environmentId } }) => environmentsRepo.archive(environmentId))
+        .handle("archiveEnvironment", ({ path: { environmentId } }) =>
+          environmentsRepo.archive(environmentId))
         // DELETE /api/v1/environments/:environmentId/hard (hard delete)
         .handle("deleteEnvironment", ({ path: { environmentId } }) => environmentsRepo.hardDelete(environmentId))
     })
