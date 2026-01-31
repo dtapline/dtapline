@@ -3,13 +3,15 @@ import type { CreateProjectInput, Project, UpdateProjectInput } from "@cloud-mat
 import { ProjectId } from "@cloud-matrix/domain/Project"
 import type { UserId } from "@cloud-matrix/domain/User"
 import { Context, Effect, Layer, Schema } from "effect"
+import { ObjectId } from "mongodb"
 import { MongoDatabase } from "../MongoDB.js"
+import { toObjectId } from "../ObjectIdSchema.js"
 
 /**
- * MongoDB document type for Project (stores branded types as strings)
+ * MongoDB document type for Project (uses native _id)
  */
 interface ProjectDocument {
-  id: string
+  _id: ObjectId
   userId: string
   name: string
   description?: string | null
@@ -58,7 +60,7 @@ export class ProjectsRepository extends Context.Tag("ProjectsRepository")<
  * Helper to convert MongoDB document to Project
  */
 const docToProject = (doc: ProjectDocument): any => ({
-  id: Schema.decodeSync(ProjectId)(doc.id),
+  id: Schema.decodeSync(ProjectId)(doc._id.toHexString()),
   userId: doc.userId as unknown as UserId,
   name: doc.name,
   description: doc.description ?? undefined,
@@ -101,8 +103,7 @@ export const ProjectsRepositoryLive = Layer.effect(
           }
 
           const now = new Date()
-          const projectDoc: ProjectDocument = {
-            id: crypto.randomUUID(),
+          const projectDoc: Omit<ProjectDocument, "_id"> = {
             userId,
             name: input.name,
             description: input.description ?? null,
@@ -112,8 +113,8 @@ export const ProjectsRepositoryLive = Layer.effect(
             updatedAt: now
           }
 
-          yield* Effect.tryPromise({
-            try: () => collection.insertOne(projectDoc),
+          const result = yield* Effect.tryPromise({
+            try: () => collection.insertOne(projectDoc as any),
             catch: (error) =>
               new DatabaseError({
                 operation: "insertOne",
@@ -122,13 +123,13 @@ export const ProjectsRepositoryLive = Layer.effect(
               })
           })
 
-          return docToProject(projectDoc)
+          return docToProject({ _id: result.insertedId, ...projectDoc })
         }),
 
       findById: (projectId) =>
         Effect.gen(function*() {
           const result = yield* Effect.tryPromise({
-            try: () => collection.findOne({ id: projectId }),
+            try: () => collection.findOne({ _id: toObjectId(projectId) }),
             catch: (error) =>
               new DatabaseError({
                 operation: "findOne",
@@ -181,7 +182,7 @@ export const ProjectsRepositoryLive = Layer.effect(
           const result = yield* Effect.tryPromise({
             try: () =>
               collection.findOneAndUpdate(
-                { id: projectId },
+                { _id: toObjectId(projectId) },
                 { $set: updateFields },
                 { returnDocument: "after" }
               ),
@@ -208,7 +209,7 @@ export const ProjectsRepositoryLive = Layer.effect(
       delete: (projectId) =>
         Effect.gen(function*() {
           const result = yield* Effect.tryPromise({
-            try: () => collection.deleteOne({ id: projectId }),
+            try: () => collection.deleteOne({ _id: toObjectId(projectId) }),
             catch: (error) =>
               new DatabaseError({
                 operation: "deleteOne",
