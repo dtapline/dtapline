@@ -1,5 +1,5 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import type { CreateProjectInput, UpdateProjectInput } from "@cloud-matrix/domain/Project"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { projectsApi } from "../api"
 
 /**
@@ -12,7 +12,7 @@ export const projectKeys = {
   details: () => [...projectKeys.all, "detail"] as const,
   detail: (id: string) => [...projectKeys.details(), id] as const,
   matrix: (id: string) => [...projectKeys.detail(id), "matrix"] as const,
-  deployments: (id: string) => [...projectKeys.detail(id), "deployments"] as const,
+  deployments: (id: string) => [...projectKeys.detail(id), "deployments"] as const
 }
 
 /**
@@ -24,7 +24,7 @@ export function useProjects() {
     queryFn: async () => {
       const data = await projectsApi.list()
       return data.projects
-    },
+    }
   })
 }
 
@@ -35,7 +35,7 @@ export function useProject(projectId: string) {
   return useQuery({
     queryKey: projectKeys.detail(projectId),
     queryFn: () => projectsApi.get(projectId),
-    enabled: !!projectId,
+    enabled: !!projectId
   })
 }
 
@@ -46,7 +46,7 @@ export function useProjectMatrix(projectId: string) {
   return useQuery({
     queryKey: projectKeys.matrix(projectId),
     queryFn: () => projectsApi.getMatrix(projectId),
-    enabled: !!projectId,
+    enabled: !!projectId
   })
 }
 
@@ -57,11 +57,10 @@ export function useCreateProject() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (input: typeof CreateProjectInput.Type) =>
-      projectsApi.create(input),
+    mutationFn: (input: typeof CreateProjectInput.Type) => projectsApi.create(input),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: projectKeys.lists() })
-    },
+    }
   })
 }
 
@@ -73,18 +72,18 @@ export function useUpdateProject() {
 
   return useMutation({
     mutationFn: ({
-      projectId,
       input,
+      projectId
     }: {
       projectId: string
       input: typeof UpdateProjectInput.Type
     }) => projectsApi.update(projectId, input),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
-        queryKey: projectKeys.detail(variables.projectId),
+        queryKey: projectKeys.detail(variables.projectId)
       })
       queryClient.invalidateQueries({ queryKey: projectKeys.lists() })
-    },
+    }
   })
 }
 
@@ -98,6 +97,6 @@ export function useDeleteProject() {
     mutationFn: (projectId: string) => projectsApi.delete(projectId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: projectKeys.lists() })
-    },
+    }
   })
 }

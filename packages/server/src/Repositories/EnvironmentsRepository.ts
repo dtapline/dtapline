@@ -18,7 +18,7 @@ interface EnvironmentDocument {
   projectId: string
   name: string
   displayName: string
-  color: string | undefined
+  color?: string | null
   order: number
   archived: boolean
   createdAt: Date
@@ -87,7 +87,7 @@ const docToEnvironment = (doc: EnvironmentDocument): any => ({
   projectId: doc.projectId as unknown as ProjectId,
   name: doc.name,
   displayName: doc.displayName,
-  color: doc.color,
+  color: doc.color ?? undefined,
   order: doc.order,
   archived: doc.archived,
   createdAt: doc.createdAt
@@ -156,12 +156,12 @@ export const EnvironmentsRepositoryLive = Layer.effect(
               })
           }))
 
-          const environmentDoc = {
+          const environmentDoc: EnvironmentDocument = {
             id: crypto.randomUUID(),
             projectId,
             name: input.name,
             displayName: input.displayName,
-            color: input.color,
+            color: input.color ?? null,
             order,
             archived: false,
             createdAt: new Date()
@@ -267,7 +267,7 @@ export const EnvironmentsRepositoryLive = Layer.effect(
               })
           })
 
-          const environmentDoc = {
+          const environmentDoc: EnvironmentDocument = {
             id: crypto.randomUUID(),
             projectId,
             name,
@@ -296,7 +296,7 @@ export const EnvironmentsRepositoryLive = Layer.effect(
           const updateFields: Record<string, any> = {}
 
           if (input.displayName !== undefined) updateFields.displayName = input.displayName
-          if (input.color !== undefined) updateFields.color = input.color
+          if (input.color !== undefined) updateFields.color = input.color ?? null
           if (input.order !== undefined) updateFields.order = input.order
 
           const result = yield* Effect.tryPromise({

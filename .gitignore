@@ -14,3 +14,7 @@ scratchpad/*
 .env.development.local
 .env.test.local
 .env.production.local
+
+# Gitleaks
+gitleaks-report.json
+.husky/_

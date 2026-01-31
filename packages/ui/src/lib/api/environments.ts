@@ -1,4 +1,4 @@
-import type { Environment, CreateEnvironmentInput, UpdateEnvironmentInput } from "@cloud-matrix/domain/Environment"
+import type { CreateEnvironmentInput, Environment, UpdateEnvironmentInput } from "@cloud-matrix/domain/Environment"
 import { apiClient } from "./client"
 
 /**
@@ -10,7 +10,7 @@ export const environmentsApi = {
    */
   list: (projectId: string, includeArchived = false) => {
     const query = includeArchived ? "?includeArchived=true" : ""
-    return apiClient.get<{ environments: Environment[] }>(
+    return apiClient.get<{ environments: Array<Environment> }>(
       `/api/v1/projects/${projectId}/environments${query}`
     )
   },
@@ -47,5 +47,5 @@ export const environmentsApi = {
    * Permanently delete an environment
    */
   hardDelete: (projectId: string, environmentId: string) =>
-    apiClient.delete(`/api/v1/projects/${projectId}/environments/${environmentId}/hard`),
+    apiClient.delete(`/api/v1/projects/${projectId}/environments/${environmentId}/hard`)
 }

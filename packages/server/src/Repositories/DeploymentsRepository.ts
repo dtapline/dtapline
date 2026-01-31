@@ -22,14 +22,14 @@ interface DeploymentDocument {
   serviceId: string
   version: string
   commitSha: string
-  gitTag: string | undefined
-  pullRequestUrl: string | undefined
-  deployedBy: string | undefined
+  gitTag?: string | null
+  pullRequestUrl?: string | null
+  deployedBy?: string | null
   deployedAt: Date
   status: DeploymentStatus
-  buildUrl: string | undefined
-  releaseNotes: string | undefined
-  metadata: Record<string, unknown> | undefined
+  buildUrl?: string | null
+  releaseNotes?: string | null
+  metadata?: Record<string, unknown> | null
 }
 
 /**
@@ -93,14 +93,14 @@ const docToDeployment = (doc: DeploymentDocument): any => ({
   serviceId: doc.serviceId as unknown as ServiceId,
   version: doc.version,
   commitSha: doc.commitSha,
-  gitTag: doc.gitTag,
-  pullRequestUrl: doc.pullRequestUrl,
-  deployedBy: doc.deployedBy,
+  gitTag: doc.gitTag ?? undefined,
+  pullRequestUrl: doc.pullRequestUrl ?? undefined,
+  deployedBy: doc.deployedBy ?? undefined,
   deployedAt: doc.deployedAt,
   status: doc.status,
-  buildUrl: doc.buildUrl,
-  releaseNotes: doc.releaseNotes,
-  metadata: doc.metadata
+  buildUrl: doc.buildUrl ?? undefined,
+  releaseNotes: doc.releaseNotes ?? undefined,
+  metadata: doc.metadata ?? undefined
 })
 
 /**
@@ -122,14 +122,14 @@ export const DeploymentsRepositoryLive = Layer.effect(
             serviceId,
             version,
             commitSha: input.commitSha,
-            gitTag: input.gitTag,
-            pullRequestUrl: input.pullRequestUrl,
-            deployedBy: input.deployedBy,
+            gitTag: input.gitTag ?? null,
+            pullRequestUrl: input.pullRequestUrl ?? null,
+            deployedBy: input.deployedBy ?? null,
             deployedAt: new Date(),
             status: input.status ?? "success",
-            buildUrl: input.buildUrl,
-            releaseNotes: input.releaseNotes,
-            metadata: input.metadata
+            buildUrl: input.buildUrl ?? null,
+            releaseNotes: input.releaseNotes ?? null,
+            metadata: input.metadata ?? null
           }
 
           yield* Effect.tryPromise({
