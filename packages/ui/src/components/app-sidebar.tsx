@@ -1,6 +1,6 @@
-import { NavMain } from "@/components/nav-main";
-import { NavSecondary } from "@/components/nav-secondary";
-import { NavUser } from "@/components/nav-user";
+import { NavMain } from "@/components/nav-main"
+import { NavSecondary } from "@/components/nav-secondary"
+import { NavUser } from "@/components/nav-user"
 import {
   Sidebar,
   SidebarContent,
@@ -8,51 +8,51 @@ import {
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
-  SidebarMenuItem,
-} from "@/components/ui/sidebar";
-import { Link } from "@tanstack/react-router";
+  SidebarMenuItem
+} from "@/components/ui/sidebar"
+import { useCurrentUser } from "@/lib/hooks/use-user"
+import { Link } from "@tanstack/react-router"
 import {
   ArrowUpCircleIcon,
   FolderIcon,
   GlobeIcon,
   HelpCircleIcon,
   LayoutDashboardIcon,
-  SettingsIcon,
-} from "lucide-react";
-import * as React from "react";
-import { useCurrentUser } from "@/lib/hooks/use-user";
+  SettingsIcon
+} from "lucide-react"
+import * as React from "react"
 
 const data = {
   navMain: [
     {
       title: "Dashboard",
       to: "/",
-      icon: LayoutDashboardIcon,
+      icon: LayoutDashboardIcon
     },
     {
       title: "Projects",
-      to: "/project",
-      icon: FolderIcon,
+      to: "/projects",
+      icon: FolderIcon
     },
     {
       title: "Environments",
       to: "/environments",
-      icon: GlobeIcon,
-    },
+      icon: GlobeIcon
+    }
   ],
   navSecondary: [
     {
       title: "Settings",
       url: "#",
-      icon: SettingsIcon,
+      icon: SettingsIcon
     },
     {
       title: "Get Help",
       url: "#",
-      icon: HelpCircleIcon,
-    },
-  ],
-};
+      icon: HelpCircleIcon
+    }
+  ]
+}
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { data: user, isLoading } = useCurrentUser()
@@ -86,18 +86,18 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
-        {isLoading ? (
-          <div className="p-2 text-sm text-muted-foreground">Loading...</div>
-        ) : user ? (
-          <NavUser
-            user={{
-              name: user.name,
-              email: user.email,
-              avatar: getInitials(user.name),
-            }}
-          />
-        ) : null}
+        {isLoading ? <div className="p-2 text-sm text-muted-foreground">Loading...</div> : user ?
+          (
+            <NavUser
+              user={{
+                name: user.name,
+                email: user.email,
+                avatar: getInitials(user.name)
+              }}
+            />
+          ) :
+          null}
       </SidebarFooter>
     </Sidebar>
-  );
+  )
 }

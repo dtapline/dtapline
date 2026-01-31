@@ -1,30 +1,21 @@
-import { useEffect, useState } from "react"
 import type { Environment } from "@cloud-matrix/domain/Environment"
+import { useEffect, useState } from "react"
 import { useCreateEnvironment, useUpdateEnvironment } from "../../lib/hooks/use-environments"
 import { Button } from "../ui/button"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle
-} from "../ui/dialog"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "../ui/dialog"
 import { Input } from "../ui/input"
 import { Label } from "../ui/label"
 
 interface EnvironmentDialogProps {
-  projectId: string
   environment?: Environment
   open: boolean
   onOpenChange: (open: boolean) => void
 }
 
 export function EnvironmentDialog({
-  projectId,
   environment,
-  open,
-  onOpenChange
+  onOpenChange,
+  open
 }: EnvironmentDialogProps) {
   const [name, setName] = useState("")
   const [displayName, setDisplayName] = useState("")
@@ -53,21 +44,15 @@ export function EnvironmentDialog({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
 
-    const input = {
-      displayName,
-      name,
-      order: parseInt(order, 10)
-    }
-
     if (isEditing) {
       updateMutation.mutate(
         {
           environmentId: environment.id,
           input: {
-            ...input,
-            color: color || undefined
-          },
-          projectId
+            displayName,
+            color: color || undefined,
+            order: parseInt(order, 10)
+          }
         },
         {
           onSuccess: () => {
@@ -78,11 +63,10 @@ export function EnvironmentDialog({
     } else {
       createMutation.mutate(
         {
-          input: {
-            ...input,
-            color: color || undefined
-          },
-          projectId
+          name,
+          displayName,
+          color: color || undefined,
+          order: parseInt(order, 10)
         },
         {
           onSuccess: () => {
@@ -101,7 +85,7 @@ export function EnvironmentDialog({
           <DialogDescription>
             {isEditing
               ? "Update the environment details below."
-              : "Add a new deployment environment to your project."}
+              : "Add a new deployment environment (applies to all projects)."}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
@@ -115,9 +99,10 @@ export function EnvironmentDialog({
                 onChange={(e) => setName(e.target.value)}
                 required
                 maxLength={50}
+                disabled={isEditing}
               />
               <p className="text-xs text-muted-foreground">
-                A short identifier (e.g., production, staging)
+                A short identifier (e.g., production, staging) {isEditing && "- cannot be changed"}
               </p>
             </div>
 
