@@ -3,6 +3,7 @@ import { Args, Command, Options } from "@effect/cli"
 import { HttpBody, HttpClient, HttpClientRequest } from "@effect/platform"
 import { NodeContext, NodeHttpClient, NodeRuntime } from "@effect/platform-node"
 import { Console, Effect, Layer, Option, Schema } from "effect"
+import { detectCICD } from "./cicd-detect.js"
 
 /**
  * CloudMatrix CLI
@@ -106,6 +107,9 @@ const deployCommand = Command.make(
         yield* Effect.fail(new Error("API key is required. Use --api-key or set CLOUDMATRIX_API_KEY env var"))
       }
 
+      // Auto-detect CI/CD platform
+      const cicdInfo = detectCICD()
+
       // Build the deployment payload
       const payload = {
         environment: args.environment,
@@ -116,13 +120,20 @@ const deployCommand = Command.make(
         ...(Option.isSome(args.deployedBy) && { deployedBy: args.deployedBy.value }),
         status: args.status,
         ...(Option.isSome(args.buildUrl) && { buildUrl: args.buildUrl.value }),
-        ...(Option.isSome(args.releaseNotes) && { releaseNotes: args.releaseNotes.value })
+        ...(cicdInfo.detected && !Option.isSome(args.buildUrl) && cicdInfo.buildUrl && { buildUrl: cicdInfo.buildUrl }),
+        ...(Option.isSome(args.releaseNotes) && { releaseNotes: args.releaseNotes.value }),
+        ...(cicdInfo.detected && {
+          cicdPlatform: cicdInfo.platform,
+          cicdBuildUrl: cicdInfo.buildUrl,
+          cicdBuildId: cicdInfo.buildId
+        })
       }
 
       yield* Console.log(`  Environment: ${args.environment}`)
       yield* Console.log(`  Service: ${args.service}`)
       yield* Console.log(`  Commit: ${args.commitSha}`)
       if (Option.isSome(args.gitTag)) yield* Console.log(`  Tag: ${args.gitTag.value}`)
+      if (cicdInfo.detected) yield* Console.log(`  CI/CD Platform: ${cicdInfo.platform}`)
       yield* Console.log(`  Status: ${args.status}`)
 
       // Send webhook request

@@ -72,18 +72,30 @@ export function DeploymentMatrix({
           {services.map((service) => (
             <tr key={service.id}>
               <td className="sticky left-0 z-10 border bg-background p-3 font-medium">
-                <div className="flex flex-col gap-1">
-                  <span>{service.displayName}</span>
-                  {service.repositoryUrl && (
-                    <a
-                      href={service.repositoryUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-xs font-normal text-muted-foreground hover:underline"
-                    >
-                      {service.name}
-                    </a>
+                <div className="flex items-center gap-2">
+                  {service.iconUrl && (
+                    <img
+                      src={service.iconUrl}
+                      alt={`${service.displayName} icon`}
+                      className="h-5 w-5"
+                      onError={(e) => {
+                        e.currentTarget.style.display = "none"
+                      }}
+                    />
                   )}
+                  <div className="flex flex-col gap-1">
+                    <span>{service.displayName}</span>
+                    {service.repositoryUrl && (
+                      <a
+                        href={service.repositoryUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs font-normal text-muted-foreground hover:underline"
+                      >
+                        {service.name}
+                      </a>
+                    )}
+                  </div>
                 </div>
               </td>
               {environments.map((env) => {

@@ -63,6 +63,12 @@ export * as Layers from "./Layers.js"
 export * as MongoDB from "./MongoDB.js"
 
 /**
+ * Schema for MongoDB ObjectId that stays as ObjectId instance
+ * Used internally in repositories
+ */
+export * as ObjectIdSchema from "./ObjectIdSchema.js"
+
+/**
  * MongoDB document type for ApiKey
  */
 export * as ApiKeysRepository from "./Repositories/ApiKeysRepository.js"
@@ -78,7 +84,7 @@ export * as DeploymentsRepository from "./Repositories/DeploymentsRepository.js"
 export * as EnvironmentsRepository from "./Repositories/EnvironmentsRepository.js"
 
 /**
- * MongoDB document type for Project (stores branded types as strings)
+ * MongoDB document type for Project (uses native _id)
  */
 export * as ProjectsRepository from "./Repositories/ProjectsRepository.js"
 
@@ -107,6 +113,12 @@ export * as DeploymentService from "./Services/DeploymentService.js"
  * Matrix cell - represents the deployment state for a specific environment-service pair
  */
 export * as MatrixService from "./Services/MatrixService.js"
+
+/**
+ * CI/CD Platform Icon URLs
+ * Returns Simple Icons CDN URLs for various CI/CD platforms
+ */
+export * as CICDIcons from "./Utils/CICDIcons.js"
 
 /**
  * AWS Lambda handler for CloudMatrix API
