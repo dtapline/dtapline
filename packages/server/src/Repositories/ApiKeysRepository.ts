@@ -5,7 +5,7 @@ import type { ProjectId } from "@cloud-matrix/domain/Project"
 import type { UserId } from "@cloud-matrix/domain/User"
 import * as bcrypt from "bcryptjs"
 import { Context, Effect, Layer, Schema } from "effect"
-import { ObjectId } from "mongodb"
+import type { ObjectId } from "mongodb"
 import { MongoDatabase } from "../MongoDB.js"
 import { toObjectId } from "../ObjectIdSchema.js"
 

@@ -10,7 +10,7 @@ import { DatabaseError, DeploymentNotFound } from "@cloud-matrix/domain/Errors"
 import type { ProjectId } from "@cloud-matrix/domain/Project"
 import type { ServiceId } from "@cloud-matrix/domain/Service"
 import { Context, Effect, Layer, Schema } from "effect"
-import { ObjectId } from "mongodb"
+import type { ObjectId } from "mongodb"
 import { MongoDatabase } from "../MongoDB.js"
 import { toObjectId } from "../ObjectIdSchema.js"
 

@@ -1,6 +1,6 @@
+import { Schema } from "effect"
 import { pipe } from "effect/Function"
 import * as ParseResult from "effect/ParseResult"
-import { Schema } from "effect"
 import { ObjectId as MongoObjectId } from "mongodb"
 
 /**
@@ -19,7 +19,7 @@ export const ObjectIdFromSelf = pipe(
  * Schema that transforms between string (external) and ObjectId (internal)
  * - Decode: string -> ObjectId (when reading from API/domain)
  * - Encode: ObjectId -> string (when returning to API/domain)
- * 
+ *
  * This keeps ObjectId internal to repositories - external code only sees strings
  */
 export const ObjectIdFromString = Schema.transformOrFail(

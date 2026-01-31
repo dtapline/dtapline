@@ -6,6 +6,7 @@ import { DeploymentsWebhookGroupLive } from "./DeploymentsWebhookGroup.js"
 import { EnvironmentsGroupLive } from "./EnvironmentsGroup.js"
 import { ProjectsGroupLive } from "./ProjectsGroup.js"
 import { ServicesGroupLive } from "./ServicesGroup.js"
+import { UserGroupLive } from "./UserGroup.js"
 import { VersionPatternsGroupLive } from "./VersionPatternsGroup.js"
 
 /**
@@ -18,5 +19,6 @@ export const CloudMatrixApiLive = HttpApiBuilder.api(CloudMatrixApi).pipe(
   Layer.provide(EnvironmentsGroupLive),
   Layer.provide(ServicesGroupLive),
   Layer.provide(ApiKeysGroupLive),
-  Layer.provide(VersionPatternsGroupLive)
+  Layer.provide(VersionPatternsGroupLive),
+  Layer.provide(UserGroupLive)
 )

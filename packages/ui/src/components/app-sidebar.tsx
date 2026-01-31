@@ -20,13 +20,9 @@ import {
   SettingsIcon,
 } from "lucide-react";
 import * as React from "react";
+import { useCurrentUser } from "@/lib/hooks/use-user";
 
 const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
   navMain: [
     {
       title: "Dashboard",
@@ -59,6 +55,18 @@ const data = {
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { data: user, isLoading } = useCurrentUser()
+
+  // Extract initials from name for avatar fallback
+  const getInitials = (name: string) => {
+    return name
+      .split(" ")
+      .map((word) => word[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2)
+  }
+
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>
@@ -78,7 +86,17 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        {isLoading ? (
+          <div className="p-2 text-sm text-muted-foreground">Loading...</div>
+        ) : user ? (
+          <NavUser
+            user={{
+              name: user.name,
+              email: user.email,
+              avatar: getInitials(user.name),
+            }}
+          />
+        ) : null}
       </SidebarFooter>
     </Sidebar>
   );

@@ -36,8 +36,8 @@ export function useCreateApiKey() {
 
   return useMutation({
     mutationFn: ({
-      projectId,
-      input
+      input,
+      projectId
     }: {
       projectId: string
       input: typeof CreateApiKeyInput.Type
@@ -58,8 +58,8 @@ export function useRevokeApiKey() {
 
   return useMutation({
     mutationFn: ({
-      projectId,
-      apiKeyId
+      apiKeyId,
+      projectId
     }: {
       projectId: string
       apiKeyId: string

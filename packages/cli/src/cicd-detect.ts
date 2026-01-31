@@ -19,7 +19,7 @@ export function detectCICD(): CICDInfo {
     const buildUrl = process.env.GITHUB_SERVER_URL && process.env.GITHUB_REPOSITORY && process.env.GITHUB_RUN_ID
       ? `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`
       : undefined
-    
+
     return {
       platform: "GitHub Actions",
       detected: true,
@@ -30,10 +30,11 @@ export function detectCICD(): CICDInfo {
 
   // Azure Pipelines
   if (process.env.TF_BUILD === "True" || process.env.AZURE_PIPELINES === "true") {
-    const buildUrl = process.env.SYSTEM_TEAMFOUNDATIONCOLLECTIONURI && process.env.SYSTEM_TEAMPROJECT && process.env.BUILD_BUILDID
-      ? `${process.env.SYSTEM_TEAMFOUNDATIONCOLLECTIONURI}${process.env.SYSTEM_TEAMPROJECT}/_build/results?buildId=${process.env.BUILD_BUILDID}`
-      : undefined
-    
+    const buildUrl =
+      process.env.SYSTEM_TEAMFOUNDATIONCOLLECTIONURI && process.env.SYSTEM_TEAMPROJECT && process.env.BUILD_BUILDID
+        ? `${process.env.SYSTEM_TEAMFOUNDATIONCOLLECTIONURI}${process.env.SYSTEM_TEAMPROJECT}/_build/results?buildId=${process.env.BUILD_BUILDID}`
+        : undefined
+
     return {
       platform: "Azure Pipelines",
       detected: true,
@@ -47,7 +48,7 @@ export function detectCICD(): CICDInfo {
     const buildUrl = process.env.CI_PROJECT_URL && process.env.CI_PIPELINE_ID
       ? `${process.env.CI_PROJECT_URL}/-/pipelines/${process.env.CI_PIPELINE_ID}`
       : undefined
-    
+
     return {
       platform: "GitLab CI",
       detected: true,
@@ -91,7 +92,7 @@ export function detectCICD(): CICDInfo {
     const buildUrl = process.env.BITBUCKET_GIT_HTTP_ORIGIN && process.env.BITBUCKET_BUILD_NUMBER
       ? `${process.env.BITBUCKET_GIT_HTTP_ORIGIN}/addon/pipelines/home#!/results/${process.env.BITBUCKET_BUILD_NUMBER}`
       : undefined
-    
+
     return {
       platform: "Bitbucket Pipelines",
       detected: true,
@@ -113,9 +114,11 @@ export function detectCICD(): CICDInfo {
   // AWS CodeBuild
   if (process.env.CODEBUILD_BUILD_ID) {
     const buildUrl = process.env.CODEBUILD_BUILD_ARN
-      ? `https://console.aws.amazon.com/codesuite/codebuild/projects/${process.env.CODEBUILD_BUILD_ARN.split(":")[5]}/build/${process.env.CODEBUILD_BUILD_ID}`
+      ? `https://console.aws.amazon.com/codesuite/codebuild/projects/${
+        process.env.CODEBUILD_BUILD_ARN.split(":")[5]
+      }/build/${process.env.CODEBUILD_BUILD_ID}`
       : undefined
-    
+
     return {
       platform: "AWS CodeBuild",
       detected: true,
@@ -130,7 +133,8 @@ export function detectCICD(): CICDInfo {
       platform: "Google Cloud Build",
       detected: true,
       buildId: process.env.BUILD_ID,
-      buildUrl: `https://console.cloud.google.com/cloud-build/builds/${process.env.BUILD_ID}?project=${process.env.PROJECT_ID}`
+      buildUrl:
+        `https://console.cloud.google.com/cloud-build/builds/${process.env.BUILD_ID}?project=${process.env.PROJECT_ID}`
     }
   }
 
