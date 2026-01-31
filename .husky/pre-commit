@@ -1,0 +1,13 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+echo "🎨 Running lint-fix on staged files..."
+pnpm lint-fix || {
+  echo "❌ Lint failed! Please fix the issues above."
+  exit 1
+}
+
+echo "✅ Lint passed! Adding fixed files to commit..."
+git add -u
+
+echo "✅ Pre-commit checks passed!"
