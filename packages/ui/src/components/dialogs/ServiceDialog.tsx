@@ -1,15 +1,8 @@
-import { useEffect, useState } from "react"
 import type { Service } from "@cloud-matrix/domain/Service"
+import { useEffect, useState } from "react"
 import { useCreateService, useUpdateService } from "../../lib/hooks/use-services"
 import { Button } from "../ui/button"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle
-} from "../ui/dialog"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "../ui/dialog"
 import { Input } from "../ui/input"
 import { Label } from "../ui/label"
 
@@ -20,45 +13,61 @@ interface ServiceDialogProps {
   onOpenChange: (open: boolean) => void
 }
 
-export function ServiceDialog({ projectId, service, open, onOpenChange }: ServiceDialogProps) {
+export function ServiceDialog({ onOpenChange, open, projectId, service }: ServiceDialogProps) {
   const [name, setName] = useState("")
-  const [displayName, setDisplayName] = useState("")
+  const [slug, setSlug] = useState("")
   const [repositoryUrl, setRepositoryUrl] = useState("")
   const [iconUrl, setIconUrl] = useState("")
+  const [slugManuallyEdited, setSlugManuallyEdited] = useState(false)
 
   const createMutation = useCreateService()
   const updateMutation = useUpdateService()
 
   const isEditing = !!service
 
+  // Auto-generate slug from name
+  const generateSlug = (text: string) => {
+    return text
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+  }
+
   useEffect(() => {
     if (service) {
       setName(service.name)
-      setDisplayName(service.displayName)
+      setSlug(service.slug)
       setRepositoryUrl(service.repositoryUrl ?? "")
       setIconUrl(service.iconUrl ?? "")
+      setSlugManuallyEdited(true) // Don't auto-generate when editing
     } else {
       setName("")
-      setDisplayName("")
+      setSlug("")
       setRepositoryUrl("")
       setIconUrl("")
+      setSlugManuallyEdited(false)
     }
   }, [service])
+
+  // Auto-generate slug when name changes (only if slug hasn't been manually edited)
+  const handleNameChange = (value: string) => {
+    setName(value)
+    if (!isEditing && !slugManuallyEdited) {
+      setSlug(generateSlug(value))
+    }
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
 
-    const input = {
-      displayName,
-      name,
-      repositoryUrl: repositoryUrl || undefined,
-      iconUrl: iconUrl || undefined
-    }
-
     if (isEditing) {
       updateMutation.mutate(
         {
-          input,
+          input: {
+            name,
+            repositoryUrl: repositoryUrl || undefined,
+            iconUrl: iconUrl || undefined
+          },
           projectId,
           serviceId: service.id
         },
@@ -71,7 +80,12 @@ export function ServiceDialog({ projectId, service, open, onOpenChange }: Servic
     } else {
       createMutation.mutate(
         {
-          input,
+          input: {
+            slug,
+            name,
+            repositoryUrl: repositoryUrl || undefined,
+            iconUrl: iconUrl || undefined
+          },
           projectId
         },
         {
@@ -100,29 +114,33 @@ export function ServiceDialog({ projectId, service, open, onOpenChange }: Servic
               <Label htmlFor="name">Name</Label>
               <Input
                 id="name"
-                placeholder="api-server"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-                maxLength={50}
-              />
-              <p className="text-xs text-muted-foreground">
-                A short identifier (e.g., api-server, web-app)
-              </p>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="displayName">Display Name</Label>
-              <Input
-                id="displayName"
                 placeholder="API Server"
-                value={displayName}
-                onChange={(e) => setDisplayName(e.target.value)}
+                value={name}
+                onChange={(e) => handleNameChange(e.target.value)}
                 required
                 maxLength={100}
               />
               <p className="text-xs text-muted-foreground">
                 A human-readable name for display
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="slug">Slug</Label>
+              <Input
+                id="slug"
+                placeholder="api-server"
+                value={slug}
+                onChange={(e) => {
+                  setSlug(e.target.value)
+                  setSlugManuallyEdited(true)
+                }}
+                required
+                maxLength={50}
+                disabled={isEditing}
+              />
+              <p className="text-xs text-muted-foreground">
+                A short identifier (e.g., api-server, web-app) {isEditing && "- cannot be changed"}
               </p>
             </div>
 

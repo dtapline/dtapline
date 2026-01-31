@@ -17,8 +17,8 @@ import { MongoDatabase } from "../MongoDB.js"
 interface ServiceDocument {
   _id: ObjectId
   projectId: string
+  slug: string
   name: string
-  displayName: string
   repositoryUrl?: string | null
   iconUrl?: string | null
   archived: boolean
@@ -47,13 +47,13 @@ export class ServicesRepository extends Context.Tag("ServicesRepository")<
 
     readonly findByName: (
       projectId: string,
-      name: string
+      slug: string
     ) => Effect.Effect<Service | null, DatabaseError>
 
     readonly getOrCreate: (
       projectId: string,
-      name: string,
-      displayName?: string,
+      slug: string,
+      name?: string,
       repositoryUrl?: string
     ) => Effect.Effect<Service, DatabaseError>
 
@@ -72,7 +72,7 @@ export class ServicesRepository extends Context.Tag("ServicesRepository")<
 
     readonly exists: (
       projectId: string,
-      name: string
+      slug: string
     ) => Effect.Effect<boolean, DatabaseError>
   }
 >() {}
@@ -83,8 +83,8 @@ export class ServicesRepository extends Context.Tag("ServicesRepository")<
 const docToService = (doc: ServiceDocument): any => ({
   id: Schema.decodeSync(ServiceId)(doc._id.toHexString()),
   projectId: doc.projectId as unknown as ProjectId,
+  slug: doc.slug,
   name: doc.name,
-  displayName: doc.displayName,
   repositoryUrl: doc.repositoryUrl ?? undefined,
   iconUrl: doc.iconUrl ?? undefined,
   archived: doc.archived,
@@ -103,9 +103,9 @@ export const ServicesRepositoryLive = Layer.effect(
     return {
       create: (projectId, input) =>
         Effect.gen(function*() {
-          // Check if service with same name already exists
+          // Check if service with same slug already exists
           const existsResult = yield* Effect.tryPromise({
-            try: () => collection.findOne({ projectId, name: input.name }),
+            try: () => collection.findOne({ projectId, slug: input.slug }),
             catch: (error) =>
               new DatabaseError({
                 operation: "findOne",
@@ -118,16 +118,16 @@ export const ServicesRepositoryLive = Layer.effect(
             return yield* Effect.fail(
               new ServiceAlreadyExists({
                 projectId,
-                name: input.name,
-                message: `Service with name "${input.name}" already exists in this project`
+                name: input.slug,
+                message: `Service with slug "${input.slug}" already exists in this project`
               })
             )
           }
 
           const serviceDoc: Omit<ServiceDocument, "_id"> = {
             projectId,
+            slug: input.slug,
             name: input.name,
-            displayName: input.displayName,
             repositoryUrl: input.repositoryUrl ?? null,
             iconUrl: input.iconUrl ?? null,
             archived: false,
@@ -188,7 +188,7 @@ export const ServicesRepositoryLive = Layer.effect(
           }
 
           const results = yield* Effect.tryPromise({
-            try: () => collection.find(filter).sort({ name: 1 }).toArray(),
+            try: () => collection.find(filter).sort({ slug: 1 }).toArray(),
             catch: (error) =>
               new DatabaseError({
                 operation: "find",
@@ -200,14 +200,14 @@ export const ServicesRepositoryLive = Layer.effect(
           return results.map(docToService)
         }),
 
-      findByName: (projectId, name) =>
+      findByName: (projectId, slug) =>
         Effect.gen(function*() {
           const result = yield* Effect.tryPromise({
-            try: () => collection.findOne({ projectId, name }),
+            try: () => collection.findOne({ projectId, slug }),
             catch: (error) =>
               new DatabaseError({
                 operation: "findOne",
-                message: "Failed to find service by name",
+                message: "Failed to find service by slug",
                 cause: error
               })
           })
@@ -215,11 +215,11 @@ export const ServicesRepositoryLive = Layer.effect(
           return result ? docToService(result) : null
         }),
 
-      getOrCreate: (projectId, name, displayName, repositoryUrl) =>
+      getOrCreate: (projectId, slug, name, repositoryUrl) =>
         Effect.gen(function*() {
           // Try to find existing service
           const existing = yield* Effect.tryPromise({
-            try: () => collection.findOne({ projectId, name }),
+            try: () => collection.findOne({ projectId, slug }),
             catch: (error) =>
               new DatabaseError({
                 operation: "findOne",
@@ -232,11 +232,11 @@ export const ServicesRepositoryLive = Layer.effect(
             return docToService(existing)
           }
 
-          // Create new service with auto-generated display name if needed
+          // Create new service with auto-generated name if needed
           const serviceDoc: Omit<ServiceDocument, "_id"> = {
             projectId,
-            name,
-            displayName: displayName ?? name.charAt(0).toUpperCase() + name.slice(1),
+            slug,
+            name: name ?? slug.charAt(0).toUpperCase() + slug.slice(1),
             repositoryUrl: repositoryUrl ?? null,
             iconUrl: null,
             archived: false,
@@ -269,7 +269,7 @@ export const ServicesRepositoryLive = Layer.effect(
 
           const updateFields: Record<string, any> = {}
 
-          if (input.displayName !== undefined) updateFields.displayName = input.displayName
+          if (input.name !== undefined) updateFields.name = input.name
           if (input.repositoryUrl !== undefined) updateFields.repositoryUrl = input.repositoryUrl ?? null
           if (input.iconUrl !== undefined) updateFields.iconUrl = input.iconUrl ?? null
 
@@ -389,10 +389,10 @@ export const ServicesRepositoryLive = Layer.effect(
           }
         }),
 
-      exists: (projectId, name) =>
+      exists: (projectId, slug) =>
         Effect.gen(function*() {
           const result = yield* Effect.tryPromise({
-            try: () => collection.findOne({ projectId, name }),
+            try: () => collection.findOne({ projectId, slug }),
             catch: (error) =>
               new DatabaseError({
                 operation: "findOne",

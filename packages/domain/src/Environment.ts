@@ -8,8 +8,8 @@ export class EnvironmentId extends Schema.String.pipe(Schema.brand("EnvironmentI
 export class Environment extends Schema.Class<Environment>("Environment")({
   id: EnvironmentId,
   userId: UserId, // Changed from projectId to userId for global environments
-  name: Schema.String.pipe(Schema.minLength(1), Schema.maxLength(50)), // e.g., "production"
-  displayName: Schema.String.pipe(Schema.minLength(1), Schema.maxLength(100)), // e.g., "Production"
+  slug: Schema.String.pipe(Schema.minLength(1), Schema.maxLength(50)), // e.g., "production"
+  name: Schema.String.pipe(Schema.minLength(1), Schema.maxLength(100)), // e.g., "Production"
   color: Schema.optional(Schema.String.pipe(Schema.pattern(/^#[0-9A-Fa-f]{6}$/))), // Hex color
   order: Schema.Number.pipe(Schema.int(), Schema.greaterThanOrEqualTo(0)),
   archived: Schema.Boolean,
@@ -18,15 +18,15 @@ export class Environment extends Schema.Class<Environment>("Environment")({
 
 // Create environment input
 export class CreateEnvironmentInput extends Schema.Struct({
-  name: Schema.String.pipe(Schema.minLength(1), Schema.maxLength(50)),
-  displayName: Schema.String.pipe(Schema.minLength(1), Schema.maxLength(100)),
+  slug: Schema.String.pipe(Schema.minLength(1), Schema.maxLength(50)),
+  name: Schema.String.pipe(Schema.minLength(1), Schema.maxLength(100)),
   color: Schema.optional(Schema.String.pipe(Schema.pattern(/^#[0-9A-Fa-f]{6}$/))),
   order: Schema.optional(Schema.Number.pipe(Schema.int(), Schema.greaterThanOrEqualTo(0)))
 }) {}
 
 // Update environment input
+// Note: order is not included - use the dedicated reorder endpoint for atomic ordering
 export class UpdateEnvironmentInput extends Schema.Struct({
-  displayName: Schema.optional(Schema.String.pipe(Schema.minLength(1), Schema.maxLength(100))),
-  color: Schema.optional(Schema.String.pipe(Schema.pattern(/^#[0-9A-Fa-f]{6}$/))),
-  order: Schema.optional(Schema.Number.pipe(Schema.int(), Schema.greaterThanOrEqualTo(0)))
+  name: Schema.optional(Schema.String.pipe(Schema.minLength(1), Schema.maxLength(100))),
+  color: Schema.optional(Schema.String.pipe(Schema.pattern(/^#[0-9A-Fa-f]{6}$/)))
 }) {}

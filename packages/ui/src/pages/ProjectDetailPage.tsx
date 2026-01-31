@@ -69,7 +69,7 @@ export function ProjectDetailPage({ projectId }: ProjectDetailPageProps) {
                       style={{ backgroundColor: env.color }}
                     />
                   )}
-                  {env.displayName}
+                  {env.name}
                 </span>
               ))}
             <Button

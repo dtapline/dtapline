@@ -243,6 +243,20 @@ export class EnvironmentsGroup extends HttpApiGroup.make("environments")
       .addError(Errors.DatabaseError, { status: 500 })
   )
   .add(
+    HttpApiEndpoint.put("reorderEnvironment", "/api/v1/environments/:environmentId/reorder")
+      .setPath(Schema.Struct({
+        environmentId: EnvironmentIdFromString
+      }))
+      .setPayload(
+        Schema.Struct({
+          newOrder: Schema.Number.pipe(Schema.int(), Schema.greaterThanOrEqualTo(0))
+        })
+      )
+      .addSuccess(Schema.Void)
+      .addError(Errors.EnvironmentNotFound, { status: 404 })
+      .addError(Errors.DatabaseError, { status: 500 })
+  )
+  .add(
     HttpApiEndpoint.del("deleteEnvironment", "/api/v1/environments/:environmentId/hard")
       .setPath(Schema.Struct({
         environmentId: EnvironmentIdFromString

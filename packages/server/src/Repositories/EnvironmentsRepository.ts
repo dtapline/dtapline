@@ -19,8 +19,8 @@ import { toObjectId } from "../ObjectIdSchema.js"
 interface EnvironmentDocument {
   _id: ObjectId
   userId: string // Changed from projectId to userId
+  slug: string
   name: string
-  displayName: string
   color?: string | null
   order: number
   archived: boolean
@@ -50,13 +50,13 @@ export class EnvironmentsRepository extends Context.Tag("EnvironmentsRepository"
 
     readonly findByName: (
       userId: string,
-      name: string
+      slug: string
     ) => Effect.Effect<Environment | null, DatabaseError>
 
     readonly getOrCreate: (
       userId: string,
-      name: string,
-      displayName?: string
+      slug: string,
+      name?: string
     ) => Effect.Effect<Environment, DatabaseError>
 
     readonly update: (
@@ -74,12 +74,17 @@ export class EnvironmentsRepository extends Context.Tag("EnvironmentsRepository"
 
     readonly exists: (
       userId: string,
-      name: string
+      slug: string
     ) => Effect.Effect<boolean, DatabaseError>
 
     readonly getNextOrder: (
       userId: string
     ) => Effect.Effect<number, DatabaseError>
+
+    readonly reorder: (
+      environmentId: string,
+      newOrder: number
+    ) => Effect.Effect<void, EnvironmentNotFound | DatabaseError>
   }
 >() {}
 
@@ -89,8 +94,8 @@ export class EnvironmentsRepository extends Context.Tag("EnvironmentsRepository"
 const docToEnvironment = (doc: EnvironmentDocument): any => ({
   id: Schema.decodeSync(EnvironmentId)(doc._id.toHexString()),
   userId: doc.userId as unknown as UserId,
+  slug: doc.slug,
   name: doc.name,
-  displayName: doc.displayName,
   color: doc.color ?? undefined,
   order: doc.order,
   archived: doc.archived,
@@ -121,9 +126,9 @@ export const EnvironmentsRepositoryLive = Layer.effect(
     return {
       create: (userId, input) =>
         Effect.gen(function*() {
-          // Check if environment with same name already exists
+          // Check if environment with same slug already exists
           const existsResult = yield* Effect.tryPromise({
-            try: () => collection.findOne({ userId, name: input.name }),
+            try: () => collection.findOne({ userId, slug: input.slug }),
             catch: (error) =>
               new DatabaseError({
                 operation: "findOne",
@@ -136,8 +141,8 @@ export const EnvironmentsRepositoryLive = Layer.effect(
             return yield* Effect.fail(
               new EnvironmentAlreadyExists({
                 projectId: userId, // TODO: Update EnvironmentAlreadyExists error to use userId
-                name: input.name,
-                message: `Environment with name "${input.name}" already exists for this user`
+                name: input.slug,
+                message: `Environment with slug "${input.slug}" already exists for this user`
               })
             )
           }
@@ -162,8 +167,8 @@ export const EnvironmentsRepositoryLive = Layer.effect(
 
           const environmentDoc: Omit<EnvironmentDocument, "_id"> = {
             userId,
+            slug: input.slug,
             name: input.name,
-            displayName: input.displayName,
             color: input.color ?? null,
             order,
             archived: false,
@@ -227,14 +232,14 @@ export const EnvironmentsRepositoryLive = Layer.effect(
           return results.map(docToEnvironment)
         }),
 
-      findByName: (userId, name) =>
+      findByName: (userId, slug) =>
         Effect.gen(function*() {
           const result = yield* Effect.tryPromise({
-            try: () => collection.findOne({ userId, name }),
+            try: () => collection.findOne({ userId, slug }),
             catch: (error) =>
               new DatabaseError({
                 operation: "findOne",
-                message: "Failed to find environment by name",
+                message: "Failed to find environment by slug",
                 cause: error
               })
           })
@@ -242,11 +247,11 @@ export const EnvironmentsRepositoryLive = Layer.effect(
           return result ? docToEnvironment(result) : null
         }),
 
-      getOrCreate: (userId, name, displayName) =>
+      getOrCreate: (userId, slug, name) =>
         Effect.gen(function*() {
           // Try to find existing environment
           const existing = yield* Effect.tryPromise({
-            try: () => collection.findOne({ userId, name }),
+            try: () => collection.findOne({ userId, slug }),
             catch: (error) =>
               new DatabaseError({
                 operation: "findOne",
@@ -272,8 +277,8 @@ export const EnvironmentsRepositoryLive = Layer.effect(
 
           const environmentDoc: Omit<EnvironmentDocument, "_id"> = {
             userId,
-            name,
-            displayName: displayName ?? name.charAt(0).toUpperCase() + name.slice(1),
+            slug,
+            name: name ?? slug.charAt(0).toUpperCase() + slug.slice(1),
             color: DEFAULT_COLORS[count % DEFAULT_COLORS.length],
             order: count,
             archived: false,
@@ -297,9 +302,8 @@ export const EnvironmentsRepositoryLive = Layer.effect(
         Effect.gen(function*() {
           const updateFields: Record<string, any> = {}
 
-          if (input.displayName !== undefined) updateFields.displayName = input.displayName
+          if (input.name !== undefined) updateFields.name = input.name
           if (input.color !== undefined) updateFields.color = input.color ?? null
-          if (input.order !== undefined) updateFields.order = input.order
 
           const result = yield* Effect.tryPromise({
             try: () =>
@@ -399,10 +403,10 @@ export const EnvironmentsRepositoryLive = Layer.effect(
           }
         }),
 
-      exists: (userId, name) =>
+      exists: (userId, slug) =>
         Effect.gen(function*() {
           const result = yield* Effect.tryPromise({
-            try: () => collection.findOne({ userId, name }),
+            try: () => collection.findOne({ userId, slug }),
             catch: (error) =>
               new DatabaseError({
                 operation: "findOne",
@@ -432,6 +436,102 @@ export const EnvironmentsRepositoryLive = Layer.effect(
           })
 
           return result.length > 0 ? result[0].order + 1 : 0
+        }),
+
+      reorder: (environmentId, newOrder) =>
+        Effect.gen(function*() {
+          // 1. Find the environment being moved
+          const env = yield* Effect.tryPromise({
+            try: () => collection.findOne({ _id: toObjectId(environmentId) }),
+            catch: (error) =>
+              new DatabaseError({
+                operation: "findOne",
+                message: "Failed to find environment for reorder",
+                cause: error
+              })
+          })
+
+          if (!env) {
+            return yield* Effect.fail(
+              new EnvironmentNotFound({
+                environmentId,
+                message: `Environment with ID ${environmentId} not found`
+              })
+            )
+          }
+
+          const oldOrder = env.order
+          const userId = env.userId
+
+          // If the order hasn't changed, no-op
+          if (oldOrder === newOrder) {
+            return
+          }
+
+          // 2. Get all environments for this user, sorted by order
+          const allEnvs = yield* Effect.tryPromise({
+            try: () =>
+              collection
+                .find({ userId, archived: false })
+                .sort({ order: 1 })
+                .toArray(),
+            catch: (error) =>
+              new DatabaseError({
+                operation: "find",
+                message: "Failed to find all environments",
+                cause: error
+              })
+          })
+
+          // 3. Build update operations for bulk write
+          const updates: Array<any> = []
+
+          if (newOrder < oldOrder) {
+            // Moving up: shift items down between newOrder and oldOrder
+            allEnvs.forEach((e) => {
+              if (e.order >= newOrder && e.order < oldOrder) {
+                updates.push({
+                  updateOne: {
+                    filter: { _id: e._id },
+                    update: { $set: { order: e.order + 1 } }
+                  }
+                })
+              }
+            })
+          } else if (newOrder > oldOrder) {
+            // Moving down: shift items up between oldOrder and newOrder
+            allEnvs.forEach((e) => {
+              if (e.order > oldOrder && e.order <= newOrder) {
+                updates.push({
+                  updateOne: {
+                    filter: { _id: e._id },
+                    update: { $set: { order: e.order - 1 } }
+                  }
+                })
+              }
+            })
+          }
+
+          // 4. Update the moved environment
+          updates.push({
+            updateOne: {
+              filter: { _id: env._id },
+              update: { $set: { order: newOrder } }
+            }
+          })
+
+          // 5. Execute all updates atomically
+          if (updates.length > 0) {
+            yield* Effect.tryPromise({
+              try: () => collection.bulkWrite(updates),
+              catch: (error) =>
+                new DatabaseError({
+                  operation: "bulkWrite",
+                  message: "Failed to reorder environments",
+                  cause: error
+                })
+            })
+          }
         })
     }
   })

@@ -63,6 +63,23 @@ export function useUpdateEnvironment() {
 }
 
 /**
+ * Reorder an environment
+ */
+export function useReorderEnvironment() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ environmentId, newOrder }: { environmentId: string; newOrder: number }) =>
+      environmentsApi.reorder(environmentId, newOrder),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: environmentKeys.all
+      })
+    }
+  })
+}
+
+/**
  * Archive an environment (soft delete)
  */
 export function useArchiveEnvironment() {

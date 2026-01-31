@@ -9,7 +9,6 @@ import {
   useSensors
 } from "@dnd-kit/core"
 import {
-  arrayMove,
   SortableContext,
   sortableKeyboardCoordinates,
   useSortable,
@@ -18,7 +17,7 @@ import {
 import { CSS } from "@dnd-kit/utilities"
 import { GripVertical } from "lucide-react"
 import { useState } from "react"
-import { useArchiveEnvironment, useEnvironments, useUpdateEnvironment } from "../lib/hooks/use-environments"
+import { useArchiveEnvironment, useEnvironments, useReorderEnvironment } from "../lib/hooks/use-environments"
 import { EnvironmentDialog } from "./dialogs/EnvironmentDialog"
 import {
   AlertDialog,
@@ -39,7 +38,7 @@ export function EnvironmentsList() {
 
   const { data: environments, isLoading } = useEnvironments()
   const archiveMutation = useArchiveEnvironment()
-  const updateMutation = useUpdateEnvironment()
+  const reorderMutation = useReorderEnvironment()
 
   // Sort environments by order
   const sortedEnvironments = environments?.slice().sort((a, b) => a.order - b.order) || []
@@ -62,17 +61,10 @@ export function EnvironmentsList() {
 
     if (oldIndex === -1 || newIndex === -1) return
 
-    // Reorder the array
-    const reordered = arrayMove(sortedEnvironments, oldIndex, newIndex)
-
-    // Update the order field for each environment
-    reordered.forEach((env, index) => {
-      if (env.order !== index) {
-        updateMutation.mutate({
-          environmentId: env.id,
-          input: { order: index }
-        })
-      }
+    // Single atomic API call to reorder
+    reorderMutation.mutate({
+      environmentId: active.id as string,
+      newOrder: newIndex
     })
   }
 
@@ -141,8 +133,8 @@ export function EnvironmentsList() {
           <AlertDialogHeader>
             <AlertDialogTitle>Archive Environment</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to archive "{archivingEnvironment?.displayName}"? Archived environments can be
-              restored later.
+              Are you sure you want to archive "{archivingEnvironment?.name}"? Archived environments can be restored
+              later.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -191,8 +183,8 @@ function EnvironmentItem({ environment, onArchive, onEdit }: EnvironmentItemProp
       <div className="flex flex-1 items-center gap-4">
         {environment.color && <div className="h-4 w-4 rounded-full" style={{ backgroundColor: environment.color }} />}
         <div>
-          <h3 className="font-medium">{environment.displayName}</h3>
-          <p className="text-sm text-muted-foreground">{environment.name}</p>
+          <h3 className="font-medium">{environment.name}</h3>
+          <p className="text-sm text-muted-foreground">{environment.slug}</p>
         </div>
       </div>
 

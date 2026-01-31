@@ -1,21 +1,21 @@
 import type { Deployment } from "@cloud-matrix/domain/Deployment"
 import type { Environment } from "@cloud-matrix/domain/Environment"
 import type { Service } from "@cloud-matrix/domain/Service"
-import { DeploymentStatusIcon } from "./DeploymentStatusIcon"
 import { cn } from "../lib/utils"
+import { DeploymentStatusIcon } from "./DeploymentStatusIcon"
 
 interface DeploymentMatrixProps {
-  environments: readonly Environment[]
-  services: readonly Service[]
+  environments: ReadonlyArray<Environment>
+  services: ReadonlyArray<Service>
   deployments: Record<string, Record<string, Deployment | null>>
   isLoading?: boolean
 }
 
 export function DeploymentMatrix({
-  environments,
-  services,
   deployments,
-  isLoading = false
+  environments,
+  isLoading = false,
+  services
 }: DeploymentMatrixProps) {
   if (isLoading) {
     return (
@@ -32,8 +32,8 @@ export function DeploymentMatrix({
           {services.length === 0 && environments.length === 0
             ? "Add environments and services to start tracking deployments"
             : services.length === 0
-              ? "Add services to start tracking deployments"
-              : "Add environments to start tracking deployments"}
+            ? "Add services to start tracking deployments"
+            : "Add environments to start tracking deployments"}
         </p>
       </div>
     )
@@ -53,14 +53,14 @@ export function DeploymentMatrix({
                 className="min-w-[150px] border bg-muted/50 p-3 text-left font-medium"
               >
                 <div className="flex flex-col gap-1">
-                  <span>{env.displayName}</span>
+                  <span>{env.name}</span>
                   {env.color && (
                     <span className="flex items-center gap-1 text-xs font-normal text-muted-foreground">
                       <span
                         className="inline-block h-2 w-2 rounded-full"
                         style={{ backgroundColor: env.color }}
                       />
-                      {env.name}
+                      {env.slug}
                     </span>
                   )}
                 </div>
@@ -76,7 +76,7 @@ export function DeploymentMatrix({
                   {service.iconUrl && (
                     <img
                       src={service.iconUrl}
-                      alt={`${service.displayName} icon`}
+                      alt={`${service.name} icon`}
                       className="h-5 w-5"
                       onError={(e) => {
                         e.currentTarget.style.display = "none"
@@ -84,7 +84,7 @@ export function DeploymentMatrix({
                     />
                   )}
                   <div className="flex flex-col gap-1">
-                    <span>{service.displayName}</span>
+                    <span>{service.name}</span>
                     {service.repositoryUrl && (
                       <a
                         href={service.repositoryUrl}
@@ -92,7 +92,7 @@ export function DeploymentMatrix({
                         rel="noopener noreferrer"
                         className="text-xs font-normal text-muted-foreground hover:underline"
                       >
-                        {service.name}
+                        {service.slug}
                       </a>
                     )}
                   </div>
@@ -102,13 +102,13 @@ export function DeploymentMatrix({
                 const deployment = deployments[env.id]?.[service.id]
                 return (
                   <td key={env.id} className="border p-3">
-                    {deployment ? (
-                      <DeploymentCell deployment={deployment} />
-                    ) : (
-                      <span className="text-xs text-muted-foreground">
-                        Not deployed
-                      </span>
-                    )}
+                    {deployment ?
+                      <DeploymentCell deployment={deployment} /> :
+                      (
+                        <span className="text-xs text-muted-foreground">
+                          Not deployed
+                        </span>
+                      )}
                   </td>
                 )
               })}
