@@ -1,6 +1,8 @@
 import type { Deployment } from "@cloud-matrix/domain/Deployment"
 import type { Environment } from "@cloud-matrix/domain/Environment"
 import type { Service } from "@cloud-matrix/domain/Service"
+import { DeploymentStatusIcon } from "./DeploymentStatusIcon"
+import { cn } from "../lib/utils"
 
 interface DeploymentMatrixProps {
   environments: readonly Environment[]
@@ -109,10 +111,19 @@ export function DeploymentMatrix({
 function DeploymentCell({ deployment }: { deployment: Deployment }) {
   const deployedAt = new Date(deployment.deployedAt)
   const relativeTime = formatRelativeTime(deployedAt)
+  const statusColor = getStatusColor(deployment.status)
 
   return (
-    <div className="flex flex-col gap-1">
-      <span className="font-mono text-sm font-medium">{deployment.version}</span>
+    <div
+      className={cn(
+        "flex flex-col gap-1 rounded-md p-2 transition-colors",
+        statusColor
+      )}
+    >
+      <div className="flex items-center gap-2">
+        <DeploymentStatusIcon status={deployment.status} />
+        <span className="font-mono text-sm font-medium">{deployment.version}</span>
+      </div>
       <span className="text-xs text-muted-foreground" title={deployedAt.toLocaleString()}>
         {relativeTime}
       </span>
@@ -128,6 +139,21 @@ function DeploymentCell({ deployment }: { deployment: Deployment }) {
       )}
     </div>
   )
+}
+
+function getStatusColor(status: string): string {
+  switch (status) {
+    case "success":
+      return "bg-green-50 border-l-4 border-green-600 dark:bg-green-950/20"
+    case "failed":
+      return "bg-red-50 border-l-4 border-red-600 dark:bg-red-950/20"
+    case "in_progress":
+      return "bg-orange-50 border-l-4 border-orange-600 dark:bg-orange-950/20"
+    case "rolled_back":
+      return "bg-gray-50 border-l-4 border-gray-600 dark:bg-gray-950/20"
+    default:
+      return "bg-muted/20"
+  }
 }
 
 function formatRelativeTime(date: Date): string {
