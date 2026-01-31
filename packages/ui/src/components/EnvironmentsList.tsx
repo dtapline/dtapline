@@ -1,6 +1,6 @@
 import type { Environment } from "@cloud-matrix/domain/Environment"
+import type { DragEndEvent } from "@dnd-kit/core"
 import { closestCenter, DndContext, KeyboardSensor, PointerSensor, useSensor, useSensors } from "@dnd-kit/core"
-import type { DragEndEvent, DragEndEvent } from "@dnd-kit/core"
 import {
   arrayMove,
   SortableContext,
@@ -35,7 +35,11 @@ export function EnvironmentsList() {
   const updateMutation = useUpdateEnvironment()
 
   const sensors = useSensors(
-    useSensor(PointerSensor),
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8 // Require 8px movement before dragging starts
+      }
+    }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates
     })
@@ -169,18 +173,14 @@ function EnvironmentItem({ environment, onArchive, onEdit }: EnvironmentItemProp
   }
 
   return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      className="flex items-center gap-2 rounded-lg border bg-background p-4"
-    >
-      <button
+    <div ref={setNodeRef} style={style} className="flex items-center gap-2 rounded-lg border bg-background p-4">
+      <div
         className="cursor-grab touch-none text-muted-foreground hover:text-foreground active:cursor-grabbing"
         {...attributes}
         {...listeners}
       >
         <GripVertical className="h-5 w-5" />
-      </button>
+      </div>
       <div className="flex items-center gap-4 flex-1">
         {environment.color && <div className="h-4 w-4 rounded-full" style={{ backgroundColor: environment.color }} />}
         <div>
