@@ -6,6 +6,7 @@ import { CreateEnvironmentInput, Environment, EnvironmentId, UpdateEnvironmentIn
 import * as Errors from "./Errors.js"
 import { CreateProjectInput, Project, ProjectId, UpdateProjectInput } from "./Project.js"
 import { CreateServiceInput, Service, ServiceId, UpdateServiceInput } from "./Service.js"
+import { User } from "./User.js"
 import { TestPatternRequest, TestPatternResponse, UpdateVersionPatternInput, VersionPattern } from "./VersionPattern.js"
 
 // Convert branded types to string for path params
@@ -397,6 +398,18 @@ export class VersionPatternsGroup extends HttpApiGroup.make("versionPatterns")
 {}
 
 // ============================================================================
+// User API
+// ============================================================================
+
+export class UserGroup extends HttpApiGroup.make("user")
+  .add(
+    HttpApiEndpoint.get("getCurrentUser", "/api/v1/user/me")
+      .addSuccess(User)
+      .addError(Errors.DatabaseError, { status: 500 })
+  )
+{}
+
+// ============================================================================
 // Main API
 // ============================================================================
 
@@ -407,4 +420,5 @@ export class CloudMatrixApi extends HttpApi.make("cloudmatrix-api")
   .add(ServicesGroup)
   .add(ApiKeysGroup)
   .add(VersionPatternsGroup)
+  .add(UserGroup)
 {}

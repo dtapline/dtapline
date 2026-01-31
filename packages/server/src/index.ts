@@ -35,6 +35,12 @@ export * as ProjectsGroup from "./Api/ProjectsGroup.js"
 export * as ServicesGroup from "./Api/ServicesGroup.js"
 
 /**
+ * User API Group Handler
+ * Returns the current user (for MVP, returns the default user from config)
+ */
+export * as UserGroup from "./Api/UserGroup.js"
+
+/**
  * Version Patterns API Group implementation
  * Handles getting, updating, and testing version extraction patterns
  */

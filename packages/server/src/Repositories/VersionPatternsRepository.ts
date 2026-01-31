@@ -3,7 +3,7 @@ import type { ProjectId } from "@cloud-matrix/domain/Project"
 import type { UpdateVersionPatternInput, VersionPattern } from "@cloud-matrix/domain/VersionPattern"
 import { VersionPatternId } from "@cloud-matrix/domain/VersionPattern"
 import { Context, Effect, Layer, Schema } from "effect"
-import { ObjectId } from "mongodb"
+import type { ObjectId } from "mongodb"
 import { MongoDatabase } from "../MongoDB.js"
 
 /**

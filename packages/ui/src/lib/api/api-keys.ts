@@ -1,7 +1,7 @@
 /**
  * API Keys API Client
  */
-import { ApiKeyResponse, CreateApiKeyInput } from "@cloud-matrix/domain/ApiKey"
+import type { ApiKeyResponse, CreateApiKeyInput } from "@cloud-matrix/domain/ApiKey"
 import { apiClient } from "./client"
 
 type ApiKeyResponseType = typeof ApiKeyResponse.Type
@@ -10,7 +10,7 @@ export const apiKeysApi = {
   /**
    * List all API keys for a project
    */
-  list: async (projectId: string): Promise<{ apiKeys: ApiKeyResponseType[] }> => {
+  list: async (projectId: string): Promise<{ apiKeys: Array<ApiKeyResponseType> }> => {
     return apiClient.get(`/api/v1/projects/${projectId}/api-keys`)
   },
 
