@@ -3,13 +3,14 @@ import type { ProjectId } from "@cloud-matrix/domain/Project"
 import type { UpdateVersionPatternInput, VersionPattern } from "@cloud-matrix/domain/VersionPattern"
 import { VersionPatternId } from "@cloud-matrix/domain/VersionPattern"
 import { Context, Effect, Layer, Schema } from "effect"
+import { ObjectId } from "mongodb"
 import { MongoDatabase } from "../MongoDB.js"
 
 /**
  * MongoDB document type for VersionPattern
  */
 interface VersionPatternDocument {
-  id: string
+  _id: ObjectId
   projectId: string
   defaultPattern: string
   servicePatterns?: Record<string, string> | null
@@ -51,7 +52,7 @@ export class VersionPatternsRepository extends Context.Tag("VersionPatternsRepos
  * Helper to convert MongoDB document to VersionPattern
  */
 const docToVersionPattern = (doc: VersionPatternDocument): any => ({
-  id: Schema.decodeSync(VersionPatternId)(doc.id),
+  id: Schema.decodeSync(VersionPatternId)(doc._id.toHexString()),
   projectId: doc.projectId as unknown as ProjectId,
   defaultPattern: doc.defaultPattern,
   servicePatterns: doc.servicePatterns ?? undefined,
@@ -86,16 +87,15 @@ export const VersionPatternsRepositoryLive = Layer.effect(
           }
 
           // Create default pattern
-          const versionPatternDoc: VersionPatternDocument = {
-            id: crypto.randomUUID(),
+          const versionPatternDoc: Omit<VersionPatternDocument, "_id"> = {
             projectId,
             defaultPattern: DEFAULT_VERSION_PATTERN,
             servicePatterns: null,
             updatedAt: new Date()
           }
 
-          yield* Effect.tryPromise({
-            try: () => collection.insertOne(versionPatternDoc),
+          const result = yield* Effect.tryPromise({
+            try: () => collection.insertOne(versionPatternDoc as any),
             catch: (error) =>
               new DatabaseError({
                 operation: "insertOne",
@@ -104,7 +104,7 @@ export const VersionPatternsRepositoryLive = Layer.effect(
               })
           })
 
-          return docToVersionPattern(versionPatternDoc)
+          return docToVersionPattern({ _id: result.insertedId, ...versionPatternDoc })
         }),
 
       update: (projectId, input) =>
@@ -141,24 +141,26 @@ export const VersionPatternsRepositoryLive = Layer.effect(
           })
 
           if (!result) {
-            // If upsert created a new document, we need to set the ID
-            const created: VersionPatternDocument = {
-              id: crypto.randomUUID(),
-              projectId,
-              defaultPattern: input.defaultPattern ?? DEFAULT_VERSION_PATTERN,
-              servicePatterns: input.servicePatterns ?? null,
-              updatedAt: new Date()
-            }
-
-            yield* Effect.tryPromise({
-              try: () => collection.insertOne(created),
+            // If upsert created a new document, we need to fetch it
+            const created = yield* Effect.tryPromise({
+              try: () => collection.findOne({ projectId }),
               catch: (error) =>
                 new DatabaseError({
-                  operation: "insertOne",
-                  message: "Failed to create version pattern after upsert",
+                  operation: "findOne",
+                  message: "Failed to find version pattern after upsert",
                   cause: error
                 })
             })
+
+            if (!created) {
+              return yield* Effect.fail(
+                new DatabaseError({
+                  operation: "findOne",
+                  message: "Version pattern not found after upsert",
+                  cause: new Error("Document not found")
+                })
+              )
+            }
 
             return docToVersionPattern(created)
           }

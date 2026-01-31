@@ -10,13 +10,15 @@ import { DatabaseError, DeploymentNotFound } from "@cloud-matrix/domain/Errors"
 import type { ProjectId } from "@cloud-matrix/domain/Project"
 import type { ServiceId } from "@cloud-matrix/domain/Service"
 import { Context, Effect, Layer, Schema } from "effect"
+import { ObjectId } from "mongodb"
 import { MongoDatabase } from "../MongoDB.js"
+import { toObjectId } from "../ObjectIdSchema.js"
 
 /**
  * MongoDB document type for Deployment
  */
 interface DeploymentDocument {
-  id: string
+  _id: ObjectId
   projectId: string
   environmentId: string
   serviceId: string
@@ -87,7 +89,7 @@ export class DeploymentsRepository extends Context.Tag("DeploymentsRepository")<
  * Helper to convert MongoDB document to Deployment
  */
 const docToDeployment = (doc: DeploymentDocument): any => ({
-  id: Schema.decodeSync(DeploymentId)(doc.id),
+  id: Schema.decodeSync(DeploymentId)(doc._id.toHexString()),
   projectId: doc.projectId as unknown as ProjectId,
   environmentId: doc.environmentId as unknown as EnvironmentId,
   serviceId: doc.serviceId as unknown as ServiceId,
@@ -115,8 +117,7 @@ export const DeploymentsRepositoryLive = Layer.effect(
     return {
       create: (projectId, environmentId, serviceId, version, input) =>
         Effect.gen(function*() {
-          const deploymentDoc: DeploymentDocument = {
-            id: crypto.randomUUID(),
+          const deploymentDoc: Omit<DeploymentDocument, "_id"> = {
             projectId,
             environmentId,
             serviceId,
@@ -132,8 +133,8 @@ export const DeploymentsRepositoryLive = Layer.effect(
             metadata: input.metadata ?? null
           }
 
-          yield* Effect.tryPromise({
-            try: () => collection.insertOne(deploymentDoc),
+          const result = yield* Effect.tryPromise({
+            try: () => collection.insertOne(deploymentDoc as any),
             catch: (error) =>
               new DatabaseError({
                 operation: "insertOne",
@@ -142,13 +143,13 @@ export const DeploymentsRepositoryLive = Layer.effect(
               })
           })
 
-          return docToDeployment(deploymentDoc)
+          return docToDeployment({ _id: result.insertedId, ...deploymentDoc })
         }),
 
       findById: (deploymentId) =>
         Effect.gen(function*() {
           const result = yield* Effect.tryPromise({
-            try: () => collection.findOne({ id: deploymentId }),
+            try: () => collection.findOne({ _id: toObjectId(deploymentId) }),
             catch: (error) =>
               new DatabaseError({
                 operation: "findOne",
