@@ -30,6 +30,8 @@ export default function Dashboard() {
       return {
         projectId: project.id,
         projectName: project.name,
+        projectDescription: project.description,
+        project, // Pass full project for editing
         environments: matrixData.environments,
         services: matrixData.services,
         deployments: matrixData.deployments

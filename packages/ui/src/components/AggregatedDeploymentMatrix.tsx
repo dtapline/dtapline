@@ -1,12 +1,19 @@
 import type { Deployment } from "@cloud-matrix/domain/Deployment"
 import type { Environment } from "@cloud-matrix/domain/Environment"
+import type { Project } from "@cloud-matrix/domain/Project"
 import type { Service } from "@cloud-matrix/domain/Service"
+import { Settings } from "lucide-react"
+import { useState } from "react"
 import { cn } from "../lib/utils"
 import { DeploymentStatusIcon } from "./DeploymentStatusIcon"
+import { ProjectDialog } from "./dialogs/ProjectDialog"
+import { Button } from "./ui/button"
 
 interface ProjectMatrixData {
   projectId: string
   projectName: string
+  projectDescription?: string
+  project?: Project
   environments: ReadonlyArray<Environment>
   services: ReadonlyArray<Service>
   deployments: Record<string, Record<string, Deployment | null>>
@@ -103,7 +110,8 @@ interface ProjectSectionProps {
 }
 
 function ProjectSection({ allEnvironments, projectMatrix }: ProjectSectionProps) {
-  const { deployments, environments: projectEnvironments, projectName, services } = projectMatrix
+  const { deployments, environments: projectEnvironments, project, projectName, services } = projectMatrix
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
 
   // Get environment IDs that are enabled for this project
   const enabledEnvironmentIds = new Set(projectEnvironments.map((env) => env.id))
@@ -125,16 +133,29 @@ function ProjectSection({ allEnvironments, projectMatrix }: ProjectSectionProps)
     <>
       {/* Project header row */}
       <tr className="bg-muted/30">
-        <td
-          colSpan={allEnvironments.length + 1}
-          className="border p-3 font-semibold"
-        >
-          <a
-            href={`/project/${projectMatrix.projectId}`}
-            className="hover:underline hover:text-primary"
-          >
-            {projectName}
-          </a>
+        <td colSpan={allEnvironments.length + 1} className="border p-3">
+          <div className="flex items-center justify-between">
+            <a
+              href={`/project/${projectMatrix.projectId}`}
+              className="font-semibold hover:underline hover:text-primary"
+            >
+              {projectName}
+            </a>
+            {project && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={(e) => {
+                  e.preventDefault()
+                  setIsEditDialogOpen(true)
+                }}
+                className="h-7 gap-1 text-xs"
+              >
+                <Settings className="h-3 w-3" />
+                Configure Environments
+              </Button>
+            )}
+          </div>
         </td>
       </tr>
       {/* Service rows */}
@@ -183,6 +204,15 @@ function ProjectSection({ allEnvironments, projectMatrix }: ProjectSectionProps)
           })}
         </tr>
       ))}
+
+      {/* Project Edit Dialog */}
+      {project && (
+        <ProjectDialog
+          project={project}
+          open={isEditDialogOpen}
+          onOpenChange={setIsEditDialogOpen}
+        />
+      )}
     </>
   )
 }
