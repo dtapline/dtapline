@@ -20,10 +20,14 @@
     "coverage": "vitest --coverage"
   },
   "dependencies": {
+    "@cloud-matrix/domain": "workspace:^",
+    "@effect-aws/lambda": "^1.5.1",
+    "@effect-aws/powertools-logger": "^1.5.1",
     "@effect/platform": "latest",
     "@effect/platform-node": "latest",
-    "@cloud-matrix/domain": "workspace:^",
-    "effect": "latest"
+    "bcryptjs": "^3.0.3",
+    "effect": "latest",
+    "mongodb": "^7.0.0"
   },
   "effect": {
     "generateExports": {
@@ -36,5 +40,8 @@
         "**/*.ts"
       ]
     }
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^3.0.0"
   }
 }
