@@ -76,23 +76,28 @@ export const MatrixServiceLive = Layer.effect(
           // 1. Verify project exists and get details
           const project = yield* projectsRepo.findById(projectId)
 
-          // 2. Get all environments (excluding archived)
-          const environments = yield* environmentsRepo.findByProjectId(projectId, false)
+          // 2. Get all user's global environments (excluding archived)
+          const allEnvironments = yield* environmentsRepo.findByUserId(project.userId, false)
 
-          // 3. Get all services (excluding archived)
+          // 3. Filter environments based on project's selectedEnvironmentIds
+          const environments = project.selectedEnvironmentIds
+            ? allEnvironments.filter((env) => project.selectedEnvironmentIds!.includes(env.id))
+            : allEnvironments
+
+          // 4. Get all services (excluding archived)
           const services = yield* servicesRepo.findByProjectId(projectId, false)
 
-          // 4. Get current deployment state
+          // 5. Get current deployment state
           const currentDeployments = yield* deploymentsRepo.getCurrentState(projectId)
 
-          // 5. Create lookup map for fast access: environmentId_serviceId -> deployment
+          // 6. Create lookup map for fast access: environmentId_serviceId -> deployment
           const deploymentMap = new Map<string, CurrentDeployment>()
           for (const deployment of currentDeployments) {
             const key = `${deployment.environmentId}_${deployment.serviceId}`
             deploymentMap.set(key, deployment)
           }
 
-          // 6. Build matrix: [environmentIndex][serviceIndex]
+          // 7. Build matrix: [environmentIndex][serviceIndex]
           const matrix: Array<Array<MatrixCell>> = environments.map((env) => {
             return services.map((service) => {
               const key = `${env.id}_${service.id}`

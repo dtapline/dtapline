@@ -1,3 +1,4 @@
+import { EnvironmentId } from "@cloud-matrix/domain/Environment"
 import { DatabaseError, ProjectAlreadyExists, ProjectNotFound } from "@cloud-matrix/domain/Errors"
 import type { CreateProjectInput, Project, UpdateProjectInput } from "@cloud-matrix/domain/Project"
 import { ProjectId } from "@cloud-matrix/domain/Project"
@@ -16,6 +17,7 @@ interface ProjectDocument {
   name: string
   description?: string | null
   gitRepoUrl?: string | null
+  selectedEnvironmentIds?: Array<string> | null // Array of environment IDs enabled for this project
   tier: "free" | "pro" | "enterprise"
   createdAt: Date
   updatedAt: Date
@@ -65,6 +67,9 @@ const docToProject = (doc: ProjectDocument): any => ({
   name: doc.name,
   description: doc.description ?? undefined,
   gitRepoUrl: doc.gitRepoUrl ?? undefined,
+  selectedEnvironmentIds: doc.selectedEnvironmentIds
+    ? doc.selectedEnvironmentIds.map((id) => Schema.decodeSync(EnvironmentId)(id))
+    : undefined,
   tier: doc.tier,
   createdAt: doc.createdAt,
   updatedAt: doc.updatedAt
@@ -108,6 +113,7 @@ export const ProjectsRepositoryLive = Layer.effect(
             name: input.name,
             description: input.description ?? null,
             gitRepoUrl: input.gitRepoUrl ?? null,
+            selectedEnvironmentIds: null, // Initially no environments selected
             tier: "free" as const,
             createdAt: now,
             updatedAt: now
@@ -176,8 +182,13 @@ export const ProjectsRepositoryLive = Layer.effect(
           }
 
           if (input.name !== undefined) updateFields.name = input.name
-          if (input.description !== undefined) updateFields.description = input.description
-          if (input.gitRepoUrl !== undefined) updateFields.gitRepoUrl = input.gitRepoUrl
+          if (input.description !== undefined) updateFields.description = input.description ?? null
+          if (input.gitRepoUrl !== undefined) updateFields.gitRepoUrl = input.gitRepoUrl ?? null
+          if (input.selectedEnvironmentIds !== undefined) {
+            updateFields.selectedEnvironmentIds = input.selectedEnvironmentIds
+              ? input.selectedEnvironmentIds.map(String)
+              : null
+          }
 
           const result = yield* Effect.tryPromise({
             try: () =>

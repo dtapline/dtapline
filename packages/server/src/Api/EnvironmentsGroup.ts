@@ -1,45 +1,42 @@
 import { CloudMatrixApi } from "@cloud-matrix/domain/Api"
 import { HttpApiBuilder } from "@effect/platform"
-import { Effect } from "effect"
+import { Config, Effect } from "effect"
 import { EnvironmentsRepository } from "../Repositories/EnvironmentsRepository.js"
-import { ProjectsRepository } from "../Repositories/ProjectsRepository.js"
 
 /**
  * Environments API Group implementation
- * Handles CRUD operations for environments, including soft delete (archive) and hard delete
+ * Environments are now global (per user/tenant) instead of per-project
  */
 export const EnvironmentsGroupLive = HttpApiBuilder.group(
   CloudMatrixApi,
   "environments",
   (handlers) =>
     Effect.gen(function*() {
-      const projectsRepo = yield* ProjectsRepository
       const environmentsRepo = yield* EnvironmentsRepository
+      const defaultUserId = yield* Config.string("DEFAULT_USER_ID")
 
       return handlers
-        // GET /api/v1/projects/:projectId/environments
-        .handle("listEnvironments", ({ path: { projectId } }) =>
+        // GET /api/v1/environments
+        .handle("listEnvironments", () =>
           Effect.gen(function*() {
-            // Verify project exists
-            yield* projectsRepo.findById(projectId)
-            const environments = yield* environmentsRepo.findByProjectId(projectId, false)
+            const environments = yield* environmentsRepo.findByUserId(defaultUserId, false)
             return { environments }
           }))
-        // POST /api/v1/projects/:projectId/environments
-        .handle("createEnvironment", ({ path: { projectId }, payload }) =>
+        // POST /api/v1/environments
+        .handle("createEnvironment", ({ payload }) =>
           Effect.gen(function*() {
-            const environment = yield* environmentsRepo.create(projectId, payload)
+            const environment = yield* environmentsRepo.create(defaultUserId, payload)
             return { environment }
           }))
-        // PUT /api/v1/projects/:projectId/environments/:environmentId
+        // PUT /api/v1/environments/:environmentId
         .handle("updateEnvironment", ({ path: { environmentId }, payload }) =>
           Effect.gen(function*() {
             const environment = yield* environmentsRepo.update(environmentId, payload)
             return { environment }
           }))
-        // DELETE /api/v1/projects/:projectId/environments/:environmentId (soft delete/archive)
+        // DELETE /api/v1/environments/:environmentId (soft delete/archive)
         .handle("archiveEnvironment", ({ path: { environmentId } }) => environmentsRepo.archive(environmentId))
-        // DELETE /api/v1/projects/:projectId/environments/:environmentId/hard (hard delete)
+        // DELETE /api/v1/environments/:environmentId/hard (hard delete)
         .handle("deleteEnvironment", ({ path: { environmentId } }) => environmentsRepo.hardDelete(environmentId))
     })
 )

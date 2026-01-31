@@ -193,39 +193,34 @@ export class ProjectsGroup extends HttpApiGroup.make("projects")
 {}
 
 // ============================================================================
-// Environments API
+// Environments API (Global - per user/tenant, not per project)
 // ============================================================================
 
 export class EnvironmentsGroup extends HttpApiGroup.make("environments")
   .add(
-    HttpApiEndpoint.get("listEnvironments", "/api/v1/projects/:projectId/environments")
-      .setPath(Schema.Struct({ projectId: ProjectIdFromString }))
+    HttpApiEndpoint.get("listEnvironments", "/api/v1/environments")
       .addSuccess(
         Schema.Struct({
           environments: Schema.Array(Environment)
         })
       )
-      .addError(Errors.ProjectNotFound, { status: 404 })
       .addError(Errors.DatabaseError, { status: 500 })
   )
   .add(
-    HttpApiEndpoint.post("createEnvironment", "/api/v1/projects/:projectId/environments")
-      .setPath(Schema.Struct({ projectId: ProjectIdFromString }))
+    HttpApiEndpoint.post("createEnvironment", "/api/v1/environments")
       .setPayload(CreateEnvironmentInput)
       .addSuccess(
         Schema.Struct({
           environment: Environment
         })
       )
-      .addError(Errors.ProjectNotFound, { status: 404 })
       .addError(Errors.EnvironmentAlreadyExists, { status: 409 })
       .addError(Errors.ValidationError, { status: 400 })
       .addError(Errors.DatabaseError, { status: 500 })
   )
   .add(
-    HttpApiEndpoint.put("updateEnvironment", "/api/v1/projects/:projectId/environments/:environmentId")
+    HttpApiEndpoint.put("updateEnvironment", "/api/v1/environments/:environmentId")
       .setPath(Schema.Struct({
-        projectId: ProjectIdFromString,
         environmentId: EnvironmentIdFromString
       }))
       .setPayload(UpdateEnvironmentInput)
@@ -239,9 +234,8 @@ export class EnvironmentsGroup extends HttpApiGroup.make("environments")
       .addError(Errors.DatabaseError, { status: 500 })
   )
   .add(
-    HttpApiEndpoint.del("archiveEnvironment", "/api/v1/projects/:projectId/environments/:environmentId")
+    HttpApiEndpoint.del("archiveEnvironment", "/api/v1/environments/:environmentId")
       .setPath(Schema.Struct({
-        projectId: ProjectIdFromString,
         environmentId: EnvironmentIdFromString
       }))
       .addSuccess(Schema.Void)
@@ -249,9 +243,8 @@ export class EnvironmentsGroup extends HttpApiGroup.make("environments")
       .addError(Errors.DatabaseError, { status: 500 })
   )
   .add(
-    HttpApiEndpoint.del("deleteEnvironment", "/api/v1/projects/:projectId/environments/:environmentId/hard")
+    HttpApiEndpoint.del("deleteEnvironment", "/api/v1/environments/:environmentId/hard")
       .setPath(Schema.Struct({
-        projectId: ProjectIdFromString,
         environmentId: EnvironmentIdFromString
       }))
       .addSuccess(Schema.Void)

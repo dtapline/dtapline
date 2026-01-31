@@ -8,21 +8,19 @@ import { environmentsApi } from "../api"
 export const environmentKeys = {
   all: ["environments"] as const,
   lists: () => [...environmentKeys.all, "list"] as const,
-  list: (projectId: string, includeArchived = false) =>
-    [...environmentKeys.lists(), projectId, includeArchived] as const
+  list: (includeArchived = false) => [...environmentKeys.lists(), includeArchived] as const
 }
 
 /**
- * Get all environments for a project
+ * Get all environments (global - not project-scoped)
  */
-export function useEnvironments(projectId: string, includeArchived = false) {
+export function useEnvironments(includeArchived = false) {
   return useQuery({
-    queryKey: environmentKeys.list(projectId, includeArchived),
+    queryKey: environmentKeys.list(includeArchived),
     queryFn: async () => {
-      const data = await environmentsApi.list(projectId, includeArchived)
+      const data = await environmentsApi.list(includeArchived)
       return data.environments
-    },
-    enabled: !!projectId
+    }
   })
 }
 
@@ -33,16 +31,10 @@ export function useCreateEnvironment() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({
-      input,
-      projectId
-    }: {
-      projectId: string
-      input: typeof CreateEnvironmentInput.Type
-    }) => environmentsApi.create(projectId, input),
-    onSuccess: (_, variables) => {
+    mutationFn: (input: typeof CreateEnvironmentInput.Type) => environmentsApi.create(input),
+    onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: environmentKeys.list(variables.projectId)
+        queryKey: environmentKeys.all
       })
     }
   })
@@ -57,16 +49,14 @@ export function useUpdateEnvironment() {
   return useMutation({
     mutationFn: ({
       environmentId,
-      input,
-      projectId
+      input
     }: {
-      projectId: string
       environmentId: string
       input: typeof UpdateEnvironmentInput.Type
-    }) => environmentsApi.update(projectId, environmentId, input),
-    onSuccess: (_, variables) => {
+    }) => environmentsApi.update(environmentId, input),
+    onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: environmentKeys.list(variables.projectId)
+        queryKey: environmentKeys.all
       })
     }
   })
@@ -79,16 +69,10 @@ export function useArchiveEnvironment() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({
-      environmentId,
-      projectId
-    }: {
-      projectId: string
-      environmentId: string
-    }) => environmentsApi.archive(projectId, environmentId),
-    onSuccess: (_, variables) => {
+    mutationFn: (environmentId: string) => environmentsApi.archive(environmentId),
+    onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: environmentKeys.list(variables.projectId)
+        queryKey: environmentKeys.all
       })
     }
   })
@@ -101,16 +85,10 @@ export function useDeleteEnvironment() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({
-      environmentId,
-      projectId
-    }: {
-      projectId: string
-      environmentId: string
-    }) => environmentsApi.hardDelete(projectId, environmentId),
-    onSuccess: (_, variables) => {
+    mutationFn: (environmentId: string) => environmentsApi.hardDelete(environmentId),
+    onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: environmentKeys.list(variables.projectId)
+        queryKey: environmentKeys.all
       })
     }
   })

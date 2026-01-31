@@ -18,7 +18,7 @@ export * as DeploymentsWebhookGroup from "./Api/DeploymentsWebhookGroup.js"
 
 /**
  * Environments API Group implementation
- * Handles CRUD operations for environments, including soft delete (archive) and hard delete
+ * Environments are now global (per user/tenant) instead of per-project
  */
 export * as EnvironmentsGroup from "./Api/EnvironmentsGroup.js"
 
@@ -86,6 +86,7 @@ export * as DeploymentsRepository from "./Repositories/DeploymentsRepository.js"
 
 /**
  * MongoDB document type for Environment
+ * Environments are now global per user/tenant instead of per-project
  */
 export * as EnvironmentsRepository from "./Repositories/EnvironmentsRepository.js"
 

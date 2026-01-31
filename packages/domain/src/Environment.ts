@@ -1,13 +1,13 @@
 import { Schema } from "effect"
-import { ProjectId } from "./Project.js"
+import { UserId } from "./User.js"
 
 // Branded type for Environment ID
 export class EnvironmentId extends Schema.String.pipe(Schema.brand("EnvironmentId")) {}
 
-// Environment schema
+// Environment schema - now global per user/tenant instead of per-project
 export class Environment extends Schema.Class<Environment>("Environment")({
   id: EnvironmentId,
-  projectId: ProjectId,
+  userId: UserId, // Changed from projectId to userId for global environments
   name: Schema.String.pipe(Schema.minLength(1), Schema.maxLength(50)), // e.g., "production"
   displayName: Schema.String.pipe(Schema.minLength(1), Schema.maxLength(100)), // e.g., "Production"
   color: Schema.optional(Schema.String.pipe(Schema.pattern(/^#[0-9A-Fa-f]{6}$/))), // Hex color
