@@ -176,12 +176,14 @@ function EnvironmentItem({ environment, onArchive, onEdit }: EnvironmentItemProp
     <div
       ref={setNodeRef}
       style={style}
-      className="flex items-center gap-2 rounded-lg border bg-background p-4"
+      className="flex items-center gap-3 rounded-lg border bg-background p-4 hover:border-primary/50 transition-colors"
     >
       <button
-        className="cursor-grab touch-none text-muted-foreground hover:text-foreground active:cursor-grabbing"
+        type="button"
+        className="flex-shrink-0 cursor-grab touch-none p-1 text-muted-foreground hover:text-foreground hover:bg-muted rounded active:cursor-grabbing"
         {...attributes}
         {...listeners}
+        aria-label="Drag to reorder"
       >
         <GripVertical className="h-5 w-5" />
       </button>
