@@ -8,13 +8,15 @@ import {
 } from "@cloud-matrix/domain/Errors"
 import type { ProjectId } from "@cloud-matrix/domain/Project"
 import { Context, Effect, Layer, Schema } from "effect"
+import { ObjectId } from "mongodb"
 import { MongoDatabase } from "../MongoDB.js"
+import { toObjectId } from "../ObjectIdSchema.js"
 
 /**
  * MongoDB document type for Environment
  */
 interface EnvironmentDocument {
-  id: string
+  _id: ObjectId
   projectId: string
   name: string
   displayName: string
@@ -83,7 +85,7 @@ export class EnvironmentsRepository extends Context.Tag("EnvironmentsRepository"
  * Helper to convert MongoDB document to Environment
  */
 const docToEnvironment = (doc: EnvironmentDocument): any => ({
-  id: Schema.decodeSync(EnvironmentId)(doc.id),
+  id: Schema.decodeSync(EnvironmentId)(doc._id.toHexString()),
   projectId: doc.projectId as unknown as ProjectId,
   name: doc.name,
   displayName: doc.displayName,
@@ -156,8 +158,7 @@ export const EnvironmentsRepositoryLive = Layer.effect(
               })
           }))
 
-          const environmentDoc: EnvironmentDocument = {
-            id: crypto.randomUUID(),
+          const environmentDoc: Omit<EnvironmentDocument, "_id"> = {
             projectId,
             name: input.name,
             displayName: input.displayName,
@@ -167,8 +168,8 @@ export const EnvironmentsRepositoryLive = Layer.effect(
             createdAt: new Date()
           }
 
-          yield* Effect.tryPromise({
-            try: () => collection.insertOne(environmentDoc),
+          const result = yield* Effect.tryPromise({
+            try: () => collection.insertOne(environmentDoc as any),
             catch: (error) =>
               new DatabaseError({
                 operation: "insertOne",
@@ -177,13 +178,13 @@ export const EnvironmentsRepositoryLive = Layer.effect(
               })
           })
 
-          return docToEnvironment(environmentDoc)
+          return docToEnvironment({ _id: result.insertedId, ...environmentDoc })
         }),
 
       findById: (environmentId) =>
         Effect.gen(function*() {
           const result = yield* Effect.tryPromise({
-            try: () => collection.findOne({ id: environmentId }),
+            try: () => collection.findOne({ _id: toObjectId(environmentId) }),
             catch: (error) =>
               new DatabaseError({
                 operation: "findOne",
@@ -267,8 +268,7 @@ export const EnvironmentsRepositoryLive = Layer.effect(
               })
           })
 
-          const environmentDoc: EnvironmentDocument = {
-            id: crypto.randomUUID(),
+          const environmentDoc: Omit<EnvironmentDocument, "_id"> = {
             projectId,
             name,
             displayName: displayName ?? name.charAt(0).toUpperCase() + name.slice(1),
@@ -278,8 +278,8 @@ export const EnvironmentsRepositoryLive = Layer.effect(
             createdAt: new Date()
           }
 
-          yield* Effect.tryPromise({
-            try: () => collection.insertOne(environmentDoc),
+          const result = yield* Effect.tryPromise({
+            try: () => collection.insertOne(environmentDoc as any),
             catch: (error) =>
               new DatabaseError({
                 operation: "insertOne",
@@ -288,7 +288,7 @@ export const EnvironmentsRepositoryLive = Layer.effect(
               })
           })
 
-          return docToEnvironment(environmentDoc)
+          return docToEnvironment({ _id: result.insertedId, ...environmentDoc })
         }),
 
       update: (environmentId, input) =>
@@ -302,7 +302,7 @@ export const EnvironmentsRepositoryLive = Layer.effect(
           const result = yield* Effect.tryPromise({
             try: () =>
               collection.findOneAndUpdate(
-                { id: environmentId },
+                { _id: toObjectId(environmentId) },
                 { $set: updateFields },
                 { returnDocument: "after" }
               ),
@@ -331,7 +331,7 @@ export const EnvironmentsRepositoryLive = Layer.effect(
           const result = yield* Effect.tryPromise({
             try: () =>
               collection.findOneAndUpdate(
-                { id: environmentId },
+                { _id: toObjectId(environmentId) },
                 { $set: { archived: true } },
                 { returnDocument: "after" }
               ),
@@ -378,7 +378,7 @@ export const EnvironmentsRepositoryLive = Layer.effect(
           }
 
           const result = yield* Effect.tryPromise({
-            try: () => collection.deleteOne({ id: environmentId }),
+            try: () => collection.deleteOne({ _id: toObjectId(environmentId) }),
             catch: (error) =>
               new DatabaseError({
                 operation: "deleteOne",

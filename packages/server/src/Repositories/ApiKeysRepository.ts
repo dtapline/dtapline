@@ -5,13 +5,15 @@ import type { ProjectId } from "@cloud-matrix/domain/Project"
 import type { UserId } from "@cloud-matrix/domain/User"
 import * as bcrypt from "bcryptjs"
 import { Context, Effect, Layer, Schema } from "effect"
+import { ObjectId } from "mongodb"
 import { MongoDatabase } from "../MongoDB.js"
+import { toObjectId } from "../ObjectIdSchema.js"
 
 /**
  * MongoDB document type for ApiKey
  */
 interface ApiKeyDocument {
-  id: string
+  _id: ObjectId
   projectId: string
   userId: string
   keyHash: string
@@ -68,7 +70,7 @@ export class ApiKeysRepository extends Context.Tag("ApiKeysRepository")<
  * Helper to convert MongoDB document to ApiKey
  */
 const docToApiKey = (doc: ApiKeyDocument): any => ({
-  id: Schema.decodeSync(ApiKeyId)(doc.id),
+  id: Schema.decodeSync(ApiKeyId)(doc._id.toHexString()),
   projectId: doc.projectId as unknown as ProjectId,
   userId: doc.userId as unknown as UserId,
   keyHash: doc.keyHash,
@@ -126,8 +128,7 @@ export const ApiKeysRepositoryLive = Layer.effect(
               })
           })
 
-          const apiKeyDoc: ApiKeyDocument = {
-            id: crypto.randomUUID(),
+          const apiKeyDoc: Omit<ApiKeyDocument, "_id"> = {
             projectId,
             userId,
             keyHash,
@@ -139,8 +140,8 @@ export const ApiKeysRepositoryLive = Layer.effect(
             expiresAt: null
           }
 
-          yield* Effect.tryPromise({
-            try: () => collection.insertOne(apiKeyDoc),
+          const result = yield* Effect.tryPromise({
+            try: () => collection.insertOne(apiKeyDoc as any),
             catch: (error) =>
               new Errors.DatabaseError({
                 operation: "insertOne",
@@ -149,14 +150,14 @@ export const ApiKeysRepositoryLive = Layer.effect(
               })
           })
 
-          const apiKey = docToApiKey(apiKeyDoc)
+          const apiKey = docToApiKey({ _id: result.insertedId, ...apiKeyDoc })
           return { ...apiKey, plainKey }
         }),
 
       findById: (apiKeyId) =>
         Effect.gen(function*() {
           const result = yield* Effect.tryPromise({
-            try: () => collection.findOne({ id: apiKeyId }),
+            try: () => collection.findOne({ _id: toObjectId(apiKeyId) }),
             catch: (error) =>
               new Errors.DatabaseError({
                 operation: "findOne",
@@ -224,7 +225,7 @@ export const ApiKeysRepositoryLive = Layer.effect(
               if (candidate.expiresAt && candidate.expiresAt < new Date()) {
                 return yield* Effect.fail(
                   new Errors.ApiKeyExpired({
-                    apiKeyId: candidate.id,
+                    apiKeyId: candidate._id.toHexString(),
                     expiresAt: candidate.expiresAt,
                     message: "API key has expired"
                   })
@@ -248,7 +249,7 @@ export const ApiKeysRepositoryLive = Layer.effect(
           yield* Effect.tryPromise({
             try: () =>
               collection.updateOne(
-                { id: apiKeyId },
+                { _id: toObjectId(apiKeyId) },
                 { $set: { lastUsedAt: new Date() } }
               ),
             catch: (error) =>
@@ -263,7 +264,7 @@ export const ApiKeysRepositoryLive = Layer.effect(
       revoke: (apiKeyId) =>
         Effect.gen(function*() {
           const result = yield* Effect.tryPromise({
-            try: () => collection.deleteOne({ id: apiKeyId }),
+            try: () => collection.deleteOne({ _id: toObjectId(apiKeyId) }),
             catch: (error) =>
               new Errors.DatabaseError({
                 operation: "deleteOne",
