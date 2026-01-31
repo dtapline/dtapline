@@ -57,11 +57,11 @@ export const DeploymentServiceLive = Layer.effect(
       processWebhook: (projectId, input) =>
         Effect.gen(function*() {
           // 1. Verify project exists
-          yield* projectsRepo.findById(projectId)
+          const project = yield* projectsRepo.findById(projectId)
 
-          // 2. Get or create environment (auto-creation)
+          // 2. Get or create environment (auto-creation) - now uses userId since environments are global
           const environment = yield* environmentsRepo.getOrCreate(
-            projectId,
+            project.userId,
             input.environment,
             // Generate display name: "production" -> "Production"
             input.environment.charAt(0).toUpperCase() + input.environment.slice(1)

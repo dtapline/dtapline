@@ -6,7 +6,7 @@ import {
   EnvironmentHasDeployments,
   EnvironmentNotFound
 } from "@cloud-matrix/domain/Errors"
-import type { ProjectId } from "@cloud-matrix/domain/Project"
+import type { UserId } from "@cloud-matrix/domain/User"
 import { Context, Effect, Layer, Schema } from "effect"
 import type { ObjectId } from "mongodb"
 import { MongoDatabase } from "../MongoDB.js"
@@ -14,10 +14,11 @@ import { toObjectId } from "../ObjectIdSchema.js"
 
 /**
  * MongoDB document type for Environment
+ * Environments are now global per user/tenant instead of per-project
  */
 interface EnvironmentDocument {
   _id: ObjectId
-  projectId: string
+  userId: string // Changed from projectId to userId
   name: string
   displayName: string
   color?: string | null
@@ -28,12 +29,13 @@ interface EnvironmentDocument {
 
 /**
  * Environments Repository interface
+ * Environments are now managed globally per user/tenant
  */
 export class EnvironmentsRepository extends Context.Tag("EnvironmentsRepository")<
   EnvironmentsRepository,
   {
     readonly create: (
-      projectId: string,
+      userId: string,
       input: typeof CreateEnvironmentInput.Type
     ) => Effect.Effect<Environment, EnvironmentAlreadyExists | DatabaseError>
 
@@ -41,18 +43,18 @@ export class EnvironmentsRepository extends Context.Tag("EnvironmentsRepository"
       environmentId: string
     ) => Effect.Effect<Environment, EnvironmentNotFound | DatabaseError>
 
-    readonly findByProjectId: (
-      projectId: string,
+    readonly findByUserId: (
+      userId: string,
       includeArchived?: boolean
     ) => Effect.Effect<ReadonlyArray<Environment>, DatabaseError>
 
     readonly findByName: (
-      projectId: string,
+      userId: string,
       name: string
     ) => Effect.Effect<Environment | null, DatabaseError>
 
     readonly getOrCreate: (
-      projectId: string,
+      userId: string,
       name: string,
       displayName?: string
     ) => Effect.Effect<Environment, DatabaseError>
@@ -71,12 +73,12 @@ export class EnvironmentsRepository extends Context.Tag("EnvironmentsRepository"
     ) => Effect.Effect<void, EnvironmentNotFound | EnvironmentHasDeployments | DatabaseError>
 
     readonly exists: (
-      projectId: string,
+      userId: string,
       name: string
     ) => Effect.Effect<boolean, DatabaseError>
 
     readonly getNextOrder: (
-      projectId: string
+      userId: string
     ) => Effect.Effect<number, DatabaseError>
   }
 >() {}
@@ -86,7 +88,7 @@ export class EnvironmentsRepository extends Context.Tag("EnvironmentsRepository"
  */
 const docToEnvironment = (doc: EnvironmentDocument): any => ({
   id: Schema.decodeSync(EnvironmentId)(doc._id.toHexString()),
-  projectId: doc.projectId as unknown as ProjectId,
+  userId: doc.userId as unknown as UserId,
   name: doc.name,
   displayName: doc.displayName,
   color: doc.color ?? undefined,
@@ -117,11 +119,11 @@ export const EnvironmentsRepositoryLive = Layer.effect(
     const collection = db.collection<EnvironmentDocument>("environments")
 
     return {
-      create: (projectId, input) =>
+      create: (userId, input) =>
         Effect.gen(function*() {
           // Check if environment with same name already exists
           const existsResult = yield* Effect.tryPromise({
-            try: () => collection.findOne({ projectId, name: input.name }),
+            try: () => collection.findOne({ userId, name: input.name }),
             catch: (error) =>
               new DatabaseError({
                 operation: "findOne",
@@ -133,9 +135,9 @@ export const EnvironmentsRepositoryLive = Layer.effect(
           if (existsResult) {
             return yield* Effect.fail(
               new EnvironmentAlreadyExists({
-                projectId,
+                projectId: userId, // TODO: Update EnvironmentAlreadyExists error to use userId
                 name: input.name,
-                message: `Environment with name "${input.name}" already exists in this project`
+                message: `Environment with name "${input.name}" already exists for this user`
               })
             )
           }
@@ -144,7 +146,7 @@ export const EnvironmentsRepositoryLive = Layer.effect(
           const order = input.order ?? (yield* Effect.tryPromise({
             try: async () => {
               const result = await collection
-                .find({ projectId })
+                .find({ userId })
                 .sort({ order: -1 })
                 .limit(1)
                 .toArray()
@@ -159,7 +161,7 @@ export const EnvironmentsRepositoryLive = Layer.effect(
           }))
 
           const environmentDoc: Omit<EnvironmentDocument, "_id"> = {
-            projectId,
+            userId,
             name: input.name,
             displayName: input.displayName,
             color: input.color ?? null,
@@ -205,9 +207,9 @@ export const EnvironmentsRepositoryLive = Layer.effect(
           return docToEnvironment(result)
         }),
 
-      findByProjectId: (projectId, includeArchived = false) =>
+      findByUserId: (userId, includeArchived = false) =>
         Effect.gen(function*() {
-          const filter: any = { projectId }
+          const filter: any = { userId }
           if (!includeArchived) {
             filter.archived = false
           }
@@ -217,7 +219,7 @@ export const EnvironmentsRepositoryLive = Layer.effect(
             catch: (error) =>
               new DatabaseError({
                 operation: "find",
-                message: "Failed to find environments by project ID",
+                message: "Failed to find environments by user ID",
                 cause: error
               })
           })
@@ -225,10 +227,10 @@ export const EnvironmentsRepositoryLive = Layer.effect(
           return results.map(docToEnvironment)
         }),
 
-      findByName: (projectId, name) =>
+      findByName: (userId, name) =>
         Effect.gen(function*() {
           const result = yield* Effect.tryPromise({
-            try: () => collection.findOne({ projectId, name }),
+            try: () => collection.findOne({ userId, name }),
             catch: (error) =>
               new DatabaseError({
                 operation: "findOne",
@@ -240,11 +242,11 @@ export const EnvironmentsRepositoryLive = Layer.effect(
           return result ? docToEnvironment(result) : null
         }),
 
-      getOrCreate: (projectId, name, displayName) =>
+      getOrCreate: (userId, name, displayName) =>
         Effect.gen(function*() {
           // Try to find existing environment
           const existing = yield* Effect.tryPromise({
-            try: () => collection.findOne({ projectId, name }),
+            try: () => collection.findOne({ userId, name }),
             catch: (error) =>
               new DatabaseError({
                 operation: "findOne",
@@ -259,7 +261,7 @@ export const EnvironmentsRepositoryLive = Layer.effect(
 
           // Create new environment with auto-generated values
           const count = yield* Effect.tryPromise({
-            try: () => collection.countDocuments({ projectId }),
+            try: () => collection.countDocuments({ userId }),
             catch: (error) =>
               new DatabaseError({
                 operation: "countDocuments",
@@ -269,7 +271,7 @@ export const EnvironmentsRepositoryLive = Layer.effect(
           })
 
           const environmentDoc: Omit<EnvironmentDocument, "_id"> = {
-            projectId,
+            userId,
             name,
             displayName: displayName ?? name.charAt(0).toUpperCase() + name.slice(1),
             color: DEFAULT_COLORS[count % DEFAULT_COLORS.length],
@@ -397,10 +399,10 @@ export const EnvironmentsRepositoryLive = Layer.effect(
           }
         }),
 
-      exists: (projectId, name) =>
+      exists: (userId, name) =>
         Effect.gen(function*() {
           const result = yield* Effect.tryPromise({
-            try: () => collection.findOne({ projectId, name }),
+            try: () => collection.findOne({ userId, name }),
             catch: (error) =>
               new DatabaseError({
                 operation: "findOne",
@@ -412,12 +414,12 @@ export const EnvironmentsRepositoryLive = Layer.effect(
           return result !== null
         }),
 
-      getNextOrder: (projectId) =>
+      getNextOrder: (userId) =>
         Effect.gen(function*() {
           const result = yield* Effect.tryPromise({
             try: () =>
               collection
-                .find({ projectId })
+                .find({ userId })
                 .sort({ order: -1 })
                 .limit(1)
                 .toArray(),
