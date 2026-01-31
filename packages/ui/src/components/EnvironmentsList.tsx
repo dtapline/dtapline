@@ -173,22 +173,30 @@ function EnvironmentItem({ environment, onArchive, onEdit }: EnvironmentItemProp
   }
 
   return (
-    <div ref={setNodeRef} style={style} className="flex items-center gap-2 rounded-lg border bg-background p-4">
-      <div
-        className="cursor-grab touch-none text-muted-foreground hover:text-foreground active:cursor-grabbing"
-        {...attributes}
-        {...listeners}
-      >
-        <GripVertical className="h-5 w-5" />
-      </div>
-      <div className="flex items-center gap-4 flex-1">
-        {environment.color && <div className="h-4 w-4 rounded-full" style={{ backgroundColor: environment.color }} />}
-        <div>
-          <h3 className="font-medium">{environment.displayName}</h3>
-          <p className="text-sm text-muted-foreground">{environment.name}</p>
+    <div
+      ref={setNodeRef}
+      style={style}
+      className="group flex items-center gap-3 rounded-lg border bg-background p-4 hover:border-primary/50 transition-colors select-none cursor-grab active:cursor-grabbing"
+      {...attributes}
+      {...listeners}
+    >
+      <GripVertical className="h-5 w-5 text-muted-foreground group-hover:text-primary flex-shrink-0" />
+      <div className="flex items-center gap-4 flex-1 min-w-0">
+        {environment.color && (
+          <div className="h-4 w-4 rounded-full flex-shrink-0" style={{ backgroundColor: environment.color }} />
+        )}
+        <div className="min-w-0 flex-1">
+          <h3 className="font-medium truncate">{environment.displayName}</h3>
+          <p className="text-sm text-muted-foreground truncate">
+            Name: {environment.name} • Order: {environment.order}
+          </p>
         </div>
       </div>
-      <div className="flex gap-2">
+      <div
+        className="flex gap-2 flex-shrink-0"
+        onClick={(e) => e.stopPropagation()}
+        onPointerDown={(e) => e.stopPropagation()}
+      >
         <Button variant="outline" size="sm" onClick={onEdit}>
           Edit
         </Button>
