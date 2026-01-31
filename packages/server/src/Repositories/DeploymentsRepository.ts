@@ -32,6 +32,9 @@ interface DeploymentDocument {
   buildUrl?: string | null
   releaseNotes?: string | null
   metadata?: Record<string, unknown> | null
+  cicdPlatform?: string | null
+  cicdBuildUrl?: string | null
+  cicdBuildId?: string | null
 }
 
 /**
@@ -102,7 +105,10 @@ const docToDeployment = (doc: DeploymentDocument): any => ({
   status: doc.status,
   buildUrl: doc.buildUrl ?? undefined,
   releaseNotes: doc.releaseNotes ?? undefined,
-  metadata: doc.metadata ?? undefined
+  metadata: doc.metadata ?? undefined,
+  cicdPlatform: doc.cicdPlatform ?? undefined,
+  cicdBuildUrl: doc.cicdBuildUrl ?? undefined,
+  cicdBuildId: doc.cicdBuildId ?? undefined
 })
 
 /**
@@ -130,7 +136,10 @@ export const DeploymentsRepositoryLive = Layer.effect(
             status: input.status ?? "success",
             buildUrl: input.buildUrl ?? null,
             releaseNotes: input.releaseNotes ?? null,
-            metadata: input.metadata ?? null
+            metadata: input.metadata ?? null,
+            cicdPlatform: input.cicdPlatform ?? null,
+            cicdBuildUrl: input.cicdBuildUrl ?? null,
+            cicdBuildId: input.cicdBuildId ?? null
           }
 
           const result = yield* Effect.tryPromise({

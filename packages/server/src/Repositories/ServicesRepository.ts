@@ -20,6 +20,7 @@ interface ServiceDocument {
   name: string
   displayName: string
   repositoryUrl?: string | null
+  iconUrl?: string | null
   archived: boolean
   createdAt: Date
 }
@@ -85,6 +86,7 @@ const docToService = (doc: ServiceDocument): any => ({
   name: doc.name,
   displayName: doc.displayName,
   repositoryUrl: doc.repositoryUrl ?? undefined,
+  iconUrl: doc.iconUrl ?? undefined,
   archived: doc.archived,
   createdAt: doc.createdAt
 })
@@ -127,6 +129,7 @@ export const ServicesRepositoryLive = Layer.effect(
             name: input.name,
             displayName: input.displayName,
             repositoryUrl: input.repositoryUrl ?? null,
+            iconUrl: input.iconUrl ?? null,
             archived: false,
             createdAt: new Date()
           }
@@ -235,6 +238,7 @@ export const ServicesRepositoryLive = Layer.effect(
             name,
             displayName: displayName ?? name.charAt(0).toUpperCase() + name.slice(1),
             repositoryUrl: repositoryUrl ?? null,
+            iconUrl: null,
             archived: false,
             createdAt: new Date()
           }
@@ -267,6 +271,7 @@ export const ServicesRepositoryLive = Layer.effect(
 
           if (input.displayName !== undefined) updateFields.displayName = input.displayName
           if (input.repositoryUrl !== undefined) updateFields.repositoryUrl = input.repositoryUrl ?? null
+          if (input.iconUrl !== undefined) updateFields.iconUrl = input.iconUrl ?? null
 
           const result = yield* Effect.tryPromise({
             try: () =>

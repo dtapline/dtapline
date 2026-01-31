@@ -24,6 +24,7 @@ export function ServiceDialog({ projectId, service, open, onOpenChange }: Servic
   const [name, setName] = useState("")
   const [displayName, setDisplayName] = useState("")
   const [repositoryUrl, setRepositoryUrl] = useState("")
+  const [iconUrl, setIconUrl] = useState("")
 
   const createMutation = useCreateService()
   const updateMutation = useUpdateService()
@@ -35,10 +36,12 @@ export function ServiceDialog({ projectId, service, open, onOpenChange }: Servic
       setName(service.name)
       setDisplayName(service.displayName)
       setRepositoryUrl(service.repositoryUrl ?? "")
+      setIconUrl(service.iconUrl ?? "")
     } else {
       setName("")
       setDisplayName("")
       setRepositoryUrl("")
+      setIconUrl("")
     }
   }, [service])
 
@@ -48,7 +51,8 @@ export function ServiceDialog({ projectId, service, open, onOpenChange }: Servic
     const input = {
       displayName,
       name,
-      repositoryUrl: repositoryUrl || undefined
+      repositoryUrl: repositoryUrl || undefined,
+      iconUrl: iconUrl || undefined
     }
 
     if (isEditing) {
@@ -135,6 +139,34 @@ export function ServiceDialog({ projectId, service, open, onOpenChange }: Servic
               <p className="text-xs text-muted-foreground">
                 Optional link to the source code repository
               </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="iconUrl">Icon URL</Label>
+              <Input
+                id="iconUrl"
+                type="url"
+                placeholder="https://cdn.simpleicons.org/github"
+                value={iconUrl}
+                onChange={(e) => setIconUrl(e.target.value)}
+                pattern="^https?://.+"
+              />
+              <p className="text-xs text-muted-foreground">
+                Optional icon URL. Auto-set from CI/CD platform if not provided.
+              </p>
+              {iconUrl && (
+                <div className="flex items-center gap-2 rounded-md border p-2">
+                  <img
+                    src={iconUrl}
+                    alt="Service icon preview"
+                    className="h-6 w-6"
+                    onError={(e) => {
+                      e.currentTarget.style.display = "none"
+                    }}
+                  />
+                  <span className="text-xs text-muted-foreground">Icon preview</span>
+                </div>
+              )}
             </div>
           </div>
 

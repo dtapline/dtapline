@@ -7,6 +7,7 @@ import { EnvironmentsRepository } from "../Repositories/EnvironmentsRepository.j
 import { ProjectsRepository } from "../Repositories/ProjectsRepository.js"
 import { ServicesRepository } from "../Repositories/ServicesRepository.js"
 import { VersionPatternsRepository } from "../Repositories/VersionPatternsRepository.js"
+import { getCICDIcon } from "../Utils/CICDIcons.js"
 
 /**
  * Deployment Service
@@ -77,7 +78,18 @@ export const DeploymentServiceLive = Layer.effect(
               .join(" ")
           )
 
-          // 4. Extract version from git tag using configured pattern
+          // 4. Auto-set service icon from CI/CD platform if not already set
+          if (!service.iconUrl && input.cicdPlatform) {
+            const iconUrl = getCICDIcon(input.cicdPlatform)
+            if (iconUrl) {
+              // Best-effort: ignore errors if icon update fails
+              yield* servicesRepo.update(service.id, { iconUrl }).pipe(
+                Effect.catchAll(() => Effect.void)
+              )
+            }
+          }
+
+          // 5. Extract version from git tag using configured pattern
           const versionPattern = yield* versionPatternsRepo.getPatternForService(
             projectId,
             input.service
@@ -87,7 +99,7 @@ export const DeploymentServiceLive = Layer.effect(
             ? extractVersion(input.gitTag, versionPattern) ?? input.commitSha
             : input.commitSha
 
-          // 5. Record the deployment
+          // 6. Record the deployment
           const deployment = yield* deploymentsRepo.create(
             projectId,
             environment.id,

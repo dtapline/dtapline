@@ -11,6 +11,7 @@ export class Service extends Schema.Class<Service>("Service")({
   name: Schema.String.pipe(Schema.minLength(1), Schema.maxLength(50)), // e.g., "api-server"
   displayName: Schema.String.pipe(Schema.minLength(1), Schema.maxLength(100)), // e.g., "API Server"
   repositoryUrl: Schema.optional(Schema.String.pipe(Schema.pattern(/^https?:\/\/.+/))),
+  iconUrl: Schema.optional(Schema.String.pipe(Schema.pattern(/^https?:\/\/.+/))),
   archived: Schema.Boolean,
   createdAt: Schema.DateFromSelf
 }) {}
@@ -19,11 +20,13 @@ export class Service extends Schema.Class<Service>("Service")({
 export class CreateServiceInput extends Schema.Struct({
   name: Schema.String.pipe(Schema.minLength(1), Schema.maxLength(50)),
   displayName: Schema.String.pipe(Schema.minLength(1), Schema.maxLength(100)),
-  repositoryUrl: Schema.optional(Schema.String.pipe(Schema.pattern(/^https?:\/\/.+/)))
+  repositoryUrl: Schema.optional(Schema.String.pipe(Schema.pattern(/^https?:\/\/.+/))),
+  iconUrl: Schema.optional(Schema.String.pipe(Schema.pattern(/^https?:\/\/.+/)))
 }) {}
 
 // Update service input
 export class UpdateServiceInput extends Schema.Struct({
   displayName: Schema.optional(Schema.String.pipe(Schema.minLength(1), Schema.maxLength(100))),
-  repositoryUrl: Schema.optional(Schema.String.pipe(Schema.pattern(/^https?:\/\/.+/)))
+  repositoryUrl: Schema.optional(Schema.String.pipe(Schema.pattern(/^https?:\/\/.+/))),
+  iconUrl: Schema.optional(Schema.String.pipe(Schema.pattern(/^https?:\/\/.+/)))
 }) {}

@@ -31,7 +31,12 @@ export class Deployment extends Schema.Class<Deployment>("Deployment")({
   // Optional rich data
   buildUrl: Schema.optional(Schema.String.pipe(Schema.pattern(/^https?:\/\/.+/))),
   releaseNotes: Schema.optional(Schema.String),
-  metadata: Schema.optional(Schema.Record({ key: Schema.String, value: Schema.Unknown }))
+  metadata: Schema.optional(Schema.Record({ key: Schema.String, value: Schema.Unknown })),
+
+  // CI/CD platform information
+  cicdPlatform: Schema.optional(Schema.String),
+  cicdBuildUrl: Schema.optional(Schema.String.pipe(Schema.pattern(/^https?:\/\/.+/))),
+  cicdBuildId: Schema.optional(Schema.String)
 }) {}
 
 // Create deployment input (webhook payload)
@@ -49,7 +54,12 @@ export class CreateDeploymentInput extends Schema.Struct({
   status: Schema.optionalWith(DeploymentStatus, { default: () => "success" as const }),
   buildUrl: Schema.optional(Schema.String.pipe(Schema.pattern(/^https?:\/\/.+/))),
   releaseNotes: Schema.optional(Schema.String),
-  metadata: Schema.optional(Schema.Record({ key: Schema.String, value: Schema.Unknown }))
+  metadata: Schema.optional(Schema.Record({ key: Schema.String, value: Schema.Unknown })),
+
+  // CI/CD platform information
+  cicdPlatform: Schema.optional(Schema.String),
+  cicdBuildUrl: Schema.optional(Schema.String.pipe(Schema.pattern(/^https?:\/\/.+/))),
+  cicdBuildId: Schema.optional(Schema.String)
 }) {}
 
 // Query filters for deployment history
