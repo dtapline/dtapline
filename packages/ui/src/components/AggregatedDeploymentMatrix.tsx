@@ -44,12 +44,12 @@ export function AggregatedDeploymentMatrix({
     )
   }
 
-  // Get all unique environments across all projects (maintain order)
+  // Get all unique environments across all projects and sort by order
   const allEnvironments = Array.from(
     new Map(
       projectMatrices.flatMap((pm) => pm.environments.map((env) => [env.id, env]))
     ).values()
-  )
+  ).sort((a, b) => a.order - b.order)
 
   if (allEnvironments.length === 0) {
     return (
