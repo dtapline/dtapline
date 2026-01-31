@@ -29,7 +29,7 @@ export const ApiKeysGroupLive = HttpApiBuilder.group(
         .handle("createApiKey", ({ path: { projectId }, payload }) =>
           Effect.gen(function*() {
             const apiKeyWithSecret = yield* apiKeysRepo.generate(projectId, userId, payload)
-            const { keyHash, plainKey, userId: _userId, ...apiKeyResponse } = apiKeyWithSecret
+            const { keyHash: _keyHash, plainKey, userId: _userId, ...apiKeyResponse } = apiKeyWithSecret
             return {
               ...apiKeyResponse,
               key: plainKey
