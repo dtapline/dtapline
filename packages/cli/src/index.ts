@@ -2,7 +2,7 @@
 import { Args, Command, Options } from "@effect/cli"
 import { HttpBody, HttpClient, HttpClientRequest } from "@effect/platform"
 import { NodeContext, NodeHttpClient, NodeRuntime } from "@effect/platform-node"
-import { Console, Effect, Layer, Schema } from "effect"
+import { Console, Effect, Layer, Option, Schema } from "effect"
 
 /**
  * CloudMatrix CLI
@@ -48,15 +48,18 @@ const serverUrlOption = Options.text("server-url").pipe(
 )
 
 const gitTagOption = Options.text("git-tag").pipe(
-  Options.withDescription("Git tag for this deployment (e.g., v1.2.3)")
+  Options.withDescription("Git tag for this deployment (e.g., v1.2.3)"),
+  Options.optional
 )
 
 const prUrlOption = Options.text("pr-url").pipe(
-  Options.withDescription("Pull request URL")
+  Options.withDescription("Pull request URL"),
+  Options.optional
 )
 
 const deployedByOption = Options.text("deployed-by").pipe(
-  Options.withDescription("Who/what triggered the deployment")
+  Options.withDescription("Who/what triggered the deployment"),
+  Options.optional
 )
 
 const statusOption = Options.choice("status", ["success", "failed", "in_progress", "rolled_back"]).pipe(
@@ -65,11 +68,13 @@ const statusOption = Options.choice("status", ["success", "failed", "in_progress
 )
 
 const buildUrlOption = Options.text("build-url").pipe(
-  Options.withDescription("Build/CI pipeline URL")
+  Options.withDescription("Build/CI pipeline URL"),
+  Options.optional
 )
 
 const releaseNotesOption = Options.text("release-notes").pipe(
-  Options.withDescription("Release notes or changelog")
+  Options.withDescription("Release notes or changelog"),
+  Options.optional
 )
 
 // ============================================================================
@@ -106,18 +111,18 @@ const deployCommand = Command.make(
         environment: args.environment,
         service: args.service,
         commitSha: args.commitSha,
-        ...(args.gitTag && { gitTag: args.gitTag }),
-        ...(args.prUrl && { pullRequestUrl: args.prUrl }),
-        ...(args.deployedBy && { deployedBy: args.deployedBy }),
+        ...(Option.isSome(args.gitTag) && { gitTag: args.gitTag.value }),
+        ...(Option.isSome(args.prUrl) && { pullRequestUrl: args.prUrl.value }),
+        ...(Option.isSome(args.deployedBy) && { deployedBy: args.deployedBy.value }),
         status: args.status,
-        ...(args.buildUrl && { buildUrl: args.buildUrl }),
-        ...(args.releaseNotes && { releaseNotes: args.releaseNotes })
+        ...(Option.isSome(args.buildUrl) && { buildUrl: args.buildUrl.value }),
+        ...(Option.isSome(args.releaseNotes) && { releaseNotes: args.releaseNotes.value })
       }
 
       yield* Console.log(`  Environment: ${args.environment}`)
       yield* Console.log(`  Service: ${args.service}`)
       yield* Console.log(`  Commit: ${args.commitSha}`)
-      if (args.gitTag) yield* Console.log(`  Tag: ${args.gitTag}`)
+      if (Option.isSome(args.gitTag)) yield* Console.log(`  Tag: ${args.gitTag.value}`)
       yield* Console.log(`  Status: ${args.status}`)
 
       // Send webhook request
