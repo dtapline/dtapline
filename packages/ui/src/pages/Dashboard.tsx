@@ -1,11 +1,15 @@
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { ProjectDialog } from "@/components/dialogs/ProjectDialog"
 import { useProjects } from "@/lib/hooks/use-projects"
-import { Link } from "@tanstack/react-router"
+import { Link, useNavigate } from "@tanstack/react-router"
 import { Plus } from "lucide-react"
 
 export default function Dashboard() {
   const { data: projects, isLoading, error } = useProjects()
+  const [isProjectDialogOpen, setIsProjectDialogOpen] = useState(false)
+  const navigate = useNavigate()
 
   if (isLoading) {
     return (
@@ -36,7 +40,7 @@ export default function Dashboard() {
             Manage your deployment projects and view deployment matrices
           </p>
         </div>
-        <Button>
+        <Button onClick={() => setIsProjectDialogOpen(true)}>
           <Plus className="mr-2 h-4 w-4" />
           New Project
         </Button>
@@ -46,7 +50,7 @@ export default function Dashboard() {
         <Card>
           <CardContent className="flex flex-col items-center justify-center h-64">
             <p className="text-muted-foreground mb-4">No projects yet</p>
-            <Button>
+            <Button onClick={() => setIsProjectDialogOpen(true)}>
               <Plus className="mr-2 h-4 w-4" />
               Create your first project
             </Button>
@@ -77,6 +81,15 @@ export default function Dashboard() {
           ))}
         </div>
       )}
+
+      <ProjectDialog
+        open={isProjectDialogOpen}
+        onOpenChange={setIsProjectDialogOpen}
+        onSuccess={(project) => {
+          // Navigate to the newly created project
+          navigate({ to: "/project/$projectId", params: { projectId: project.id } })
+        }}
+      />
     </div>
   )
 }

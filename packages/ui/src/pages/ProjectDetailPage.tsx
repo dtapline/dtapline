@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { ApiKeysList } from "../components/ApiKeysList"
 import { DeploymentMatrix } from "../components/DeploymentMatrix"
 import { EnvironmentsList } from "../components/EnvironmentsList"
 import { ServicesList } from "../components/ServicesList"
@@ -149,14 +150,10 @@ export function ProjectDetailPage({ projectId }: ProjectDetailPageProps) {
             <div className="mb-6">
               <h2 className="text-xl font-semibold">Project Settings</h2>
               <p className="text-sm text-muted-foreground">
-                Configure project settings
+                Configure project settings and API keys
               </p>
             </div>
-            <div className="rounded-lg border border-dashed p-8 text-center">
-              <p className="text-muted-foreground">
-                Project settings coming soon
-              </p>
-            </div>
+            <ApiKeysList projectId={projectId} />
           </div>
         )}
       </div>
