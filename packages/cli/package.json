@@ -1,7 +1,6 @@
 {
   "name": "@cloud-matrix/cli",
   "version": "0.0.0",
-  "type": "module",
   "license": "MIT",
   "description": "CloudMatrix CLI for deployment reporting",
   "repository": {
@@ -10,10 +9,16 @@
     "directory": "packages/cli"
   },
   "bin": {
-    "cloudmatrix": "./bin/cloudmatrix.js"
+    "cloudmatrix": "./dist/index.js"
   },
+  "files": [
+    "dist",
+    "bin"
+  ],
   "scripts": {
-    "build": "tsc -b tsconfig.build.json",
+    "build": "pnpm clean && pnpm bundle",
+    "bundle": "esbuild src/index.ts --bundle --platform=node --target=node20 --outfile=dist/index.js --format=cjs --banner:js=\"#!/usr/bin/env node\"",
+    "clean": "rm -rf dist",
     "check": "tsc -b tsconfig.json",
     "test": "vitest"
   },
@@ -25,6 +30,7 @@
     "effect": "^3.19.15"
   },
   "devDependencies": {
-    "@types/node": "^22.0.0"
+    "@types/node": "^22.0.0",
+    "esbuild": "^0.25.0"
   }
 }

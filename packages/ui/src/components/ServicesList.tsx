@@ -102,7 +102,7 @@ export function ServicesList({ projectId }: ServicesListProps) {
 
       <ServiceDialog
         projectId={projectId}
-        service={editingService ?? undefined}
+        service={editingService}
         open={!!editingService}
         onOpenChange={(open: boolean) => !open && setEditingService(null)}
       />

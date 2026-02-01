@@ -72,13 +72,13 @@ export function createApiClient(config: ApiConfig) {
     post: <T, B = unknown>(endpoint: string, body?: B) =>
       request<T>(endpoint, {
         method: "POST",
-        body: body ? JSON.stringify(body) : undefined
+        body: body ? JSON.stringify(body) : null
       }),
 
     put: <T, B = unknown>(endpoint: string, body?: B) =>
       request<T>(endpoint, {
         method: "PUT",
-        body: body ? JSON.stringify(body) : undefined
+        body: body ? JSON.stringify(body) : null
       }),
 
     delete: (endpoint: string) => request<void>(endpoint, { method: "DELETE" })

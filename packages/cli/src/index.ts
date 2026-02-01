@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 import { Args, Command, Options } from "@effect/cli"
 import { HttpBody, HttpClient, HttpClientRequest } from "@effect/platform"
 import { NodeContext, NodeHttpClient, NodeRuntime } from "@effect/platform-node"
@@ -40,7 +39,8 @@ const commitShaArg = Args.text({ name: "commitSha" }).pipe(
 // ============================================================================
 
 const apiKeyOption = Options.text("api-key").pipe(
-  Options.withDescription("CloudMatrix API key (or set CLOUDMATRIX_API_KEY env var)")
+  Options.withDescription("CloudMatrix API key (or set CLOUDMATRIX_API_KEY env var)"),
+  Options.optional
 )
 
 const serverUrlOption = Options.text("server-url").pipe(
@@ -102,7 +102,7 @@ const deployCommand = Command.make(
       yield* Console.log("🚀 Reporting deployment to CloudMatrix...")
 
       // Get API key from option or environment variable
-      const apiKey = args.apiKey ?? process.env.CLOUDMATRIX_API_KEY
+      const apiKey = Option.isSome(args.apiKey) ? args.apiKey.value : process.env.CLOUDMATRIX_API_KEY
       if (!apiKey) {
         yield* Effect.fail(new Error("API key is required. Use --api-key or set CLOUDMATRIX_API_KEY env var"))
       }

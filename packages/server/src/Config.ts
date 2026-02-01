@@ -10,7 +10,6 @@ export interface ServerConfig {
   readonly defaultUserId: string
   readonly defaultUserEmail: string
   readonly defaultUserName: string
-  readonly nodeEnv: string
 }
 
 /**
@@ -45,9 +44,6 @@ export const ServerConfigLive = Layer.effect(
     const defaultUserName = yield* Config.string("DEFAULT_USER_NAME").pipe(
       Config.withDefault("Development Team")
     )
-    const nodeEnv = yield* Config.string("NODE_ENV").pipe(
-      Config.withDefault("development")
-    )
 
     return {
       mongodbUri,
@@ -55,8 +51,7 @@ export const ServerConfigLive = Layer.effect(
       corsOrigins,
       defaultUserId,
       defaultUserEmail,
-      defaultUserName,
-      nodeEnv
+      defaultUserName
     }
   })
 )

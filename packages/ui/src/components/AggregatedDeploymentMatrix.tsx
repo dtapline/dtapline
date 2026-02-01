@@ -13,7 +13,7 @@ import { Button } from "./ui/button"
 interface ProjectMatrixData {
   projectId: string
   projectName: string
-  projectDescription?: string
+  projectDescription?: string | undefined
   project?: Project
   environments: ReadonlyArray<Environment>
   services: ReadonlyArray<Service>
