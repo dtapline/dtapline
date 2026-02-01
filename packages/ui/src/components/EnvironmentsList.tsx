@@ -123,7 +123,7 @@ export function EnvironmentsList() {
       />
 
       <EnvironmentDialog
-        environment={editingEnvironment ?? undefined}
+        environment={editingEnvironment}
         open={!!editingEnvironment}
         onOpenChange={(open) => !open && setEditingEnvironment(null)}
       />

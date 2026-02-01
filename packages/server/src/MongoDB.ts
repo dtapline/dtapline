@@ -70,7 +70,11 @@ export const MongoDBLive = Layer.scoped(
         })
     })
 
-    const db = client.db("cloudmatrix")
+    // Extract database name from MongoDB connection URI
+    // The database name is the path segment after the hostname
+    const uriMatch = config.mongodbUri.match(/\/\/[^/]+\/([^/?]+)/)
+    const dbName = uriMatch?.[1] || "cloudmatrix"
+    const db = client.db(dbName)
 
     // Cache for next invocation
     cachedClient = client

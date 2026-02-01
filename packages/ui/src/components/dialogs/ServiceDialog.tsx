@@ -8,7 +8,7 @@ import { Label } from "../ui/label"
 
 interface ServiceDialogProps {
   projectId: string
-  service?: Service
+  service?: Service | null
   open: boolean
   onOpenChange: (open: boolean) => void
 }

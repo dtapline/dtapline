@@ -7,7 +7,7 @@ import { Input } from "../ui/input"
 import { Label } from "../ui/label"
 
 interface EnvironmentDialogProps {
-  environment?: Environment
+  environment?: Environment | null
   open: boolean
   onOpenChange: (open: boolean) => void
 }
