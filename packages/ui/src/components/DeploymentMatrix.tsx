@@ -1,6 +1,7 @@
 import type { Deployment } from "@cloud-matrix/domain/Deployment"
 import type { Environment } from "@cloud-matrix/domain/Environment"
 import type { Service } from "@cloud-matrix/domain/Service"
+import { formatDistance } from "date-fns"
 import { cn } from "../lib/utils"
 import { DeploymentStatusIcon } from "./DeploymentStatusIcon"
 
@@ -101,7 +102,7 @@ export function DeploymentMatrix({
               {environments.map((env) => {
                 const deployment = deployments[env.id]?.[service.id]
                 return (
-                  <td key={env.id} className="border p-3">
+                  <td key={env.id} className="border p-4">
                     {deployment ?
                       <DeploymentCell deployment={deployment} /> :
                       (
@@ -122,80 +123,79 @@ export function DeploymentMatrix({
 
 function DeploymentCell({ deployment }: { deployment: Deployment }) {
   const deployedAt = new Date(deployment.deployedAt)
-  const relativeTime = formatRelativeTime(deployedAt)
-  const statusColor = getStatusColor(deployment.status)
+  const { iconBg, iconColor } = getStatusIconStyle(deployment.status)
+  const relativeTime = formatDistance(deployedAt, new Date(), { addSuffix: true })
+  const exactDateTime = deployedAt.toLocaleString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true
+  })
 
   return (
-    <div
-      className={cn(
-        "flex flex-col gap-1 rounded-md p-2 transition-colors",
-        statusColor
-      )}
-    >
-      <div className="flex items-center gap-2">
-        <DeploymentStatusIcon status={deployment.status} />
-        <span className="font-mono text-sm font-medium">{deployment.version}</span>
+    <div className="flex items-start gap-3">
+      {/* Large status icon box - Octopus Deploy style */}
+      <div
+        className={cn(
+          "flex h-12 w-12 shrink-0 items-center justify-center rounded",
+          iconBg
+        )}
+      >
+        <DeploymentStatusIcon status={deployment.status} className={cn("h-6 w-6", iconColor)} />
       </div>
-      <span className="text-xs text-muted-foreground" title={deployedAt.toLocaleString()}>
-        {relativeTime}
-      </span>
-      {deployment.buildUrl && (
-        <a
-          href={deployment.buildUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-xs text-blue-600 hover:underline dark:text-blue-400"
+
+      {/* Version and timestamp */}
+      <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+        <span className="font-mono text-base font-semibold">{deployment.version}</span>
+        <span
+          className="text-sm text-muted-foreground"
+          title={exactDateTime}
         >
-          View build
-        </a>
-      )}
+          {relativeTime}
+        </span>
+        {deployment.buildUrl && (
+          <a
+            href={deployment.buildUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-1 text-xs text-blue-600 hover:underline dark:text-blue-400"
+          >
+            View build
+          </a>
+        )}
+      </div>
     </div>
   )
 }
 
-function getStatusColor(status: string): string {
+function getStatusIconStyle(status: string): { iconBg: string; iconColor: string } {
   switch (status) {
     case "success":
-      return "bg-green-50 border-l-4 border-green-600 dark:bg-green-950/20"
+      return {
+        iconBg: "bg-green-500 dark:bg-green-600",
+        iconColor: "text-white"
+      }
     case "failed":
-      return "bg-red-50 border-l-4 border-red-600 dark:bg-red-950/20"
+      return {
+        iconBg: "bg-red-500 dark:bg-red-600",
+        iconColor: "text-white"
+      }
     case "in_progress":
-      return "bg-orange-50 border-l-4 border-orange-600 dark:bg-orange-950/20"
+      return {
+        iconBg: "bg-orange-500 dark:bg-orange-600",
+        iconColor: "text-white"
+      }
     case "rolled_back":
-      return "bg-gray-50 border-l-4 border-gray-600 dark:bg-gray-950/20"
+      return {
+        iconBg: "bg-gray-500 dark:bg-gray-600",
+        iconColor: "text-white"
+      }
     default:
-      return "bg-muted/20"
+      return {
+        iconBg: "bg-muted",
+        iconColor: "text-muted-foreground"
+      }
   }
-}
-
-function formatRelativeTime(date: Date): string {
-  const now = new Date()
-  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000)
-
-  if (diffInSeconds < 60) {
-    return "just now"
-  }
-
-  const diffInMinutes = Math.floor(diffInSeconds / 60)
-  if (diffInMinutes < 60) {
-    return `${diffInMinutes}m ago`
-  }
-
-  const diffInHours = Math.floor(diffInMinutes / 60)
-  if (diffInHours < 24) {
-    return `${diffInHours}h ago`
-  }
-
-  const diffInDays = Math.floor(diffInHours / 24)
-  if (diffInDays < 7) {
-    return `${diffInDays}d ago`
-  }
-
-  const diffInWeeks = Math.floor(diffInDays / 7)
-  if (diffInWeeks < 4) {
-    return `${diffInWeeks}w ago`
-  }
-
-  const diffInMonths = Math.floor(diffInDays / 30)
-  return `${diffInMonths}mo ago`
 }
