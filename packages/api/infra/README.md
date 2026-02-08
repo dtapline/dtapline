@@ -13,8 +13,8 @@ infra/
 │   ├── lambda/                 # Lambda function + execution role
 │   └── api-gateway/            # HTTP API Gateway
 └── environments/
-   ├── development/            # Dev config (AWS <your-dev-account-id>)
-   └── production/             # Prod config (AWS <your-prod-account-id>)
+   ├── development/            # Dev config
+   └── production/             # Prod config
 ```
 
 ## Resources Created
@@ -102,7 +102,7 @@ The Lambda code is updated automatically by GitHub Actions workflows using AWS c
 Create an IAM user named `dtapline-ci` in each AWS account:
 
 ```bash
-# Development account (<your-dev-account-id>)
+# In your AWS account
 aws iam create-user --user-name dtapline-ci
 
 # Create access key

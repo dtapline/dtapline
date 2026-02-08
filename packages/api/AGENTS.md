@@ -28,7 +28,7 @@ Required in `.env`:
 MONGODB_URI=mongodb://localhost:27017/dtapline
 PORT=3000
 DEFAULT_USER_ID=default-user
-DEFAULT_USER_EMAIL=dev@cloudmatrix.io
+DEFAULT_USER_EMAIL=dev@dtapline.io
 DEFAULT_USER_NAME=Developer
 ```
 

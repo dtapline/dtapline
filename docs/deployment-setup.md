@@ -5,8 +5,8 @@ Complete guide to deploy Dtapline infrastructure and enable self-hosting.
 ## Overview
 
 Dtapline tracks its own deployments across 2 environments:
-- **`development`**: Deployed on every merge to `main` (AWS account <your-dev-account-id>)
-- **`production`**: Deployed when Changesets publishes a release (AWS account <your-prod-account-id>)
+- **`development`**: Deployed on every merge to `main`
+- **`production`**: Deployed when Changesets publishes a release
 
 Services tracked:
 - **`api`**: Backend API server (AWS Lambda)
@@ -17,12 +17,12 @@ Services tracked:
 
 ## Prerequisites
 
-- [x] AWS account for development: **<your-dev-account-id>**
-- [x] AWS account for production: **<your-prod-account-id>**
-- [x] MongoDB Atlas cluster: **<your-cluster-name>.mongodb.net**
-- [x] Terraform Cloud organization: **dtapline**
+- [ ] AWS account for development
+- [ ] AWS account for production (or use the same account with different regions)
+- [ ] MongoDB Atlas cluster
+- [ ] Terraform Cloud organization
 - [ ] Netlify account with site created
-- [x] GitHub repository: **dtapline/dtapline**
+- [ ] GitHub repository: **dtapline/dtapline**
 
 ---
 
@@ -38,7 +38,7 @@ If you already have AWS admin access, skip creating a new user and use your exis
 
 Create an IAM user specifically for CI/CD deployments.
 
-#### Development Account (<your-dev-account-id>)
+#### Development Account
 
 ```bash
 # Switch to development account
@@ -59,7 +59,7 @@ aws iam attach-user-policy --user-name dtapline-ci \
 
 > **Note**: For production, consider using a more restrictive policy that only allows Lambda, IAM, API Gateway, and CloudWatch operations.
 
-#### Production Account (<your-prod-account-id>)
+#### Production Account
 
 Repeat the same steps for production account.
 

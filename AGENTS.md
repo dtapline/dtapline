@@ -62,7 +62,7 @@ pnpm dedupe        # Deduplicate dependencies (run after adding/updating deps)
    }
    ```
    
-   This pattern is applied in all 6 repositories. See any repository for examples.
+   This pattern is applied in all 6 MongoDB repositories (ProjectsRepository, EnvironmentsRepository, ServicesRepository, DeploymentsRepository, ApiKeysRepository, VersionPatternsRepository). See any repository for examples.
 
 ## Security
 

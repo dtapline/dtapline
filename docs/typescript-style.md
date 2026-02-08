@@ -23,7 +23,7 @@
 // Effect packages (domain, api)
 import { Effect, Schema } from "effect"
 import { HttpApiEndpoint } from "@effect/platform"
-import { TodoNotFound } from "@cloud-matrix/domain/TodosApi"
+import { TodoNotFound } from "@dtapline/domain/TodosApi"
 import { TodosRepository } from "./TodosRepository.js"  // .js extension required!
 import type { Context } from "@effect/platform"
 

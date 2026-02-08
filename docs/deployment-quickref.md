@@ -6,8 +6,8 @@ Quick commands and values for Dtapline deployment.
 
 | Environment | AWS Account | MongoDB Database | Trigger |
 |-------------|-------------|------------------|---------|
-| Development | <your-dev-account-id> | dtapline-dev | Push to `main` |
-| Production | <your-prod-account-id> | dtapline-prd | Release tag (changesets) |
+| Development | Your Dev Account | dtapline-dev | Push to `main` |
+| Production | Your Prod Account | dtapline-prd | Release tag (changesets) |
 
 ## Terraform Commands
 
@@ -65,9 +65,9 @@ DTAPLINE_SERVER_URL           # Same as production API Gateway
 
 ### Connection Strings
 ```
-Development: mongodb+srv://<your-cluster-name>.mongodb.net/dtapline-dev?authSource=%24external&authMechanism=MONGODB-AWS
+Development: mongodb+srv://<your-cluster>.mongodb.net/dtapline-dev?authSource=%24external&authMechanism=MONGODB-AWS
 
-Production: mongodb+srv://<your-cluster-name>.mongodb.net/dtapline-prd?authSource=%24external&authMechanism=MONGODB-AWS
+Production: mongodb+srv://<your-cluster>.mongodb.net/dtapline-prd?authSource=%24external&authMechanism=MONGODB-AWS
 ```
 
 ### IAM Database Users
@@ -84,20 +84,20 @@ Production: mongodb+srv://<your-cluster-name>.mongodb.net/dtapline-prd?authSourc
 
 ## CI User Setup
 
-### Development Account (<your-dev-account-id>)
+### Development Account
 ```bash
-aws iam create-user --user-name cloudmatrix-ci
-aws iam create-access-key --user-name cloudmatrix-ci
+aws iam create-user --user-name dtapline-ci
+aws iam create-access-key --user-name dtapline-ci
 
 # Save access keys as GitHub secrets:
 # AWS_ACCESS_KEY_ID_DEV
 # AWS_SECRET_ACCESS_KEY_DEV
 ```
 
-### Production Account (<your-prod-account-id>)
+### Production Account
 ```bash
-aws iam create-user --user-name cloudmatrix-ci
-aws iam create-access-key --user-name cloudmatrix-ci
+aws iam create-user --user-name dtapline-ci
+aws iam create-access-key --user-name dtapline-ci
 
 # Save access keys as GitHub secrets:
 # AWS_ACCESS_KEY_ID_PROD

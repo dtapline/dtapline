@@ -124,7 +124,7 @@ If you see `❌ Cannot connect to MongoDB`:
 3. **Check your `.env` file:**
    - Make sure `MONGODB_URI` is set correctly
    - For local: `mongodb://localhost:27017/dtapline`
-   - For Atlas: `mongodb+srv://user:pass@cluster.mongodb.net/cloudmatrix`
+   - For Atlas: `mongodb+srv://user:pass@cluster.mongodb.net/dtapline`
 
 ### Port Already in Use
 

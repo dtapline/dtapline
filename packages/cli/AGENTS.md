@@ -68,7 +68,7 @@ dtapline deploy production api-gateway abc123
 - `--api-key` - API key (or set `DTAPLINE_API_KEY` env var)
 
 ### Optional
-- `--server-url` - Server URL (default: https://api.cloudmatrix.io)
+- `--server-url` - Server URL (default: http://localhost:3000)
 - `--git-tag` - Git tag (e.g., v1.2.3)
 - `--pr-url` - Pull request URL
 - `--deployed-by` - Who/what triggered the deployment
@@ -164,7 +164,7 @@ src/
 └── index.ts          # Main CLI entry point
 
 bin/
-└── cloudmatrix.js    # Executable wrapper
+└── dtapline.js    # Executable wrapper
 
 examples/
 └── azure-pipelines.yml  # CI/CD integration example

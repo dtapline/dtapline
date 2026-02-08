@@ -14,10 +14,10 @@ docker run -d -p 27017:27017 --name mongodb mongo:latest
 
 ### MongoDB Atlas (Cloud)
 1. Create cluster at https://www.mongodb.com/cloud/atlas
-2. Get connection string: `mongodb+srv://user:pass@cluster.mongodb.net/cloudmatrix`
+2. Get connection string: `mongodb+srv://user:pass@cluster.mongodb.net/dtapline`
 3. Add to `packages/api/.env`:
    ```
-   MONGODB_URI=mongodb+srv://user:pass@cluster.mongodb.net/cloudmatrix
+   MONGODB_URI=mongodb+srv://user:pass@cluster.mongodb.net/dtapline
    ```
 
 ### Environment Variables
