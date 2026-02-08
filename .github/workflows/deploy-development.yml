@@ -39,7 +39,6 @@ jobs:
     name: Deploy API Server to Development
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    needs: deploy-cli
     environment:
       name: development
       url: ${{ steps.terraform.outputs.api_url }}
@@ -68,6 +67,20 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ vars.AWS_REGION }}
 
+      - name: Report deployment in progress
+        working-directory: .
+        env:
+          DTAPLINE_API_KEY: ${{ secrets.DTAPLINE_API_KEY }}
+        run: |
+          pnpm tsx packages/cli/src/index.ts deploy \
+            development \
+            api \
+            ${{ github.sha }} \
+            --server-url ${{ vars.DTAPLINE_SERVER_URL }} \
+            --status in_progress \
+            --deployed-by "GitHub Actions" \
+            --build-url ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
       - name: Terraform Init
         working-directory: packages/api/infra
         env:
@@ -90,14 +103,11 @@ jobs:
 
       - name: Report deployment to CloudMatrix
         if: success()
+        working-directory: .
         env:
           DTAPLINE_API_KEY: ${{ secrets.DTAPLINE_API_KEY }}
-        working-directory: /tmp
         run: |
-          # Download and extract CLI snapshot
-          curl -sL ${{ needs.deploy-cli.outputs.cli-url }} | tar -xz --strip-components=1 package/dist
-          # Run CLI directly (it's a self-contained bundle)
-          node dist/index.js deploy \
+          pnpm tsx packages/cli/src/index.ts deploy \
             development \
             api \
             ${{ github.sha }} \
@@ -108,22 +118,11 @@ jobs:
 
       - name: Report failed deployment
         if: failure()
+        working-directory: .
         env:
           DTAPLINE_API_KEY: ${{ secrets.DTAPLINE_API_KEY }}
-        working-directory: /tmp
         run: |
-          # Download and extract CLI snapshot
-          curl -sL ${{ needs.deploy-cli.outputs.cli-url }} | tar -xz --strip-components=1 package/dist
-          # Run CLI directly (it's a self-contained bundle)
-          node dist/index.js deploy \
-            development \
-            api \
-            ${{ github.sha }} \
-            --server-url ${{ vars.DTAPLINE_SERVER_URL || steps.terraform.outputs.api_url }} \
-            --status failed \
-            --deployed-by "GitHub Actions" \
-            --build-url ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-          npx dtapline deploy \
+          pnpm tsx packages/cli/src/index.ts deploy \
             development \
             api \
             ${{ github.sha }} \
@@ -136,7 +135,6 @@ jobs:
     name: Deploy UI to Development
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    needs: deploy-cli
     environment:
       name: development
       url: ${{ vars.NETLIFY_URL }}
@@ -154,6 +152,20 @@ jobs:
         env:
           VITE_API_BASE_URL: ${{ vars.DTAPLINE_SERVER_URL }}
 
+      - name: Report deployment in progress
+        working-directory: .
+        env:
+          DTAPLINE_API_KEY: ${{ secrets.DTAPLINE_API_KEY }}
+        run: |
+          pnpm tsx packages/cli/src/index.ts deploy \
+            development \
+            ui \
+            ${{ github.sha }} \
+            --server-url ${{ vars.DTAPLINE_SERVER_URL }} \
+            --status in_progress \
+            --deployed-by "GitHub Actions" \
+            --build-url ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
       - name: Deploy to Netlify (branch deploy)
         id: deploy
         uses: nwtgck/actions-netlify@v3
@@ -169,14 +181,11 @@ jobs:
 
       - name: Report deployment to CloudMatrix
         if: success()
+        working-directory: .
         env:
           DTAPLINE_API_KEY: ${{ secrets.DTAPLINE_API_KEY }}
-        working-directory: /tmp
         run: |
-          # Download and extract CLI snapshot
-          curl -sL ${{ needs.deploy-cli.outputs.cli-url }} | tar -xz --strip-components=1 package/dist
-          # Run CLI directly (it's a self-contained bundle)
-          node dist/index.js deploy \
+          pnpm tsx packages/cli/src/index.ts deploy \
             development \
             ui \
             ${{ github.sha }} \
@@ -187,14 +196,11 @@ jobs:
 
       - name: Report failed deployment
         if: failure()
+        working-directory: .
         env:
           DTAPLINE_API_KEY: ${{ secrets.DTAPLINE_API_KEY }}
-        working-directory: /tmp
         run: |
-          # Download and extract CLI snapshot
-          curl -sL ${{ needs.deploy-cli.outputs.cli-url }} | tar -xz --strip-components=1 package/dist
-          # Run CLI directly (it's a self-contained bundle)
-          node dist/index.js deploy \
+          pnpm tsx packages/cli/src/index.ts deploy \
             development \
             ui \
             ${{ github.sha }} \
