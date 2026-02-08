@@ -17,14 +17,29 @@ jobs:
     name: Deploy CLI Snapshot
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    outputs:
-      cli-url: ${{ steps.snapshot.outputs.url }}
+    environment:
+      name: development
+      url: ${{ steps.snapshot.outputs.url }}
     steps:
       - uses: actions/checkout@v4
       - name: Install dependencies
         uses: ./.github/actions/setup
       - name: Build packages
         run: pnpm build
+
+      - name: Report deployment in progress
+        env:
+          DTAPLINE_API_KEY: ${{ secrets.DTAPLINE_API_KEY }}
+        run: |
+          pnpm tsx packages/cli/src/index.ts deploy \
+            development \
+            cli \
+            ${{ github.sha }} \
+            --server-url ${{ vars.DTAPLINE_SERVER_URL }} \
+            --status in_progress \
+            --deployed-by "GitHub Actions" \
+            --build-url ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
       - name: Create CLI snapshot
         id: snapshot
         run: |
@@ -34,6 +49,34 @@ jobs:
           CLI_URL=$(cat /tmp/output.txt | sed 's/\x1b\[[0-9;]*m//g' | grep -o 'https://pkg\.pr\.new/[^[:space:]]*' | head -1)
           echo "url=$CLI_URL" >> $GITHUB_OUTPUT
           echo "✅ CLI snapshot published: $CLI_URL"
+
+      - name: Report deployment success
+        if: success()
+        env:
+          DTAPLINE_API_KEY: ${{ secrets.DTAPLINE_API_KEY }}
+        run: |
+          pnpm tsx packages/cli/src/index.ts deploy \
+            development \
+            cli \
+            ${{ github.sha }} \
+            --server-url ${{ vars.DTAPLINE_SERVER_URL }} \
+            --status success \
+            --deployed-by "GitHub Actions" \
+            --build-url ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+      - name: Report deployment failure
+        if: failure()
+        env:
+          DTAPLINE_API_KEY: ${{ secrets.DTAPLINE_API_KEY }}
+        run: |
+          pnpm tsx packages/cli/src/index.ts deploy \
+            development \
+            cli \
+            ${{ github.sha }} \
+            --server-url ${{ vars.DTAPLINE_SERVER_URL }} \
+            --status failed \
+            --deployed-by "GitHub Actions" \
+            --build-url ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
   deploy-api:
     name: Deploy API Server to Development
@@ -137,7 +180,6 @@ jobs:
     timeout-minutes: 15
     environment:
       name: development
-      url: ${{ vars.NETLIFY_URL }}
     defaults:
       run:
         working-directory: packages/ui
