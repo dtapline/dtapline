@@ -97,14 +97,6 @@ To test all packages in the monorepo:
 pnpm test
 ```
 
-**Code Generation**
-
-After adding new exports in domain/server packages, run:
-
-```sh
-pnpm codegen
-```
-
 **Secret Scanning**
 
 Run Gitleaks to check for secrets:

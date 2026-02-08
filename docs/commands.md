@@ -16,9 +16,6 @@ pnpm lint-fix           # Auto-fix linting issues
 # Testing
 pnpm test               # Run all tests (vitest workspace)
 pnpm coverage           # Run tests with coverage
-
-# Code Generation
-pnpm codegen            # Generate Effect exports/index files
 ```
 
 ## Package-Specific Commands

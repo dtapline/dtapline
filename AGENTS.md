@@ -26,7 +26,6 @@ cd packages/cli && node bin/dtapline.js --help
 pnpm build         # Build all packages
 pnpm check         # Type check
 pnpm test          # Run all tests
-pnpm codegen       # Generate Effect exports (run after adding exports)
 pnpm dedupe        # Deduplicate dependencies (run after adding/updating deps)
 ```
 
@@ -42,11 +41,9 @@ pnpm dedupe        # Deduplicate dependencies (run after adding/updating deps)
 
 2. **Effect error handling:** Never use try/catch. Use `Effect.catchTag` for tagged errors.
 
-3. **Run codegen:** After adding new exports in domain/server packages, run `pnpm codegen`
+3. **Deduplicate dependencies:** After adding or updating dependencies, always run `pnpm dedupe` to keep the lock file optimized and prevent duplicate package versions
 
-4. **Deduplicate dependencies:** After adding or updating dependencies, always run `pnpm dedupe` to keep the lock file optimized and prevent duplicate package versions
-
-5. **MongoDB null handling:** MongoDB stores optional fields as `null`, but Effect Schema expects `undefined`
+4. **MongoDB null handling:** MongoDB stores optional fields as `null`, but Effect Schema expects `undefined`
 
    ```typescript
    // Document interface
