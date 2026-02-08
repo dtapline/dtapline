@@ -289,7 +289,7 @@ After adding/removing routes, restart dev server to regenerate route tree.
 
 Check that server is running on http://localhost:3000:
 ```bash
-cd ../server && pnpm dev
+cd ../api && pnpm dev
 ```
 
 ### Component Not Found

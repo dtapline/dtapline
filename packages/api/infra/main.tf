@@ -27,7 +27,7 @@ provider "aws" {
   default_tags {
     tags = {
       Project   = "dtapline"
-      Service   = "server"
+      Service   = "api"
       Stage     = var.stage
       ManagedBy = "terraform"
     }

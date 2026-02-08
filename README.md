@@ -7,7 +7,7 @@ A deployment tracking dashboard that helps teams visualize and manage deployment
 This is a monorepo with 4 packages:
 
 - **`packages/domain`** - Core domain models and schemas (Effect-TS)
-- **`packages/server`** - HTTP API server with MongoDB (Effect Platform)
+- **`packages/api`** - HTTP API server with MongoDB (Effect Platform)
 - **`packages/ui`** - React 19 dashboard with TanStack Router and Tailwind CSS
 - **`packages/cli`** - CLI tool for CI/CD integration (Effect CLI)
 
@@ -27,7 +27,7 @@ pnpm install
 
 ### Environment Setup
 
-Create `.env` file in `packages/server/`:
+Create `.env` file in `packages/api/`:
 
 ```sh
 MONGODB_URI=mongodb+srv://your-connection-string
@@ -36,14 +36,14 @@ PORT=3000
 
 ### Development
 
-**Start the server:**
+**Start the API server:**
 
 ```sh
-cd packages/server
+cd packages/api
 pnpm dev
 ```
 
-**Start the UI:**
+**Start the UI App:**
 
 ```sh
 cd packages/ui

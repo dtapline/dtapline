@@ -12,8 +12,8 @@ permissions:
   contents: read
 
 jobs:
-  deploy-server:
-    name: Deploy Server to Production
+  deploy-api:
+    name: Deploy API Server to Production
     runs-on: ubuntu-latest
     timeout-minutes: 15
     environment:
@@ -21,7 +21,7 @@ jobs:
       url: ${{ steps.terraform.outputs.api_url }}
     defaults:
       run:
-        working-directory: packages/server
+        working-directory: packages/api
     steps:
       - uses: actions/checkout@v4
 
@@ -45,14 +45,14 @@ jobs:
           aws-region: eu-central-1
 
       - name: Terraform Init
-        working-directory: packages/server/infra
+        working-directory: packages/api/infra
         env:
           TF_WORKSPACE: dtapline-api-prd
         run: terraform init
 
       - name: Terraform Apply
         id: terraform
-        working-directory: packages/server/infra
+        working-directory: packages/api/infra
         env:
           TF_WORKSPACE: dtapline-api-prd
           TF_VAR_stage: "prd"

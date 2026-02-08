@@ -5,7 +5,7 @@ Simple deployment setup for Dtapline self-hosting using Terraform.
 ## ✅ What's Included
 
 **Infrastructure:**
-- ✓ Server infrastructure (Lambda + API Gateway) in `packages/server/infrastructure/`
+- ✓ Server infrastructure (Lambda + API Gateway) in `packages/api/infra/`
 - ✓ Terraform workspaces: 2 (development, production)
 - ✓ Lambda code bundled with esbuild and deployed via Terraform
 - ✓ Simple AWS credentials (no OIDC complexity)
@@ -18,7 +18,7 @@ Simple deployment setup for Dtapline self-hosting using Terraform.
 **Documentation:**
 - ✓ `docs/deployment-setup.md` - Complete setup guide
 - ✓ `docs/deployment-quickref.md` - Quick reference
-- ✓ `packages/server/infrastructure/README.md` - Infrastructure guide
+- ✓ `packages/api/infra/README.md` - Infrastructure guide
 
 ---
 
@@ -42,15 +42,15 @@ aws iam create-access-key --user-name cloudmatrix-ci
 
 ### 4. Deploy Infrastructure (10 min)
 ```bash
-cd packages/server
+cd packages/api
 
 # Bundle Lambda code
 pnpm bundle:lambda
 
 # Deploy with Terraform
-cd infrastructure/terraform
-terraform init -backend-config=environments/development/backend.tf
-terraform apply -var-file=environments/development/terraform.tfvars
+cd infra
+terraform init
+terraform apply -var-file=terraform.tfvars
 ```
 
 ### 5. Netlify (5 min)
@@ -149,7 +149,7 @@ Create changeset → Merge PR → Tag → Bundle Lambda → Terraform Apply → 
 
 - **Setup Guide**: `docs/deployment-setup.md` - Complete step-by-step
 - **Quick Reference**: `docs/deployment-quickref.md` - Commands & config
-- **Infrastructure**: `packages/server/infrastructure/README.md` - Terraform details
+- **Infrastructure**: `packages/api/infra/README.md` - Terraform details
 
 ---
 

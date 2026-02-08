@@ -20,7 +20,7 @@
 **Examples:**
 
 ```typescript
-// Effect packages (domain, server)
+// Effect packages (domain, api)
 import { Effect, Schema } from "effect"
 import { HttpApiEndpoint } from "@effect/platform"
 import { TodoNotFound } from "@cloud-matrix/domain/TodosApi"

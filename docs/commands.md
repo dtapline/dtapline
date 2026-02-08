@@ -23,7 +23,7 @@ pnpm coverage           # Run tests with coverage
 ```bash
 # Run in specific package
 pnpm --filter @dtapline/domain build
-pnpm --filter @dtapline/server test
+pnpm --filter @dtapline/api test
 
 # Or cd into package
 cd packages/domain
@@ -39,7 +39,7 @@ pnpm check
 pnpm vitest packages/domain/test/Dummy.test.ts
 
 # Pattern matching
-pnpm vitest packages/server/test/TodosRepository.test.ts
+pnpm vitest packages/api/test/TodosRepository.test.ts
 
 # Watch mode
 pnpm vitest packages/domain/test/Dummy.test.ts --watch

@@ -27,11 +27,11 @@
 - All Effect Schemas (Project, Environment, Service, Deployment, etc.)
 - Branded types (ProjectId, EnvironmentId, etc.)
 - API endpoint definitions using HttpApiEndpoint
-- No dependencies on server/ui packages
+- No dependencies on api/ui packages
 
-### `packages/server`
+### `packages/api`
 **HTTP API + MongoDB**
-- Effect Platform HTTP server
+- Effect Platform HTTP API server
 - 6 repository implementations (Projects, Environments, Services, Deployments, ApiKeys, VersionPatterns)
 - 3 services (DeploymentService, ComparisonService, VersionPatternService)
 - API key authentication with bcrypt
@@ -192,22 +192,22 @@ See [mongodb.md](./mongodb.md) for the critical null ↔ undefined conversion pa
 # Terminal 1: MongoDB
 brew services start mongodb-community
 
-# Terminal 2: Server
-cd packages/server && pnpm dev
+# Terminal 2: API Server
+cd packages/api && pnpm dev
 
 # Terminal 3: UI
 cd packages/ui && pnpm dev
 ```
 
 ### AWS Lambda
-Use `packages/server/src/lambda.ts` as handler:
+Use `packages/api/src/lambda.ts` as handler:
 - Connection pooling optimized for Lambda
 - Single MongoDB connection reused across invocations
 - Cold start: ~500ms, Warm: ~50ms
 
 ### Traditional Server
-Use `packages/server/src/server.ts`:
-- Node.js HTTP server (native `http` module)
+Use `packages/api/src/server.ts`:
+- Node.js HTTP API server (native `http` module)
 - Suitable for Docker containers, VMs, or bare metal
 - PM2 or systemd for process management
 

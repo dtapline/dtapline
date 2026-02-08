@@ -29,7 +29,7 @@ const config: UserConfig = {
     alias: {
       ...alias("ui"),
       ...alias("domain"),
-      ...alias("server")
+      ...alias("api")
     }
   }
 }

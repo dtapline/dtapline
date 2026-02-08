@@ -4,6 +4,6 @@
   "references": [
     { "path": "packages/ui" },
     { "path": "packages/domain" },
-    { "path": "packages/server" }
+    { "path": "packages/api" }
   ]
 }

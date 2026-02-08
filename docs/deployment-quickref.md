@@ -13,7 +13,7 @@ Quick commands and values for Dtapline deployment.
 
 ### Development
 ```bash
-cd packages/server/infrastructure/terraform
+cd packages/api/infra
 
 # Init
 terraform init -backend-config=environments/development/backend.tf
@@ -29,7 +29,7 @@ terraform output lambda_function_name
 
 ### Production
 ```bash
-cd packages/server/infrastructure/terraform
+cd packages/api/infra
 
 # Init
 terraform init -reconfigure -backend-config=environments/production/backend.tf
@@ -111,7 +111,7 @@ aws iam create-access-key --user-name cloudmatrix-ci
 1. Push to main
 2. GitHub Actions: check.yml runs
 3. GitHub Actions: deploy-development.yml runs
-   - Builds server → Deploys to Lambda (dev)
+   - Builds API → Deploys to Lambda (dev)
    - Builds UI → Deploys to Netlify (dev)
    - Runs CLI → Reports to dtapline
 4. Dashboard shows: development/api, development/ui
@@ -155,7 +155,7 @@ curl https://<api-gateway-url>/api/v1/projects
 
 ### Deploy Lambda Manually
 ```bash
-cd packages/server
+cd packages/api
 pnpm build
 
 # Package
@@ -190,17 +190,13 @@ dev     abc1234       abc1234       -
 ## File Locations
 
 ```
-packages/server/infrastructure/
-└── terraform/
-    ├── main.tf                      # Lambda + API Gateway
-    ├── variables.tf
-    ├── outputs.tf
-    ├── modules/
-    │   ├── lambda/                  # Lambda module
-    │   └── api-gateway/            # API Gateway module
-    └── environments/
-        ├── development/            # Dev config
-        └── production/             # Prod config
+packages/api/infra/
+├── main.tf                      # Lambda + API Gateway
+├── variables.tf
+├── outputs.tf
+├── modules/
+│   ├── lambda/                  # Lambda module
+│   └── api-gateway/            # API Gateway module
 
 .github/workflows/
 ├── check.yml                    # CI checks
