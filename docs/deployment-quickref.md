@@ -1,13 +1,13 @@
-# CloudMatrix Deployment Quick Reference
+# Dtapline Deployment Quick Reference
 
-Quick commands and values for CloudMatrix deployment.
+Quick commands and values for Dtapline deployment.
 
 ## Environments
 
 | Environment | AWS Account | MongoDB Database | Trigger |
 |-------------|-------------|------------------|---------|
-| Development | <your-dev-account-id> | cloudmatrix-dev | Push to `main` |
-| Production | <your-prod-account-id> | cloudmatrix-prod | Release tag (changesets) |
+| Development | <your-dev-account-id> | dtapline-dev | Push to `main` |
+| Production | <your-prod-account-id> | dtapline-prd | Release tag (changesets) |
 
 ## Terraform Commands
 
@@ -46,7 +46,7 @@ AWS_ACCESS_KEY_ID_DEV         # CI user development
 AWS_SECRET_ACCESS_KEY_DEV     # CI user development
 AWS_ACCESS_KEY_ID_PROD        # CI user production
 AWS_SECRET_ACCESS_KEY_PROD    # CI user production
-CLOUDMATRIX_API_KEY           # From CloudMatrix UI
+DTAPLINE_API_KEY              # From Dtapline UI
 TF_API_TOKEN                  # Terraform Cloud token
 NETLIFY_AUTH_TOKEN            # Netlify personal access token
 NETLIFY_SITE_ID               # Netlify site ID
@@ -58,28 +58,28 @@ NPM_TOKEN                     # Already exists
 ```
 API_GATEWAY_URL_DEVELOPMENT   # From Terraform output
 API_GATEWAY_URL_PRODUCTION    # From Terraform output
-CLOUDMATRIX_SERVER_URL        # Same as production API Gateway
+DTAPLINE_SERVER_URL           # Same as production API Gateway
 ```
 
 ## MongoDB Atlas Configuration
 
 ### Connection Strings
 ```
-Development: mongodb+srv://<your-cluster-name>.mongodb.net/cloudmatrix-dev?authSource=%24external&authMechanism=MONGODB-AWS
+Development: mongodb+srv://<your-cluster-name>.mongodb.net/dtapline-dev?authSource=%24external&authMechanism=MONGODB-AWS
 
-Production: mongodb+srv://<your-cluster-name>.mongodb.net/cloudmatrix-prod?authSource=%24external&authMechanism=MONGODB-AWS
+Production: mongodb+srv://<your-cluster-name>.mongodb.net/dtapline-prd?authSource=%24external&authMechanism=MONGODB-AWS
 ```
 
 ### IAM Database Users
 
 **Development**:
-- ARN: `arn:aws:iam::<your-dev-account-id>:role/cloud-matrix-lambda-development`
-- Database: `cloudmatrix-dev`
+- ARN: `arn:aws:iam::<your-dev-account-id>:role/dtapline-lambda-dev`
+- Database: `dtapline-dev`
 - Role: `readWrite`
 
 **Production**:
-- ARN: `arn:aws:iam::<your-prod-account-id>:role/cloud-matrix-lambda-production`
-- Database: `cloudmatrix-prod`
+- ARN: `arn:aws:iam::<your-prod-account-id>:role/dtapline-lambda-prd`
+- Database: `dtapline-prd`
 - Role: `readWrite`
 
 ## CI User Setup
@@ -113,7 +113,7 @@ aws iam create-access-key --user-name cloudmatrix-ci
 3. GitHub Actions: deploy-development.yml runs
    - Builds server → Deploys to Lambda (dev)
    - Builds UI → Deploys to Netlify (dev)
-   - Runs CLI → Reports to CloudMatrix
+   - Runs CLI → Reports to dtapline
 4. Dashboard shows: development/api, development/ui
 ```
 
@@ -128,9 +128,9 @@ aws iam create-access-key --user-name cloudmatrix-ci
    - Creates git tag (e.g., v1.0.0)
    - Publishes to NPM
 6. Tag triggers deploy-production.yml
-   - Deploys to Lambda (prod)
-   - Deploys to Netlify (prod)
-   - Reports all 3 services to CloudMatrix
+   - Deploys to Lambda (prd)
+   - Deploys to Netlify (prd)
+   - Reports all 3 services to Dtapline
 7. Dashboard shows: production/api, production/ui, production/cli
 ```
 
@@ -138,14 +138,14 @@ aws iam create-access-key --user-name cloudmatrix-ci
 
 ### Check Lambda Status
 ```bash
-aws lambda get-function --function-name cloud-matrix-api-development
-aws lambda get-function --function-name cloud-matrix-api-production
+aws lambda get-function --function-name dtapline-api-development
+aws lambda get-function --function-name dtapline-api-production
 ```
 
 ### View Lambda Logs
 ```bash
-aws logs tail /aws/lambda/cloud-matrix-api-development --follow
-aws logs tail /aws/lambda/cloud-matrix-api-production --follow
+aws logs tail /aws/lambda/dtapline-api-development --follow
+aws logs tail /aws/lambda/dtapline-api-production --follow
 ```
 
 ### Test API Gateway
@@ -169,7 +169,7 @@ cd ..
 
 # Deploy
 aws lambda update-function-code \
-  --function-name cloud-matrix-api-development \
+  --function-name dtapline-api-development \
   --zip-file fileb://lambda.zip
 ```
 
@@ -180,7 +180,7 @@ aws lambda update-function-code \
 Expected view:
 ```
          api           ui            cli
-prod    v1.0.0        v1.0.0        v1.0.0
+prd     v1.0.0        v1.0.0        v1.0.0
         ✅            ✅            📦
 
 dev     abc1234       abc1234       -

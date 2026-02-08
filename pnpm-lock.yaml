@@ -119,7 +119,7 @@ importers:
 
   packages/cli:
     dependencies:
-      '@cloud-matrix/domain':
+      '@dtapline/domain':
         specifier: workspace:^
         version: link:../domain/dist
       '@effect/cli':
@@ -160,7 +160,7 @@ importers:
 
   packages/server:
     dependencies:
-      '@cloud-matrix/domain':
+      '@dtapline/domain':
         specifier: workspace:^
         version: link:../domain/dist
       '@effect-aws/lambda':
@@ -215,9 +215,6 @@ importers:
 
   packages/ui:
     dependencies:
-      '@cloud-matrix/domain':
-        specifier: workspace:^
-        version: link:../domain/dist
       '@dnd-kit/core':
         specifier: ^6.3.1
         version: 6.3.1(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -227,6 +224,9 @@ importers:
       '@dnd-kit/utilities':
         specifier: ^3.2.2
         version: 3.2.2(react@19.1.0)
+      '@dtapline/domain':
+        specifier: workspace:^
+        version: link:../domain/dist
       '@effect/platform':
         specifier: ^0.94.2
         version: 0.94.3(effect@3.19.16)

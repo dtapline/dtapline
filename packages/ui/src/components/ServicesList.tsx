@@ -1,4 +1,4 @@
-import type { Service } from "@cloud-matrix/domain/Service"
+import type { Service } from "@dtapline/domain/Service"
 import { useState } from "react"
 import { useArchiveService, useServices } from "../lib/hooks/use-services"
 import { ServiceDialog } from "./dialogs/ServiceDialog"

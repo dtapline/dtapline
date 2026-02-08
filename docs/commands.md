@@ -25,8 +25,8 @@ pnpm codegen            # Generate Effect exports/index files
 
 ```bash
 # Run in specific package
-pnpm --filter @cloud-matrix/domain build
-pnpm --filter @cloud-matrix/server test
+pnpm --filter @dtapline/domain build
+pnpm --filter @dtapline/server test
 
 # Or cd into package
 cd packages/domain

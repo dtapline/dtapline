@@ -1,8 +1,8 @@
 import { Schema } from "effect"
 
-// Base error for all CloudMatrix errors
-export class CloudMatrixError extends Schema.TaggedError<CloudMatrixError>()(
-  "CloudMatrixError",
+// Base error for all dtapline errors
+export class DtaplineError extends Schema.TaggedError<DtaplineError>()(
+  "DtaplineError",
   {
     message: Schema.String
   }

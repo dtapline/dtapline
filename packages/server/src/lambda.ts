@@ -4,7 +4,7 @@ import { Layer } from "effect"
 import { AppLive } from "./Layers.js"
 
 /**
- * AWS Lambda handler for CloudMatrix API
+ * AWS Lambda handler for Dtapline API
  *
  * This handler converts the Effect HTTP API into an AWS Lambda function
  * that can be deployed to AWS Lambda and API Gateway.

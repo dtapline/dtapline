@@ -1,4 +1,4 @@
-import { CloudMatrixApi } from "@cloud-matrix/domain/Api"
+import { DtaplineApi } from "@dtapline/domain/Api"
 import { HttpApiBuilder } from "@effect/platform"
 import { Config, Effect } from "effect"
 import { EnvironmentsRepository } from "../Repositories/EnvironmentsRepository.js"
@@ -8,7 +8,7 @@ import { EnvironmentsRepository } from "../Repositories/EnvironmentsRepository.j
  * Environments are now global (per user/tenant) instead of per-project
  */
 export const EnvironmentsGroupLive = HttpApiBuilder.group(
-  CloudMatrixApi,
+  DtaplineApi,
   "environments",
   (handlers) =>
     Effect.gen(function*() {

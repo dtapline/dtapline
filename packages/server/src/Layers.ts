@@ -1,5 +1,5 @@
 import { Layer } from "effect"
-import { CloudMatrixApiLive } from "./Api/CloudMatrixApiLive.js"
+import { DtaplineApiLive } from "./Api/DtaplineApiLive.js"
 import { ServerConfigLive } from "./Config.js"
 import { MongoDBLive } from "./MongoDB.js"
 import { ApiKeysRepositoryLive } from "./Repositories/ApiKeysRepository.js"
@@ -20,7 +20,7 @@ import { MatrixServiceLive } from "./Services/MatrixService.js"
  * 2. MongoDBLive - Database connection (depends on ServerConfigLive)
  * 3. RepositoriesLive - All repositories (depend on MongoDBLive)
  * 4. ServicesLive - Business logic services (depend on RepositoriesLive)
- * 5. CloudMatrixApiLive - HTTP API (depends on ServicesLive + RepositoriesLive)
+ * 5. DtaplineApiLive - HTTP API (depends on ServicesLive + RepositoriesLive)
  */
 
 /**
@@ -54,13 +54,13 @@ export const ServicesLive = Layer.mergeAll(
 
 /**
  * Complete application layer ready for HTTP server
- * Provides: CloudMatrix HTTP API with all dependencies satisfied
+ * Provides: Dtapline HTTP API with all dependencies satisfied
  * Requires: Nothing (all dependencies are provided internally)
  *
- * The CloudMatrixApiLive requires all services and repositories to be available,
+ * The DtaplineApiLive requires all services and repositories to be available,
  * so we provide them in the correct dependency order.
  */
-export const AppLive = CloudMatrixApiLive.pipe(
+export const AppLive = DtaplineApiLive.pipe(
   Layer.provide(ServicesLive),
   Layer.provide(RepositoriesLive),
   Layer.provide(ServerConfigLive)

@@ -94,7 +94,7 @@ Use `workspace:^` for internal dependencies in package.json:
 ```json
 {
   "dependencies": {
-    "@cloud-matrix/domain": "workspace:^"
+    "@dtapline/domain": "workspace:^"
   }
 }
 ```

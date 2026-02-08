@@ -9,7 +9,7 @@ import { AppLive } from "./Layers.js"
 config()
 
 /**
- * Local development server for CloudMatrix API
+ * Local development server for Dtapline API
  *
  * Starts an HTTP server on port 3000 with request logging middleware.
  * All dependencies (MongoDB, repositories, services) are automatically
@@ -29,7 +29,7 @@ config()
  */
 
 // Log startup
-console.log("🚀 Starting CloudMatrix API server...")
+console.log("🚀 Starting Dtapline API server...")
 console.log(`📍 Server will listen on http://localhost:3000`)
 console.log(`🗄️  MongoDB URI: ${process.env.MONGODB_URI?.replace(/\/\/[^:]+:[^@]+@/, "//<credentials>@") || "NOT SET"}`)
 

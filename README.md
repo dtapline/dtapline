@@ -1,4 +1,4 @@
-# CloudMatrix
+# Dtapline
 
 A deployment tracking dashboard that helps teams visualize and manage deployments across multiple environments and services in a 2D matrix view.
 
@@ -60,10 +60,10 @@ The CLI allows you to report deployments from CI/CD pipelines:
 cd packages/cli
 
 # Using API key from environment
-export CLOUDMATRIX_API_KEY=cm_xxxxxxxxxxxxx
+export DTAPLINE_API_KEY=cm_xxxxxxxxxxxxx
 
 # Report a deployment
-node bin/cloudmatrix.js deploy \
+node bin/dtapline.js deploy \
   production \
   api-service \
   abc123def456 \

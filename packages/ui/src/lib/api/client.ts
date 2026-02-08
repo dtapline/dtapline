@@ -1,7 +1,7 @@
 /**
- * API Client for CloudMatrix
+ * API Client for Dtapline
  *
- * Simple fetch-based client for making requests to the CloudMatrix API.
+ * Simple fetch-based client for making requests to the Dtapline API.
  * Uses standard fetch API for easy integration with React Query.
  */
 

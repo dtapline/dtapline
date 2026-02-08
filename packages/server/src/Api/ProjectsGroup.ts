@@ -1,4 +1,4 @@
-import { CloudMatrixApi } from "@cloud-matrix/domain/Api"
+import { DtaplineApi } from "@dtapline/domain/Api"
 import { HttpApiBuilder } from "@effect/platform"
 import { Effect } from "effect"
 import { ServerConfigService } from "../Config.js"
@@ -14,7 +14,7 @@ import { MatrixService } from "../Services/MatrixService.js"
  * Handles CRUD operations for projects, matrix view, deployments list, and environment comparison
  */
 export const ProjectsGroupLive = HttpApiBuilder.group(
-  CloudMatrixApi,
+  DtaplineApi,
   "projects",
   (handlers) =>
     Effect.gen(function*() {

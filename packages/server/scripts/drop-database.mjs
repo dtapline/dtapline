@@ -12,7 +12,7 @@ import { MongoClient } from "mongodb"
 config()
 
 const MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost:27017"
-const DB_NAME = MONGODB_URI.split("/").pop()?.split("?")[0] || "cloudmatrix"
+const DB_NAME = MONGODB_URI.split("/").pop()?.split("?")[0] || "dtapline"
 
 console.log("⚠️  WARNING: This will delete ALL data in the database!")
 console.log(`📍 URI: ${MONGODB_URI.replace(/\/\/[^:]+:[^@]+@/, "//<credentials>@")}`)

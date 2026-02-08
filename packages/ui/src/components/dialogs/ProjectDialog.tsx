@@ -1,4 +1,4 @@
-import type { Project } from "@cloud-matrix/domain/Project"
+import type { Project } from "@dtapline/domain/Project"
 import { useEffect, useState } from "react"
 import { useEnvironments } from "../../lib/hooks/use-environments"
 import { useCreateProject, useUpdateProject } from "../../lib/hooks/use-projects"

@@ -1,12 +1,12 @@
-import type { CreateEnvironmentInput, Environment, UpdateEnvironmentInput } from "@cloud-matrix/domain/Environment"
-import { EnvironmentId } from "@cloud-matrix/domain/Environment"
+import type { CreateEnvironmentInput, Environment, UpdateEnvironmentInput } from "@dtapline/domain/Environment"
+import { EnvironmentId } from "@dtapline/domain/Environment"
 import {
   DatabaseError,
   EnvironmentAlreadyExists,
   EnvironmentHasDeployments,
   EnvironmentNotFound
-} from "@cloud-matrix/domain/Errors"
-import type { UserId } from "@cloud-matrix/domain/User"
+} from "@dtapline/domain/Errors"
+import type { UserId } from "@dtapline/domain/User"
 import { Context, Effect, Layer, Schema } from "effect"
 import type { ObjectId } from "mongodb"
 import { MongoDatabase } from "../MongoDB.js"
@@ -104,14 +104,13 @@ const docToEnvironment = (doc: EnvironmentDocument): any => ({
 
 /**
  * Default colors for auto-created environments (cycle through)
+ * Uses the dtap logo gradient colors
  */
 const DEFAULT_COLORS = [
-  "#3b82f6", // blue
-  "#10b981", // green
-  "#f59e0b", // amber
-  "#ef4444", // red
-  "#8b5cf6", // violet
-  "#ec4899" // pink
+  "#5CC8FF", // cyan (d)
+  "#6EE7A8", // green (t)
+  "#FFD166", // yellow (a)
+  "#9B8CFF" // purple (p)
 ]
 
 /**

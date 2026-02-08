@@ -1,4 +1,4 @@
-# CloudMatrix - Deployment Tracking Dashboard
+# Dtapline - Deployment Tracking Dashboard
 
 Visualize and track deployments across environments in a 2D matrix. Effect-TS backend + React UI + CLI for CI/CD integration.
 
@@ -15,7 +15,7 @@ cd packages/server && pnpm dev
 cd packages/ui && pnpm dev
 
 # Test CLI
-cd packages/cli && node bin/cloudmatrix.js --help
+cd packages/cli && node bin/dtapline.js --help
 ```
 
 **Prerequisites:** MongoDB running locally or Atlas connection. See [packages/server/README.md](packages/server/README.md) for setup.

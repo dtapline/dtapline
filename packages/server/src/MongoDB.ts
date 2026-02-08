@@ -1,4 +1,4 @@
-import { DatabaseError } from "@cloud-matrix/domain/Errors"
+import { DatabaseError } from "@dtapline/domain/Errors"
 import { Context, Effect, Layer } from "effect"
 import type { Db } from "mongodb"
 import { MongoClient } from "mongodb"
@@ -73,7 +73,7 @@ export const MongoDBLive = Layer.scoped(
     // Extract database name from MongoDB connection URI
     // The database name is the path segment after the hostname
     const uriMatch = config.mongodbUri.match(/\/\/[^/]+\/([^/?]+)/)
-    const dbName = uriMatch?.[1] || "cloudmatrix"
+    const dbName = uriMatch?.[1] || "dtapline"
     const db = client.db(dbName)
 
     // Cache for next invocation

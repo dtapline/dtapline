@@ -1,4 +1,4 @@
-import { CloudMatrixApi } from "@cloud-matrix/domain/Api"
+import { DtaplineApi } from "@dtapline/domain/Api"
 import { HttpApiBuilder } from "@effect/platform"
 import { Layer } from "effect"
 import { ApiKeysGroupLive } from "./ApiKeysGroup.js"
@@ -10,10 +10,10 @@ import { UserGroupLive } from "./UserGroup.js"
 import { VersionPatternsGroupLive } from "./VersionPatternsGroup.js"
 
 /**
- * Complete CloudMatrix API implementation
+ * Complete Dtapline API implementation
  * Combines all API groups into a single HTTP API layer
  */
-export const CloudMatrixApiLive = HttpApiBuilder.api(CloudMatrixApi).pipe(
+export const DtaplineApiLive = HttpApiBuilder.api(DtaplineApi).pipe(
   Layer.provide(DeploymentsWebhookGroupLive),
   Layer.provide(ProjectsGroupLive),
   Layer.provide(EnvironmentsGroupLive),

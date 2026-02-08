@@ -6,6 +6,7 @@
     "packages/*"
   ],
   "scripts": {
+    "dev": "pnpm --recursive run dev",
     "clean": "node scripts/clean.mjs",
     "build": "tsc -b tsconfig.build.json && pnpm --recursive --parallel run build",
     "check": "tsc -b tsconfig.json",

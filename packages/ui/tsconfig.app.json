@@ -28,8 +28,8 @@
     "rootDir": "src",
     "paths": {
       "@/*": ["./packages/ui/src/*"],
-      "@cloud-matrix/domain": ["./packages/domain/src/index.js"],
-      "@cloud-matrix/domain/*": ["./packages/domain/src/*.js"]
+      "@dtapline/domain": ["./packages/domain/src/index.js"],
+      "@dtapline/domain/*": ["./packages/domain/src/*.js"]
     }
   }
 }

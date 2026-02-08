@@ -1,4 +1,4 @@
-import type { CreateEnvironmentInput, Environment, UpdateEnvironmentInput } from "@cloud-matrix/domain/Environment"
+import type { CreateEnvironmentInput, Environment, UpdateEnvironmentInput } from "@dtapline/domain/Environment"
 import { apiClient } from "./client"
 
 /**

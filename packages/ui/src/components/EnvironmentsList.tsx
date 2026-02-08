@@ -1,4 +1,3 @@
-import type { Environment } from "@cloud-matrix/domain/Environment"
 import {
   closestCenter,
   DndContext,
@@ -15,6 +14,7 @@ import {
   verticalListSortingStrategy
 } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
+import type { Environment } from "@dtapline/domain/Environment"
 import { GripVertical } from "lucide-react"
 import { useState } from "react"
 import { useArchiveEnvironment, useEnvironments, useReorderEnvironment } from "../lib/hooks/use-environments"

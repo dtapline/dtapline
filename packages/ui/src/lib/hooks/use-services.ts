@@ -1,4 +1,4 @@
-import type { CreateServiceInput, UpdateServiceInput } from "@cloud-matrix/domain/Service"
+import type { CreateServiceInput, UpdateServiceInput } from "@dtapline/domain/Service"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { servicesApi } from "../api"
 

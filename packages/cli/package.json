@@ -1,15 +1,16 @@
 {
-  "name": "@cloud-matrix/cli",
+  "name": "@dtapline/cli",
   "version": "0.0.0",
   "license": "MIT",
-  "description": "CloudMatrix CLI for deployment reporting",
+  "description": "Dtapline CLI for deployment reporting",
   "repository": {
     "type": "git",
     "url": "<PLACEHOLDER>",
     "directory": "packages/cli"
   },
   "bin": {
-    "cloudmatrix": "./dist/index.js"
+    "dtapline": "./dist/index.js",
+    "dtap": "./dist/index.js"
   },
   "files": [
     "dist",
@@ -23,7 +24,7 @@
     "test": "vitest"
   },
   "dependencies": {
-    "@cloud-matrix/domain": "workspace:^",
+    "@dtapline/domain": "workspace:^",
     "@effect/cli": "^0.73.1",
     "@effect/platform": "^0.94.2",
     "@effect/platform-node": "^0.104.1",

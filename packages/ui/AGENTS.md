@@ -1,6 +1,6 @@
 # UI Package Guidelines
 
-React 19 dashboard for CloudMatrix deployment visualization.
+React 19 dashboard for Dtapline deployment visualization.
 
 ## Quick Start
 

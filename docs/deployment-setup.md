@@ -1,10 +1,10 @@
-# CloudMatrix Deployment Setup Guide
+# Dtapline Deployment Setup Guide
 
-Complete guide to deploy CloudMatrix infrastructure and enable self-hosting.
+Complete guide to deploy Dtapline infrastructure and enable self-hosting.
 
 ## Overview
 
-CloudMatrix tracks its own deployments across 2 environments:
+Dtapline tracks its own deployments across 2 environments:
 - **`development`**: Deployed on every merge to `main` (AWS account <your-dev-account-id>)
 - **`production`**: Deployed when Changesets publishes a release (AWS account <your-prod-account-id>)
 
@@ -20,9 +20,9 @@ Services tracked:
 - [x] AWS account for development: **<your-dev-account-id>**
 - [x] AWS account for production: **<your-prod-account-id>**
 - [x] MongoDB Atlas cluster: **<your-cluster-name>.mongodb.net**
-- [x] Terraform Cloud organization: **cloudmatrix**
+- [x] Terraform Cloud organization: **dtapline**
 - [ ] Netlify account with site created
-- [x] GitHub repository: **floydspace/cloud-matrix**
+- [x] GitHub repository: **dtapline/dtapline**
 
 ---
 
@@ -42,19 +42,19 @@ Create an IAM user specifically for CI/CD deployments.
 
 ```bash
 # Switch to development account
-aws configure --profile cloudmatrix-dev
+aws configure --profile dtapline-dev
 
 # Create CI user
-aws iam create-user --user-name cloudmatrix-ci --profile cloudmatrix-dev
+aws iam create-user --user-name dtapline-ci --profile dtapline-dev
 
 # Create access key
-aws iam create-access-key --user-name cloudmatrix-ci --profile cloudmatrix-dev
+aws iam create-access-key --user-name dtapline-ci --profile dtapline-dev
 # Save: Access Key ID and Secret Access Key
 
 # Attach admin policy (for Terraform to create all resources)
-aws iam attach-user-policy --user-name cloudmatrix-ci \
+aws iam attach-user-policy --user-name dtapline-ci \
   --policy-arn arn:aws:iam::aws:policy/AdministratorAccess \
-  --profile cloudmatrix-dev
+  --profile dtapline-dev
 ```
 
 > **Note**: For production, consider using a more restrictive policy that only allows Lambda, IAM, API Gateway, and CloudWatch operations.
@@ -69,11 +69,11 @@ Repeat the same steps for production account.
 
 ### 2.1 Create Workspaces
 
-1. Go to https://app.terraform.io/app/cloudmatrix
+1. Go to https://app.terraform.io/app/dtapline
 2. Create **TWO** workspaces (CLI-driven workflow):
-   - **`cloud-matrix-server-development`**
-   - **`cloud-matrix-server-production`**
-3. For each workspace, add tag: **`cloud-matrix-server`**
+   - **`dtapline-api-dev`**
+   - **`dtapline-api-prd`**
+3. For each workspace, add tag: **`dtapline-api`**
 
 ### 2.2 Configure Workspace Variables
 
@@ -88,7 +88,7 @@ Repeat the same steps for production account.
 ### 2.3 Get Terraform Cloud API Token
 
 1. Go to https://app.terraform.io/app/settings/tokens
-2. Create token: "GitHub Actions CloudMatrix"
+2. Create token: "GitHub Actions Dtapline"
 3. Copy token → Save as GitHub secret `TF_API_TOKEN`
 
 ---
@@ -107,15 +107,15 @@ Create **TWO** database users (one per environment):
 
 **Development User:**
 - Authentication Method: AWS IAM
-- ARN: `arn:aws:iam::<your-dev-account-id>:role/cloud-matrix-lambda-development`
-- Database: `cloudmatrix-dev`
-- Roles: `readWrite@cloudmatrix-dev`
+- ARN: `arn:aws:iam::<your-dev-account-id>:role/dtapline-lambda-dev`
+- Database: `dtapline-dev`
+- Roles: `readWrite@dtapline-dev`
 
 **Production User:**
 - Authentication Method: AWS IAM
-- ARN: `arn:aws:iam::<your-prod-account-id>:role/cloud-matrix-lambda-production`
-- Database: `cloudmatrix-prod`
-- Roles: `readWrite@cloudmatrix-prod`
+- ARN: `arn:aws:iam::<your-prod-account-id>:role/dtapline-lambda-prd`
+- Database: `dtapline-prd`
+- Roles: `readWrite@dtapline-prd`
 
 > **Note**: These roles will be created by Terraform. You can add the users now or after running Terraform.
 
@@ -156,7 +156,7 @@ This creates `dist/lambda/index.js` - a single bundled file with all dependencie
 cd infrastructure/terraform
 
 # Set workspace
-export TF_WORKSPACE=cloud-matrix-server-development
+export TF_WORKSPACE=dtapline-api-dev
 
 # Initialize Terraform
 terraform init
@@ -174,14 +174,14 @@ terraform output api_gateway_url
 # Example: https://abc123xyz.execute-api.eu-central-1.amazonaws.com
 
 terraform output lambda_function_name
-# Example: cloud-matrix-api-development
+# Example: dtapline-api-dev
 ```
 
 ### 4.3 Production Environment
 
 ```bash
 # Switch workspace
-export TF_WORKSPACE=cloud-matrix-server-production
+export TF_WORKSPACE=dtapline-api-prd
 
 # Initialize (if needed)
 terraform init
@@ -208,7 +208,7 @@ No separate `aws lambda update-function-code` needed - Terraform handles everyth
 
 1. Go to https://app.netlify.com
 2. Click "Add new site" → "Import an existing project"
-3. Connect to GitHub → Select `floydspace/cloud-matrix`
+3. Connect to GitHub → Select `dtapline/dtapline`
 4. **Build settings**:
    - Base directory: `packages/ui`
    - Build command: `pnpm build`
@@ -227,7 +227,7 @@ No separate `aws lambda update-function-code` needed - Terraform handles everyth
 
 ---
 
-## Step 6: CloudMatrix Project Setup
+## Step 6: Dtapline Project Setup
 
 ### 6.1 Start Local Server
 
@@ -242,7 +242,7 @@ Server runs at http://localhost:3000
 
 1. Open http://localhost:3000 (or deploy UI to Netlify first)
 2. Create new project:
-   - Name: **CloudMatrix**
+   - Name: **Dtapline**
    - Description: "Self-hosting deployment tracking"
 
 ### 6.3 Generate API Key
@@ -253,7 +253,7 @@ Server runs at http://localhost:3000
 4. Scopes: **`deployments:write`**
 5. Copy the key (starts with `cm_...`)
 
-**Save this key** → GitHub secret `CLOUDMATRIX_API_KEY`
+**Save this key** → GitHub secret `DTAPLINE_API_KEY`
 
 ---
 
@@ -270,7 +270,7 @@ Go to Repository Settings → Secrets and variables → Actions → Secrets
 | `AWS_ACCESS_KEY_ID_PROD` | `AKIA...` | AWS IAM (Step 1) |
 | `AWS_SECRET_ACCESS_KEY_PROD` | `...` | AWS IAM (Step 1) |
 | `TF_API_TOKEN` | `...` | Terraform Cloud (Step 2.3) |
-| `CLOUDMATRIX_API_KEY` | `cm_...` | CloudMatrix UI (Step 6.3) |
+| `DTAPLINE_API_KEY` | `cm_...` | Dtapline UI (Step 6.3) |
 | `NETLIFY_AUTH_TOKEN` | `...` | Netlify (Step 5.2) |
 | `NETLIFY_SITE_ID` | `...` | Netlify (Step 5.2) |
 | `NPM_TOKEN` | `...` | Already exists |
@@ -283,7 +283,7 @@ Go to Repository Settings → Secrets and variables → Actions → Variables
 |---------------|-------|--------------|
 | `API_GATEWAY_URL_DEVELOPMENT` | `https://....execute-api.eu-central-1.amazonaws.com` | Terraform output (Step 4.1) |
 | `API_GATEWAY_URL_PRODUCTION` | `https://....execute-api.eu-central-1.amazonaws.com` | Terraform output (Step 4.2) |
-| `CLOUDMATRIX_SERVER_URL` | Same as production API Gateway URL | For CLI reporting |
+| `DTAPLINE_SERVER_URL` | Same as production API Gateway URL | For CLI reporting |
 
 ---
 
@@ -302,9 +302,9 @@ Go to Repository Settings → Secrets and variables → Actions → Variables
 3. Watch GitHub Actions:
    - `.github/workflows/deploy-development.yml` should run
    - Check logs for Lambda deployment
-   - Verify CloudMatrix CLI reporting succeeds
+   - Verify Dtapline CLI reporting succeeds
 
-4. Check CloudMatrix dashboard:
+4. Check Dtapline dashboard:
    - Environment: `development`
    - Service: `api` and `ui`
    - Should show green checkmark with commit SHA
@@ -335,7 +335,7 @@ Go to Repository Settings → Secrets and variables → Actions → Variables
    - Creates git tag (e.g., `v1.0.0`)
    - Tag triggers `.github/workflows/deploy-production.yml`
 
-5. Check CloudMatrix dashboard:
+5. Check Dtapline dashboard:
    - Environment: `production`
    - Service: `api`, `ui`, `cli`
    - Should show version tag (e.g., `v1.0.0`)
@@ -345,7 +345,7 @@ Go to Repository Settings → Secrets and variables → Actions → Variables
 ## Summary
 
 You now have:
-- ✅ CloudMatrix tracking its own deployments
+- ✅ Dtapline tracking its own deployments
 - ✅ 2 environments: `development` and `production`
 - ✅ 3 services: `api`, `ui`, `cli`
 - ✅ Automated deployment via Terraform (no manual Lambda updates)
@@ -355,4 +355,4 @@ You now have:
 
 **Dashboard URL**: https://your-site.netlify.app/projects/<PROJECT_ID>
 
-Enjoy dogfooding CloudMatrix! 🚀
+Enjoy dogfooding Dtapline! 🚀

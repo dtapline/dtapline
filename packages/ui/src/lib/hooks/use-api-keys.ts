@@ -1,7 +1,7 @@
 /**
  * API Keys React Query Hooks
  */
-import type { CreateApiKeyInput } from "@cloud-matrix/domain/ApiKey"
+import type { CreateApiKeyInput } from "@dtapline/domain/ApiKey"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { apiKeysApi } from "../api"
 

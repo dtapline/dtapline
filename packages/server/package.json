@@ -1,5 +1,5 @@
 {
-  "name": "@cloud-matrix/server",
+  "name": "@dtapline/api",
   "version": "0.0.0",
   "type": "module",
   "license": "MIT",
@@ -22,7 +22,7 @@
     "coverage": "vitest --coverage"
   },
   "dependencies": {
-    "@cloud-matrix/domain": "workspace:^",
+    "@dtapline/domain": "workspace:^",
     "@effect-aws/lambda": "^1.5.1",
     "@effect-aws/powertools-logger": "^1.5.1",
     "@effect/cluster": "^0.56.1",

@@ -5,8 +5,8 @@ import { Console, Effect, Layer, Option, Schema } from "effect"
 import { detectCICD } from "./cicd-detect.js"
 
 /**
- * CloudMatrix CLI
- * Reports deployment information to CloudMatrix server via webhook
+ * Dtapline CLI
+ * Reports deployment information to Dtapline API server via webhook
  */
 
 // Response schema for type safety
@@ -39,13 +39,13 @@ const commitShaArg = Args.text({ name: "commitSha" }).pipe(
 // ============================================================================
 
 const apiKeyOption = Options.text("api-key").pipe(
-  Options.withDescription("CloudMatrix API key (or set CLOUDMATRIX_API_KEY env var)"),
+  Options.withDescription("Dtapline API key (or set DTAPLINE_API_KEY env var)"),
   Options.optional
 )
 
 const serverUrlOption = Options.text("server-url").pipe(
-  Options.withDescription("CloudMatrix server URL"),
-  Options.withDefault("https://api.cloudmatrix.io")
+  Options.withDescription("Dtapline API server URL"),
+  Options.withDefault("https://api.dtapline.io")
 )
 
 const gitTagOption = Options.text("git-tag").pipe(
@@ -99,12 +99,12 @@ const deployCommand = Command.make(
   },
   (args) =>
     Effect.gen(function*() {
-      yield* Console.log("🚀 Reporting deployment to CloudMatrix...")
+      yield* Console.log("🚀 Reporting deployment to dtapline...")
 
       // Get API key from option or environment variable
-      const apiKey = Option.isSome(args.apiKey) ? args.apiKey.value : process.env.CLOUDMATRIX_API_KEY
+      const apiKey = Option.isSome(args.apiKey) ? args.apiKey.value : process.env.DTAPLINE_API_KEY
       if (!apiKey) {
-        yield* Effect.fail(new Error("API key is required. Use --api-key or set CLOUDMATRIX_API_KEY env var"))
+        yield* Effect.fail(new Error("API key is required. Use --api-key or set DTAPLINE_API_KEY env var"))
       }
 
       // Auto-detect CI/CD platform
@@ -173,15 +173,15 @@ const deployCommand = Command.make(
       yield* Console.log(`  Version: ${response.version}`)
     })
 ).pipe(
-  Command.withDescription("Report a deployment to CloudMatrix server")
+  Command.withDescription("Report a deployment to dtapline server")
 )
 
 // ============================================================================
 // Root Command
 // ============================================================================
 
-const rootCommand = Command.make("cloudmatrix").pipe(
-  Command.withDescription("CloudMatrix CLI - Report deployments to your CloudMatrix server"),
+const rootCommand = Command.make("dtapline").pipe(
+  Command.withDescription("Dtapline CLI - Report deployments to your Dtapline API server"),
   Command.withSubcommands([deployCommand])
 )
 
@@ -190,7 +190,7 @@ const rootCommand = Command.make("cloudmatrix").pipe(
 // ============================================================================
 
 const cli = Command.run(rootCommand, {
-  name: "CloudMatrix CLI",
+  name: "Dtapline CLI",
   version: "0.1.0"
 })
 

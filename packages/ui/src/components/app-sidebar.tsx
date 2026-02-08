@@ -12,14 +12,7 @@ import {
 } from "@/components/ui/sidebar"
 import { useCurrentUser } from "@/lib/hooks/use-user"
 import { Link } from "@tanstack/react-router"
-import {
-  ArrowUpCircleIcon,
-  FolderIcon,
-  GlobeIcon,
-  HelpCircleIcon,
-  LayoutDashboardIcon,
-  SettingsIcon
-} from "lucide-react"
+import { FolderIcon, GlobeIcon, HelpCircleIcon, LayoutDashboardIcon, SettingsIcon } from "lucide-react"
 import * as React from "react"
 
 const data = {
@@ -72,10 +65,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton asChild>
-              <Link to="/">
-                <ArrowUpCircleIcon className="h-5 w-5" />
-                <span className="text-base font-semibold">CloudMatrix</span>
+            <SidebarMenuButton asChild size="lg" className="py-4 justify-center">
+              <Link to="/" className="flex justify-center">
+                <img src="/logo.svg" alt="Dtapline" className="h-16 w-auto" />
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>

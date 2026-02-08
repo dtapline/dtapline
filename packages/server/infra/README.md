@@ -1,6 +1,6 @@
 # Server Infrastructure
 
-Terraform configuration for deploying the CloudMatrix API server to AWS Lambda.
+Terraform configuration for deploying the Dtapline API server to AWS Lambda.
 
 ## Structure
 
@@ -19,7 +19,7 @@ infra/
 
 ## Resources Created
 
-- **Lambda Function**: Node.js 20.x runtime for CloudMatrix API
+- **Lambda Function**: Node.js 20.x runtime for Dtapline API
 - **Lambda Execution Role**: With MongoDB Atlas IAM permissions
 - **API Gateway**: HTTP API (v2) with Lambda proxy integration
 - **CloudWatch Log Groups**: For Lambda and API Gateway logs
@@ -29,8 +29,8 @@ infra/
 
 1. **Terraform Cloud workspaces**:
 
-   - `cloud-matrix-server-dev`
-   - `cloud-matrix-server-prd`
+   - `dtapline-api-dev`
+   - `dtapline-api-prd`
 
 2. **MongoDB Atlas**:
 
@@ -50,7 +50,7 @@ infra/
 cd packages/server/infrastructure/terraform
 
 # Set workspace
-export TF_WORKSPACE=cloud-matrix-server-dev
+export TF_WORKSPACE=dtapline-api-dev
 
 # Initialize
 terraform init
@@ -68,7 +68,7 @@ terraform output api_gateway_url
 cd packages/server/infra
 
 # Switch workspace
-export TF_WORKSPACE=cloud-matrix-server-prd
+export TF_WORKSPACE=dtapline-api-prd
 
 # Initialize
 terraform init

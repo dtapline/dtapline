@@ -10,7 +10,7 @@ import { MongoClient, ObjectId } from "mongodb"
 
 config()
 
-const MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost:27017/cloudmatrix"
+const MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost:27017/dtapline"
 
 console.log("🧪 Testing ObjectId migration...")
 

@@ -1,4 +1,4 @@
-import type { Environment } from "@cloud-matrix/domain/Environment"
+import type { Environment } from "@dtapline/domain/Environment"
 import { useEffect, useState } from "react"
 import { useCreateEnvironment, useUpdateEnvironment } from "../../lib/hooks/use-environments"
 import { Button } from "../ui/button"
@@ -19,7 +19,7 @@ export function EnvironmentDialog({
 }: EnvironmentDialogProps) {
   const [name, setName] = useState("")
   const [slug, setSlug] = useState("")
-  const [color, setColor] = useState("#3b82f6")
+  const [color, setColor] = useState("#5CC8FF")
   const [order, setOrder] = useState("0")
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(false)
 
@@ -40,13 +40,13 @@ export function EnvironmentDialog({
     if (environment) {
       setName(environment.name)
       setSlug(environment.slug)
-      setColor(environment.color ?? "#3b82f6")
+      setColor(environment.color ?? "#5CC8FF")
       setSlugManuallyEdited(true) // Don't auto-generate when editing
       // Order is managed via drag-and-drop, not editable in dialog
     } else {
       setName("")
       setSlug("")
-      setColor("#3b82f6")
+      setColor("#5CC8FF")
       setOrder("0")
       setSlugManuallyEdited(false)
     }

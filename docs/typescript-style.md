@@ -13,7 +13,7 @@
 
 **Order:**
 1. External library imports
-2. Cross-package imports (`@cloud-matrix/domain`)
+2. Cross-package imports (`@dtapline/domain`)
 3. Internal package imports (`@/` for UI, relative for Effect packages)
 4. Type imports (use `import type`)
 

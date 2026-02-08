@@ -23,7 +23,7 @@ docker run -d -p 27017:27017 --name mongodb mongo:latest
 ### Environment Variables
 ```bash
 # packages/server/.env
-MONGODB_URI=mongodb://localhost:27017/cloudmatrix  # Local
+MONGODB_URI=mongodb://localhost:27017/dtapline  # Local
 # OR
 MONGODB_URI=mongodb+srv://...                       # Atlas
 
@@ -348,7 +348,7 @@ process.env.MONGODB_URI = uri
 ### Connection Issues
 ```bash
 # Check if MongoDB is running
-pnpm --filter @cloud-matrix/server check-mongo
+pnpm --filter @dtapline/api check-mongo
 
 # View MongoDB logs
 brew services list

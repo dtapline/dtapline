@@ -1,6 +1,6 @@
-# CloudMatrix CLI
+# Dtapline CLI
 
-Command-line tool for reporting deployment information to CloudMatrix server. Designed for CI/CD integration with Azure Pipelines, GitHub Actions, and other automation tools.
+Command-line tool for reporting deployment information to Dtapline API server. Designed for CI/CD integration with Azure Pipelines, GitHub Actions, and other automation tools.
 
 ## Installation
 
@@ -19,7 +19,7 @@ npm link
 ### Production
 
 ```bash
-npm install -g @cloud-matrix/cli
+npm install -g @dtapline/cli
 ```
 
 ## Usage
@@ -27,7 +27,7 @@ npm install -g @cloud-matrix/cli
 ### Basic Deployment Report
 
 ```bash
-cloudmatrix deploy <environment> <service> <commitSha> \
+dtapline deploy <environment> <service> <commitSha> \
   --api-key YOUR_API_KEY \
   --server-url https://api.cloudmatrix.io
 ```
@@ -35,7 +35,7 @@ cloudmatrix deploy <environment> <service> <commitSha> \
 ### With All Options
 
 ```bash
-cloudmatrix deploy production my-api abc123def \
+dtapline deploy production my-api abc123def \
   --api-key cm_xxxxxxxxxxxxx \
   --server-url https://cloudmatrix.mycompany.com \
   --git-tag v1.2.3 \
@@ -49,9 +49,9 @@ cloudmatrix deploy production my-api abc123def \
 ### Using Environment Variable for API Key
 
 ```bash
-export CLOUDMATRIX_API_KEY=cm_xxxxxxxxxxxxx
+export DTAPLINE_API_KEY=cm_xxxxxxxxxxxxx
 
-cloudmatrix deploy staging web-frontend def456ghi \
+dtapline deploy staging web-frontend def456ghi \
   --git-tag v2.0.0-rc1
 ```
 
@@ -67,7 +67,7 @@ pool:
   vmImage: 'ubuntu-latest'
 
 variables:
-  - group: cloudmatrix-secrets  # Contains CLOUDMATRIX_API_KEY
+  - group: cloudmatrix-secrets  # Contains DTAPLINE_API_KEY
 
 stages:
   - stage: Build
@@ -81,21 +81,21 @@ stages:
           # Your build steps here...
 
           - script: |
-              npm install -g @cloud-matrix/cli
-            displayName: 'Install CloudMatrix CLI'
+              npm install -g @dtapline/cli
+            displayName: 'Install Dtapline CLI'
 
           - script: |
-              cloudmatrix deploy \
+              dtapline deploy \
                 $(ENVIRONMENT) \
                 $(SERVICE_NAME) \
                 $(Build.SourceVersion) \
-                --api-key $(CLOUDMATRIX_API_KEY) \
-                --server-url $(CLOUDMATRIX_SERVER_URL) \
+                --api-key $(DTAPLINE_API_KEY) \
+                --server-url $(DTAPLINE_SERVER_URL) \
                 --git-tag $(Build.SourceBranchName) \
                 --deployed-by "Azure DevOps" \
                 --build-url $(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId) \
                 --status success
-            displayName: 'Report Deployment to CloudMatrix'
+            displayName: 'Report Deployment to dtapline'
             condition: succeeded()
 ```
 
@@ -113,19 +113,19 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    
+
     steps:
       - uses: actions/checkout@v3
-      
+
       # Your build/deploy steps...
-      
-      - name: Report to CloudMatrix
+
+      - name: Report to Dtapline
         env:
-          CLOUDMATRIX_API_KEY: ${{ secrets.CLOUDMATRIX_API_KEY }}
+          DTAPLINE_API_KEY: ${{ secrets.DTAPLINE_API_KEY }}
         run: |
-          npm install -g @cloud-matrix/cli
-          
-          cloudmatrix deploy \
+          npm install -g @dtapline/cli
+
+          dtapline deploy \
             production \
             my-service \
             ${{ github.sha }} \
@@ -138,9 +138,9 @@ jobs:
 
 ## Command Reference
 
-### `cloudmatrix deploy`
+### `dtapline deploy`
 
-Report a deployment to CloudMatrix server.
+Report a deployment to Dtapline API server.
 
 **Arguments:**
 - `environment` - The deployment environment (e.g., dev, staging, production)
@@ -148,8 +148,8 @@ Report a deployment to CloudMatrix server.
 - `commitSha` - Git commit SHA being deployed
 
 **Options:**
-- `--api-key <key>` - CloudMatrix API key (or set CLOUDMATRIX_API_KEY env var)
-- `--server-url <url>` - CloudMatrix server URL (default: https://api.cloudmatrix.io)
+- `--api-key <key>` - Dtapline API key (or set DTAPLINE_API_KEY env var)
+- `--server-url <url>` - Dtapline API server URL (default: https://api.cloudmatrix.io)
 - `--git-tag <tag>` - Git tag for this deployment (e.g., v1.2.3)
 - `--pr-url <url>` - Pull request URL
 - `--deployed-by <who>` - Who/what triggered the deployment
@@ -164,7 +164,7 @@ Report a deployment to CloudMatrix server.
 
 ## API Key Management
 
-Get your API key from the CloudMatrix dashboard:
+Get your API key from the Dtapline dashboard:
 
 1. Navigate to your project settings
 2. Go to "API Keys" tab
@@ -179,7 +179,7 @@ API keys should have `deployments:write` scope.
 ### Successful Deployment
 
 ```bash
-cloudmatrix deploy production api-gateway a1b2c3d \
+dtapline deploy production api-gateway a1b2c3d \
   --api-key cm_xxxxxxxxxxxxx \
   --git-tag v1.5.0 \
   --deployed-by "Jenkins" \
@@ -189,7 +189,7 @@ cloudmatrix deploy production api-gateway a1b2c3d \
 ### Failed Deployment
 
 ```bash
-cloudmatrix deploy staging frontend e4f5g6h \
+dtapline deploy staging frontend e4f5g6h \
   --api-key cm_xxxxxxxxxxxxx \
   --status failed \
   --build-url https://jenkins.company.com/job/frontend/123
@@ -198,7 +198,7 @@ cloudmatrix deploy staging frontend e4f5g6h \
 ### Rollback
 
 ```bash
-cloudmatrix deploy production database i7j8k9l \
+dtapline deploy production database i7j8k9l \
   --api-key cm_xxxxxxxxxxxxx \
   --git-tag v1.4.9 \
   --status rolled_back \
@@ -211,7 +211,7 @@ cloudmatrix deploy production database i7j8k9l \
 
 Make sure you either:
 - Pass `--api-key` flag
-- Set `CLOUDMATRIX_API_KEY` environment variable
+- Set `DTAPLINE_API_KEY` environment variable
 
 ### "Failed to report deployment"
 
@@ -219,8 +219,8 @@ Check:
 - API key is valid and not expired
 - API key has `deployments:write` scope
 - Server URL is correct
-- Network connectivity to CloudMatrix server
-- Project exists in CloudMatrix
+- Network connectivity to Dtapline API server
+- Project exists in Dtapline
 
 ### View detailed errors
 
@@ -242,7 +242,7 @@ pnpm check
 pnpm dev deploy production test-service abc123 --api-key test
 
 # Or after building
-node bin/cloudmatrix.js deploy production test-service abc123 --api-key test
+node bin/dtapline.js deploy production test-service abc123 --api-key test
 ```
 
 ## License

@@ -1,7 +1,7 @@
 /**
  * API Keys API Client
  */
-import type { ApiKeyResponse, CreateApiKeyInput } from "@cloud-matrix/domain/ApiKey"
+import type { ApiKeyResponse, CreateApiKeyInput } from "@dtapline/domain/ApiKey"
 import { apiClient } from "./client"
 
 type ApiKeyResponseType = typeof ApiKeyResponse.Type

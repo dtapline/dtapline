@@ -1,5 +1,5 @@
-import { CloudMatrixApi } from "@cloud-matrix/domain/Api"
-import { testPattern } from "@cloud-matrix/domain/Utils/VersionExtractor"
+import { DtaplineApi } from "@dtapline/domain/Api"
+import { testPattern } from "@dtapline/domain/Utils/VersionExtractor"
 import { HttpApiBuilder } from "@effect/platform"
 import { Effect } from "effect"
 import { VersionPatternsRepository } from "../Repositories/VersionPatternsRepository.js"
@@ -9,7 +9,7 @@ import { VersionPatternsRepository } from "../Repositories/VersionPatternsReposi
  * Handles getting, updating, and testing version extraction patterns
  */
 export const VersionPatternsGroupLive = HttpApiBuilder.group(
-  CloudMatrixApi,
+  DtaplineApi,
   "versionPatterns",
   (handlers) =>
     Effect.gen(function*() {
