@@ -35,8 +35,8 @@ jobs:
           echo "url=$CLI_URL" >> $GITHUB_OUTPUT
           echo "✅ CLI snapshot published: $CLI_URL"
 
-  deploy-server:
-    name: Deploy Server to Development
+  deploy-api:
+    name: Deploy API Server to Development
     runs-on: ubuntu-latest
     timeout-minutes: 15
     needs: deploy-cli
@@ -45,7 +45,7 @@ jobs:
       url: ${{ steps.terraform.outputs.api_url }}
     defaults:
       run:
-        working-directory: packages/server
+        working-directory: packages/api
     steps:
       - uses: actions/checkout@v4
 
@@ -69,14 +69,14 @@ jobs:
           aws-region: ${{ vars.AWS_REGION }}
 
       - name: Terraform Init
-        working-directory: packages/server/infra
+        working-directory: packages/api/infra
         env:
           TF_WORKSPACE: dtapline-api-dev
         run: terraform init
 
       - name: Terraform Apply
         id: terraform
-        working-directory: packages/server/infra
+        working-directory: packages/api/infra
         env:
           TF_WORKSPACE: dtapline-api-dev
           TF_VAR_stage: "dev"

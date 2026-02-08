@@ -47,7 +47,7 @@ infra/
 ### Development
 
 ```bash
-cd packages/server/infrastructure/terraform
+cd packages/api/infra
 
 # Set workspace
 export TF_WORKSPACE=dtapline-api-dev
@@ -56,7 +56,7 @@ export TF_WORKSPACE=dtapline-api-dev
 terraform init
 
 # Deploy
-terraform apply -var-file=environments/dev/terraform.tfvars
+terraform apply -var-file=terraform.tfvars
 
 # Get outputs
 terraform output api_gateway_url
@@ -65,7 +65,7 @@ terraform output api_gateway_url
 ### Production
 
 ```bash
-cd packages/server/infra
+cd packages/api/infra
 
 # Switch workspace
 export TF_WORKSPACE=dtapline-api-prd
@@ -74,7 +74,7 @@ export TF_WORKSPACE=dtapline-api-prd
 terraform init
 
 # Deploy
-terraform apply -var-file=environments/prd/terraform.tfvars
+terraform apply -var-file=terraform.tfvars
 ```
 
 ## Outputs
@@ -99,17 +99,17 @@ The Lambda code is updated automatically by GitHub Actions workflows using AWS c
 
 ## Setting Up CI User
 
-Create an IAM user named `cloudmatrix-ci` in each AWS account:
+Create an IAM user named `dtapline-ci` in each AWS account:
 
 ```bash
 # Development account (<your-dev-account-id>)
-aws iam create-user --user-name cloudmatrix-ci
+aws iam create-user --user-name dtapline-ci
 
 # Create access key
-aws iam create-access-key --user-name cloudmatrix-ci
+aws iam create-access-key --user-name dtapline-ci
 
 # Attach policy for Lambda deployment
-aws iam attach-user-policy --user-name cloudmatrix-ci \
+aws iam attach-user-policy --user-name dtapline-ci \
   --policy-arn arn:aws:iam::aws:policy/AWSLambda_FullAccess
 ```
 
@@ -117,10 +117,10 @@ Save the access keys in GitHub Secrets.
 
 ## Local Development
 
-The server can also run locally without Lambda:
+The API server can also run locally without Lambda:
 
 ```bash
-cd packages/server
+cd packages/api
 pnpm dev  # Runs on http://localhost:3000
 ```
 

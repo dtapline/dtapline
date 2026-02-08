@@ -164,10 +164,10 @@ stages:
 # Setup Instructions:
 #
 # 1. In Azure DevOps, go to Pipelines → Library → Variable Groups
-# 2. Create a new variable group named "cloudmatrix-secrets"
+# 2. Create a new variable group named "dtapline-secrets"
 # 3. Add these variables:
-#    - DTAPLINE_API_KEY: Your CloudMatrix API key (mark as secret!)
-#    - DTAPLINE_SERVER_URL: Your CloudMatrix server URL (e.g., https://api.cloudmatrix.io)
+#    - DTAPLINE_API_KEY: Your Dtapline API key (mark as secret!)
+#    - DTAPLINE_SERVER_URL: Your Dtapline server URL (e.g., https://api.dtapline.io)
 # 4. Save the variable group
 # 5. Add this pipeline file to your repository as azure-pipelines.yml
 # 6. Create a new pipeline in Azure DevOps pointing to this file

@@ -9,7 +9,7 @@ Visualize and track deployments across environments in a 2D matrix. Effect-TS ba
 
 ```bash
 # Start backend (requires MongoDB running)
-cd packages/server && pnpm dev
+cd packages/api && pnpm dev
 
 # Start frontend
 cd packages/ui && pnpm dev
@@ -18,7 +18,7 @@ cd packages/ui && pnpm dev
 cd packages/cli && node bin/dtapline.js --help
 ```
 
-**Prerequisites:** MongoDB running locally or Atlas connection. See [packages/server/README.md](packages/server/README.md) for setup.
+**Prerequisites:** MongoDB running locally or Atlas connection. See [packages/api/README.md](packages/api/README.md) for setup.
 
 ## Essential Commands
 

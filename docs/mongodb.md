@@ -15,14 +15,14 @@ docker run -d -p 27017:27017 --name mongodb mongo:latest
 ### MongoDB Atlas (Cloud)
 1. Create cluster at https://www.mongodb.com/cloud/atlas
 2. Get connection string: `mongodb+srv://user:pass@cluster.mongodb.net/cloudmatrix`
-3. Add to `packages/server/.env`:
+3. Add to `packages/api/.env`:
    ```
    MONGODB_URI=mongodb+srv://user:pass@cluster.mongodb.net/cloudmatrix
    ```
 
 ### Environment Variables
 ```bash
-# packages/server/.env
+# packages/api/.env
 MONGODB_URI=mongodb://localhost:27017/dtapline  # Local
 # OR
 MONGODB_URI=mongodb+srv://...                       # Atlas
@@ -89,12 +89,12 @@ yield* Effect.tryPromise({
 
 ### Complete Example
 See any repository for the full pattern:
-- [ProjectsRepository.ts](../packages/server/src/Repositories/ProjectsRepository.ts)
-- [EnvironmentsRepository.ts](../packages/server/src/Repositories/EnvironmentsRepository.ts)
-- [ServicesRepository.ts](../packages/server/src/Repositories/ServicesRepository.ts)
-- [DeploymentsRepository.ts](../packages/server/src/Repositories/DeploymentsRepository.ts)
-- [ApiKeysRepository.ts](../packages/server/src/Repositories/ApiKeysRepository.ts)
-- [VersionPatternsRepository.ts](../packages/server/src/Repositories/VersionPatternsRepository.ts)
+- [ProjectsRepository.ts](../packages/api/src/Repositories/ProjectsRepository.ts)
+- [EnvironmentsRepository.ts](../packages/api/src/Repositories/EnvironmentsRepository.ts)
+- [ServicesRepository.ts](../packages/api/src/Repositories/ServicesRepository.ts)
+- [DeploymentsRepository.ts](../packages/api/src/Repositories/DeploymentsRepository.ts)
+- [ApiKeysRepository.ts](../packages/api/src/Repositories/ApiKeysRepository.ts)
+- [VersionPatternsRepository.ts](../packages/api/src/Repositories/VersionPatternsRepository.ts)
 
 ## Database Schema
 
@@ -214,7 +214,7 @@ db.projects.createIndex({ userId: 1 })
 
 ## Connection Pooling
 
-### For Lambda (packages/server/src/Layers.ts)
+### For Lambda (packages/api/src/Layers.ts)
 ```typescript
 const MongoClientLive = Layer.scoped(
   MongoClient.Tag,

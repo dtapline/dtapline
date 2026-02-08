@@ -3,11 +3,11 @@
   "version": "0.0.0",
   "type": "module",
   "license": "MIT",
-  "description": "The server template",
+  "description": "The Dtapline API server",
   "repository": {
     "type": "git",
-    "url": "<PLACEHOLDER>",
-    "directory": "packages/server"
+    "url": "https://github.com/dtapline/dtapline.git",
+    "directory": "packages/api"
   },
   "scripts": {
     "dev": "tsx src/server.ts",

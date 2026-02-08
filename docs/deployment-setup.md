@@ -9,7 +9,7 @@ Dtapline tracks its own deployments across 2 environments:
 - **`production`**: Deployed when Changesets publishes a release (AWS account <your-prod-account-id>)
 
 Services tracked:
-- **`api`**: Backend server (AWS Lambda)
+- **`api`**: Backend API server (AWS Lambda)
 - **`ui`**: Frontend (Netlify)
 - **`cli`**: CLI tool (NPM package)
 
@@ -133,7 +133,7 @@ Create **TWO** database users (one per environment):
 First, build the Lambda deployment package:
 
 ```bash
-cd packages/server
+cd packages/api
 
 # Install dependencies
 pnpm install
@@ -229,10 +229,10 @@ No separate `aws lambda update-function-code` needed - Terraform handles everyth
 
 ## Step 6: Dtapline Project Setup
 
-### 6.1 Start Local Server
+### 6.1 Start Local API Server
 
 ```bash
-cd packages/server
+cd packages/api
 pnpm dev
 ```
 
@@ -291,7 +291,7 @@ Go to Repository Settings → Secrets and variables → Actions → Variables
 
 ### 8.1 Test Development Deployment
 
-1. Create a small change in `packages/server/src/server.ts`
+1. Create a small change in `packages/api/src/server.ts`
 2. Commit and push to `main`:
    ```bash
    git add .

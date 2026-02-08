@@ -11,13 +11,13 @@ config()
 /**
  * Local development server for Dtapline API
  *
- * Starts an HTTP server on port 3000 with request logging middleware.
+ * Starts an HTTP API server on port 3000 with request logging middleware.
  * All dependencies (MongoDB, repositories, services) are automatically
  * provided by the AppLive layer.
  *
  * @example Run locally:
  * ```bash
- * cd packages/server
+ * cd packages/api
  * tsx src/server.ts
  * ```
  *

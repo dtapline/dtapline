@@ -43,9 +43,9 @@
       "@dtapline/domain": ["./packages/domain/src/index.js"],
       "@dtapline/domain/*": ["./packages/domain/src/*.js"],
       "@dtapline/domain/test/*": ["./packages/domain/test/*.js"],
-      "@dtapline/api": ["./packages/server/src/index.js"],
-      "@dtapline/api/*": ["./packages/server/src/*.js"],
-      "@dtapline/api/test/*": ["./packages/server/test/*.js"]
+      "@dtapline/api": ["./packages/api/src/index.js"],
+      "@dtapline/api/*": ["./packages/api/src/*.js"],
+      "@dtapline/api/test/*": ["./packages/api/test/*.js"]
     }
   }
 }
