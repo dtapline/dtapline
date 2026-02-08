@@ -184,7 +184,7 @@ function getStatusIconStyle(status: string): { iconBg: string; iconColor: string
       }
     case "in_progress":
       return {
-        iconBg: "bg-orange-500 dark:bg-orange-600",
+        iconBg: "bg-amber-500 dark:bg-amber-600",
         iconColor: "text-white"
       }
     case "rolled_back":
