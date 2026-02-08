@@ -1,6 +1,6 @@
-# CloudMatrix Deployment - Ready! 🚀
+# Dtapline Deployment - Ready! 🚀
 
-Simple deployment setup for CloudMatrix self-hosting using Terraform.
+Simple deployment setup for Dtapline self-hosting using Terraform.
 
 ## ✅ What's Included
 
@@ -13,7 +13,7 @@ Simple deployment setup for CloudMatrix self-hosting using Terraform.
 **GitHub Actions:**
 - ✓ `deploy-development.yml` - Deploy on push to main
 - ✓ `deploy-production.yml` - Deploy on release tags
-- ✓ CloudMatrix CLI integration for self-tracking
+- ✓ Dtapline CLI integration for self-tracking
 
 **Documentation:**
 - ✓ `docs/deployment-setup.md` - Complete setup guide
@@ -32,7 +32,7 @@ aws iam create-access-key --user-name cloudmatrix-ci
 ```
 
 ### 2. Terraform Cloud (5 min)
-- Create workspaces: `cloud-matrix-server-{environment}`
+- Create workspaces: `dtapline-api-{environment}`
 - Add AWS credentials to workspaces
 
 ### 3. MongoDB Atlas (10 min)
@@ -57,7 +57,7 @@ terraform apply -var-file=environments/development/terraform.tfvars
 - Create site
 - Get auth token and site ID
 
-### 6. CloudMatrix Project (5 min)
+### 6. Dtapline Project (5 min)
 - Start local server or deploy
 - Create project
 - Generate API key
@@ -85,7 +85,7 @@ git push origin main
 | `AWS_ACCESS_KEY_ID_PROD` | CI user production |
 | `AWS_SECRET_ACCESS_KEY_PROD` | CI user production |
 | `TF_API_TOKEN` | Terraform Cloud API token |
-| `CLOUDMATRIX_API_KEY` | CloudMatrix API key |
+| `DTAPLINE_API_KEY` | Dtapline API key |
 | `NETLIFY_AUTH_TOKEN` | Netlify deployment |
 | `NETLIFY_SITE_ID` | Netlify site |
 | `NPM_TOKEN` | NPM publishing |
@@ -94,11 +94,11 @@ git push origin main
 
 ## 📊 Expected Result
 
-After deployment, CloudMatrix dashboard shows:
+After deployment, Dtapline dashboard shows:
 
 ```
          api           ui            cli
-prod    v1.0.0        v1.0.0        v1.0.0
+prd     v1.0.0        v1.0.0        v1.0.0
         ✅            ✅            📦
 
 dev     abc1234       abc1234       -
@@ -120,12 +120,12 @@ dev     abc1234       abc1234       -
 
 **Development** (continuous):
 ```
-Push to main → Bundle Lambda → Terraform Apply → CloudMatrix tracks it
+Push to main → Bundle Lambda → Terraform Apply → Dtapline tracks it
 ```
 
 **Production** (controlled):
 ```
-Create changeset → Merge PR → Tag → Bundle Lambda → Terraform Apply → CloudMatrix tracks it
+Create changeset → Merge PR → Tag → Bundle Lambda → Terraform Apply → Dtapline tracks it
 ```
 
 ---
@@ -139,7 +139,7 @@ Create changeset → Merge PR → Tag → Bundle Lambda → Terraform Apply → 
    - AWS SDK externalized (provided by Lambda runtime)
 2. **Archive**: Terraform's `archive_file` data source zips the dist folder
 3. **Deploy**: Terraform creates/updates Lambda with the new code
-4. **Track**: GitHub Actions reports deployment to CloudMatrix
+4. **Track**: GitHub Actions reports deployment to Dtapline
 
 **Key advantage:** Terraform manages complete infrastructure including Lambda code - no separate AWS CLI update step needed.
 

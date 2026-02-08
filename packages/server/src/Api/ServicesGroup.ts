@@ -1,4 +1,4 @@
-import { CloudMatrixApi } from "@cloud-matrix/domain/Api"
+import { DtaplineApi } from "@dtapline/domain/Api"
 import { HttpApiBuilder } from "@effect/platform"
 import { Effect } from "effect"
 import { ProjectsRepository } from "../Repositories/ProjectsRepository.js"
@@ -9,7 +9,7 @@ import { ServicesRepository } from "../Repositories/ServicesRepository.js"
  * Handles CRUD operations for services, including soft delete (archive) and hard delete
  */
 export const ServicesGroupLive = HttpApiBuilder.group(
-  CloudMatrixApi,
+  DtaplineApi,
   "services",
   (handlers) =>
     Effect.gen(function*() {

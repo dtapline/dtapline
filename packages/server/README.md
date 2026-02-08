@@ -1,6 +1,6 @@
-# CloudMatrix Server
+# Dtapline Server
 
-Backend API server for CloudMatrix deployment tracking system.
+Backend API server for Dtapline deployment tracking system.
 
 ## Quick Start
 
@@ -40,7 +40,7 @@ cp .env.example .env
 # Edit .env and update MONGODB_URI if needed
 ```
 
-Default `.env` uses local MongoDB: `mongodb://localhost:27017/cloudmatrix`
+Default `.env` uses local MongoDB: `mongodb://localhost:27017/dtapline`
 
 ### 4. Verify MongoDB Connection
 
@@ -123,7 +123,7 @@ If you see `❌ Cannot connect to MongoDB`:
 
 3. **Check your `.env` file:**
    - Make sure `MONGODB_URI` is set correctly
-   - For local: `mongodb://localhost:27017/cloudmatrix`
+   - For local: `mongodb://localhost:27017/dtapline`
    - For Atlas: `mongodb+srv://user:pass@cluster.mongodb.net/cloudmatrix`
 
 ### Port Already in Use
@@ -134,7 +134,7 @@ If port 3000 is already in use, either:
 
 ## API Documentation
 
-The API implements the CloudMatrix HTTP API specification defined in `@cloud-matrix/domain/Api`.
+The API implements the Dtapline HTTP API specification defined in `@dtapline/domain/Api`.
 
 Main endpoint groups:
 - `/api/v1/projects` - Project management

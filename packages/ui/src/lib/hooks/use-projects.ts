@@ -1,4 +1,4 @@
-import type { CreateProjectInput, UpdateProjectInput } from "@cloud-matrix/domain/Project"
+import type { CreateProjectInput, UpdateProjectInput } from "@dtapline/domain/Project"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { projectsApi } from "../api"
 

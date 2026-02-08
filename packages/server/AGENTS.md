@@ -1,6 +1,6 @@
 # Server Package Guidelines
 
-HTTP API server with MongoDB for CloudMatrix deployment tracking.
+HTTP API server with MongoDB for Dtapline deployment tracking.
 
 ## Quick Start
 
@@ -25,7 +25,7 @@ Server runs on http://localhost:3000
 
 Required in `.env`:
 ```bash
-MONGODB_URI=mongodb://localhost:27017/cloudmatrix
+MONGODB_URI=mongodb://localhost:27017/dtapline
 PORT=3000
 DEFAULT_USER_ID=default-user
 DEFAULT_USER_EMAIL=dev@cloudmatrix.io

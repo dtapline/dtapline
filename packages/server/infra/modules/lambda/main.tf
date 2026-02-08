@@ -4,7 +4,7 @@
 
 # Lambda execution role
 resource "aws_iam_role" "lambda" {
-  name               = "cloud-matrix-lambda-role-${var.stage}"
+  name               = "dtapline-lambda-role-${var.stage}"
   assume_role_policy = data.aws_iam_policy_document.lambda_assume_role.json
 }
 

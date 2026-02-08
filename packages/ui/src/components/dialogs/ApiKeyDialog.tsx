@@ -1,18 +1,11 @@
+import type { ApiKeyResponse } from "@dtapline/domain/ApiKey"
+import { CheckCircle2, Copy } from "lucide-react"
 import { useState } from "react"
-import type { ApiKeyResponse } from "@cloud-matrix/domain/ApiKey"
 import { useCreateApiKey } from "../../lib/hooks/use-api-keys"
 import { Button } from "../ui/button"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle
-} from "../ui/dialog"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "../ui/dialog"
 import { Input } from "../ui/input"
 import { Label } from "../ui/label"
-import { Copy, CheckCircle2 } from "lucide-react"
 
 type ApiKeyResponseType = typeof ApiKeyResponse.Type
 
@@ -22,7 +15,7 @@ interface ApiKeyDialogProps {
   onOpenChange: (open: boolean) => void
 }
 
-export function ApiKeyDialog({ projectId, open, onOpenChange }: ApiKeyDialogProps) {
+export function ApiKeyDialog({ onOpenChange, open, projectId }: ApiKeyDialogProps) {
   const [name, setName] = useState("")
   const [createdKey, setCreatedKey] = useState<ApiKeyResponseType | null>(null)
   const [copied, setCopied] = useState(false)
@@ -97,11 +90,7 @@ export function ApiKeyDialog({ projectId, open, onOpenChange }: ApiKeyDialogProp
                   onClick={handleCopy}
                   className="shrink-0"
                 >
-                  {copied ? (
-                    <CheckCircle2 className="h-4 w-4 text-green-500" />
-                  ) : (
-                    <Copy className="h-4 w-4" />
-                  )}
+                  {copied ? <CheckCircle2 className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
                 </Button>
               </div>
               <p className="text-xs text-muted-foreground">
@@ -114,8 +103,7 @@ export function ApiKeyDialog({ projectId, open, onOpenChange }: ApiKeyDialogProp
                 ⚠️ Store this key securely
               </p>
               <p className="text-xs text-amber-800 dark:text-amber-300 mt-1">
-                This key will not be shown again. If you lose it, you'll need to create a new
-                one.
+                This key will not be shown again. If you lose it, you'll need to create a new one.
               </p>
             </div>
           </div>
@@ -159,8 +147,7 @@ export function ApiKeyDialog({ projectId, open, onOpenChange }: ApiKeyDialogProp
             <div className="space-y-2">
               <Label>Permissions</Label>
               <div className="text-sm text-muted-foreground">
-                This key will have <strong>deployments:write</strong> permission, allowing it to
-                report deployments.
+                This key will have <strong>deployments:write</strong> permission, allowing it to report deployments.
               </div>
             </div>
           </div>

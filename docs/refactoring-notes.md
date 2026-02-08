@@ -32,9 +32,9 @@ These were removed because AI agents already know them or they're enforced by to
 9. **UI component file naming contradiction** - Resolved: Use PascalCase for all components
 
 10. **Package descriptions** - Too generic:
-    - "`@cloud-matrix/domain` - Domain models and business logic (Effect-based)"
-    - "`@cloud-matrix/server` - Server/API layer (Effect Platform)"
-    - "`@cloud-matrix/ui` - React frontend with TanStack Router and Tailwind CSS"
+    - "`@dtapline/domain` - Domain models and business logic (Effect-based)"
+    - "`@dtapline/api` - Server/API layer (Effect Platform)"
+    - "`@dtapline/ui` - React frontend with TanStack Router and Tailwind CSS"
     
     Replaced with: "Effect-TS monorepo: domain (Effect core), server (Effect Platform), ui (React + TanStack Router + Tailwind)"
 

@@ -420,7 +420,7 @@ export class UserGroup extends HttpApiGroup.make("user")
 // Main API
 // ============================================================================
 
-export class CloudMatrixApi extends HttpApi.make("cloudmatrix-api")
+export class DtaplineApi extends HttpApi.make("dtapline-api")
   .add(DeploymentsWebhookGroup)
   .add(ProjectsGroup)
   .add(EnvironmentsGroup)

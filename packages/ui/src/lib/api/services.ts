@@ -1,4 +1,4 @@
-import type { CreateServiceInput, Service, UpdateServiceInput } from "@cloud-matrix/domain/Service"
+import type { CreateServiceInput, Service, UpdateServiceInput } from "@dtapline/domain/Service"
 import { apiClient } from "./client"
 
 /**

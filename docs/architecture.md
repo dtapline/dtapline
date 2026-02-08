@@ -1,4 +1,4 @@
-# CloudMatrix Architecture
+# Dtapline Architecture
 
 ## System Overview
 
@@ -155,7 +155,7 @@ Authorization: Bearer cm_xxxxxxxxxxxxx
 
 ### Collections
 - `projects` - Project metadata
-- `environments` - Deployment environments (dev, staging, prod)
+- `environments` - Deployment environments (dev, stg, prd)
 - `services` - Services/applications being deployed
 - `deployments` - Deployment records (who, what, when, where)
 - `apiKeys` - API keys for authentication

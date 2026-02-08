@@ -1,4 +1,4 @@
-import type { Service } from "@cloud-matrix/domain/Service"
+import type { Service } from "@dtapline/domain/Service"
 import { useEffect, useState } from "react"
 import { useCreateService, useUpdateService } from "../../lib/hooks/use-services"
 import { Button } from "../ui/button"

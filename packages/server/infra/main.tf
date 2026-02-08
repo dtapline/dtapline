@@ -13,10 +13,10 @@ terraform {
   }
 
   cloud {
-    organization = "cloudmatrix"
+    organization = "dtapline"
 
     workspaces {
-      tags = ["cloud-matrix-server"]
+      tags = ["dtapline-api"]
     }
   }
 }
@@ -26,7 +26,7 @@ provider "aws" {
 
   default_tags {
     tags = {
-      Project   = "cloud-matrix"
+      Project   = "dtapline"
       Service   = "server"
       Stage     = var.stage
       ManagedBy = "terraform"
@@ -41,15 +41,15 @@ provider "aws" {
 module "lambda" {
   source = "./modules/lambda"
 
-  function_name = "cloud-matrix-api-${var.stage}"
+  function_name = "dtapline-api-${var.stage}"
   source_dir    = "${path.module}/../dist/lambda"
   stage         = var.stage
 
   env_vars = {
     MONGODB_URI        = var.mongodb_uri
     DEFAULT_USER_ID    = "default-user"
-    DEFAULT_USER_EMAIL = "team@cloudmatrix.io"
-    DEFAULT_USER_NAME  = "CloudMatrix Team"
+    DEFAULT_USER_EMAIL = "team@dtapline.io"
+    DEFAULT_USER_NAME  = "d.t.a.p.line team"
   }
 }
 
@@ -60,6 +60,6 @@ module "lambda" {
 module "api_gateway" {
   source = "./modules/api-gateway"
 
-  api_name   = "cloud-matrix-api-${var.stage}"
+  api_name   = "dtapline-api-${var.stage}"
   lambda_arn = module.lambda.function_arn
 }

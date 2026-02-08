@@ -3,7 +3,7 @@
   "changelog": [
     "@changesets/changelog-github",
     {
-      "repo": "floydspace/cloud-matrix"
+      "repo": "dtapline/dtapline"
     }
   ],
   "commit": false,

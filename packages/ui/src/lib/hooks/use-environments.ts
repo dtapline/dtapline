@@ -1,4 +1,4 @@
-import type { CreateEnvironmentInput, UpdateEnvironmentInput } from "@cloud-matrix/domain/Environment"
+import type { CreateEnvironmentInput, UpdateEnvironmentInput } from "@dtapline/domain/Environment"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { environmentsApi } from "../api"
 

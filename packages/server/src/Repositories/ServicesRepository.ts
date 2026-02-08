@@ -1,12 +1,7 @@
-import {
-  DatabaseError,
-  ServiceAlreadyExists,
-  ServiceHasDeployments,
-  ServiceNotFound
-} from "@cloud-matrix/domain/Errors"
-import type { ProjectId } from "@cloud-matrix/domain/Project"
-import type { CreateServiceInput, Service, UpdateServiceInput } from "@cloud-matrix/domain/Service"
-import { ServiceId } from "@cloud-matrix/domain/Service"
+import { DatabaseError, ServiceAlreadyExists, ServiceHasDeployments, ServiceNotFound } from "@dtapline/domain/Errors"
+import type { ProjectId } from "@dtapline/domain/Project"
+import type { CreateServiceInput, Service, UpdateServiceInput } from "@dtapline/domain/Service"
+import { ServiceId } from "@dtapline/domain/Service"
 import { Context, Effect, Layer, Schema } from "effect"
 import { ObjectId } from "mongodb"
 import { MongoDatabase } from "../MongoDB.js"

@@ -1,4 +1,4 @@
-import type { User } from "@cloud-matrix/domain/User"
+import type { User } from "@dtapline/domain/User"
 import { apiClient } from "./client"
 
 export async function getCurrentUser(): Promise<User> {

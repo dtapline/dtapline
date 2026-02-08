@@ -11,7 +11,7 @@ trigger:
 
 variables:
   - group: cloudmatrix-secrets  # Create this variable group in Azure DevOps
-                                 # and add: CLOUDMATRIX_API_KEY, CLOUDMATRIX_SERVER_URL
+                                 # and add: DTAPLINE_API_KEY, DTAPLINE_SERVER_URL
 
 pool:
   vmImage: 'ubuntu-latest'
@@ -52,23 +52,23 @@ stages:
                   displayName: 'Deploy Application'
 
                 - script: |
-                    npm install -g @cloud-matrix/cli
+                    npm install -g @dtapline/cli
                   displayName: 'Install CloudMatrix CLI'
 
                 - script: |
-                    cloudmatrix deploy \
+                    dtapline deploy \
                       development \
                       my-api-service \
                       $(Build.SourceVersion) \
-                      --api-key $(CLOUDMATRIX_API_KEY) \
-                      --server-url $(CLOUDMATRIX_SERVER_URL) \
+                      --api-key $(DTAPLINE_API_KEY) \
+                      --server-url $(DTAPLINE_SERVER_URL) \
                       --deployed-by "Azure DevOps" \
                       --build-url "$(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)" \
                       --status success
                   displayName: 'Report Deployment to CloudMatrix'
                   condition: succeeded()
                   env:
-                    CLOUDMATRIX_API_KEY: $(CLOUDMATRIX_API_KEY)
+                    DTAPLINE_API_KEY: $(DTAPLINE_API_KEY)
 
   - stage: DeployStaging
     displayName: 'Deploy to Staging'
@@ -88,16 +88,16 @@ stages:
                   displayName: 'Deploy Application'
 
                 - script: |
-                    npm install -g @cloud-matrix/cli
+                    npm install -g @dtapline/cli
                   displayName: 'Install CloudMatrix CLI'
 
                 - script: |
-                    cloudmatrix deploy \
+                    dtapline deploy \
                       staging \
                       my-api-service \
                       $(Build.SourceVersion) \
-                      --api-key $(CLOUDMATRIX_API_KEY) \
-                      --server-url $(CLOUDMATRIX_SERVER_URL) \
+                      --api-key $(DTAPLINE_API_KEY) \
+                      --server-url $(DTAPLINE_SERVER_URL) \
                       --git-tag "$(Build.SourceBranchName)" \
                       --deployed-by "Azure DevOps" \
                       --build-url "$(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)" \
@@ -105,7 +105,7 @@ stages:
                   displayName: 'Report Deployment to CloudMatrix'
                   condition: succeeded()
                   env:
-                    CLOUDMATRIX_API_KEY: $(CLOUDMATRIX_API_KEY)
+                    DTAPLINE_API_KEY: $(DTAPLINE_API_KEY)
 
   - stage: DeployProduction
     displayName: 'Deploy to Production'
@@ -125,16 +125,16 @@ stages:
                   displayName: 'Deploy Application'
 
                 - script: |
-                    npm install -g @cloud-matrix/cli
+                    npm install -g @dtapline/cli
                   displayName: 'Install CloudMatrix CLI'
 
                 - script: |
-                    cloudmatrix deploy \
+                    dtapline deploy \
                       production \
                       my-api-service \
                       $(Build.SourceVersion) \
-                      --api-key $(CLOUDMATRIX_API_KEY) \
-                      --server-url $(CLOUDMATRIX_SERVER_URL) \
+                      --api-key $(DTAPLINE_API_KEY) \
+                      --server-url $(DTAPLINE_SERVER_URL) \
                       --git-tag "$(Build.SourceBranchName)" \
                       --deployed-by "Azure DevOps" \
                       --build-url "$(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)" \
@@ -143,31 +143,31 @@ stages:
                   displayName: 'Report Deployment to CloudMatrix'
                   condition: succeeded()
                   env:
-                    CLOUDMATRIX_API_KEY: $(CLOUDMATRIX_API_KEY)
+                    DTAPLINE_API_KEY: $(DTAPLINE_API_KEY)
 
                 # Report failed deployment
                 - script: |
-                    cloudmatrix deploy \
+                    dtapline deploy \
                       production \
                       my-api-service \
                       $(Build.SourceVersion) \
-                      --api-key $(CLOUDMATRIX_API_KEY) \
-                      --server-url $(CLOUDMATRIX_SERVER_URL) \
+                      --api-key $(DTAPLINE_API_KEY) \
+                      --server-url $(DTAPLINE_SERVER_URL) \
                       --deployed-by "Azure DevOps" \
                       --build-url "$(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)" \
                       --status failed
                   displayName: 'Report Failed Deployment'
                   condition: failed()
                   env:
-                    CLOUDMATRIX_API_KEY: $(CLOUDMATRIX_API_KEY)
+                    DTAPLINE_API_KEY: $(DTAPLINE_API_KEY)
 
 # Setup Instructions:
 #
 # 1. In Azure DevOps, go to Pipelines → Library → Variable Groups
 # 2. Create a new variable group named "cloudmatrix-secrets"
 # 3. Add these variables:
-#    - CLOUDMATRIX_API_KEY: Your CloudMatrix API key (mark as secret!)
-#    - CLOUDMATRIX_SERVER_URL: Your CloudMatrix server URL (e.g., https://api.cloudmatrix.io)
+#    - DTAPLINE_API_KEY: Your CloudMatrix API key (mark as secret!)
+#    - DTAPLINE_SERVER_URL: Your CloudMatrix server URL (e.g., https://api.cloudmatrix.io)
 # 4. Save the variable group
 # 5. Add this pipeline file to your repository as azure-pipelines.yml
 # 6. Create a new pipeline in Azure DevOps pointing to this file

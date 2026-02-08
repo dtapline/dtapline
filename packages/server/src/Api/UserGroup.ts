@@ -1,5 +1,5 @@
-import { CloudMatrixApi } from "@cloud-matrix/domain/Api"
-import { UserId } from "@cloud-matrix/domain/User"
+import { DtaplineApi } from "@dtapline/domain/Api"
+import { UserId } from "@dtapline/domain/User"
 import { HttpApiBuilder } from "@effect/platform"
 import { Effect, Schema } from "effect"
 import { ServerConfigService } from "../Config.js"
@@ -9,7 +9,7 @@ import { ServerConfigService } from "../Config.js"
  * Returns the current user (for MVP, returns the default user from config)
  */
 export const UserGroupLive = HttpApiBuilder.group(
-  CloudMatrixApi,
+  DtaplineApi,
   "user",
   (handlers) =>
     handlers.handle("getCurrentUser", () =>

@@ -1,5 +1,5 @@
-import type { DeploymentStatus } from "@cloud-matrix/domain/Deployment"
-import { CheckCircle2, XCircle, Loader2, RotateCcw } from "lucide-react"
+import type { DeploymentStatus } from "@dtapline/domain/Deployment"
+import { CheckCircle2, Loader2, RotateCcw, XCircle } from "lucide-react"
 import { cn } from "../lib/utils"
 
 interface DeploymentStatusIconProps {
@@ -7,7 +7,7 @@ interface DeploymentStatusIconProps {
   className?: string
 }
 
-export function DeploymentStatusIcon({ status, className }: DeploymentStatusIconProps) {
+export function DeploymentStatusIcon({ className, status }: DeploymentStatusIconProps) {
   switch (status) {
     case "success":
       return (

@@ -12,7 +12,7 @@ pnpm install
 pnpm build
 
 # Test locally
-node bin/cloudmatrix.js deploy production api-gateway abc123 \
+node bin/dtapline.js deploy production api-gateway abc123 \
   --api-key YOUR_API_KEY \
   --server-url http://localhost:3000
 ```
@@ -23,27 +23,27 @@ node bin/cloudmatrix.js deploy production api-gateway abc123 \
 ```bash
 cd packages/cli
 pnpm build
-node bin/cloudmatrix.js --help
+node bin/dtapline.js --help
 ```
 
 ### For CI/CD (Global Install)
 ```bash
-npm install -g @cloud-matrix/cli
-cloudmatrix deploy ...
+npm install -g @dtapline/cli
+dtapline deploy ...
 ```
 
 ## Usage
 
 ### Basic Command
 ```bash
-cloudmatrix deploy <environment> <service> <commitSha> \
+dtapline deploy <environment> <service> <commitSha> \
   --api-key <api-key> \
   --server-url <url>
 ```
 
 ### With Optional Metadata
 ```bash
-cloudmatrix deploy production api-gateway a1b2c3d \
+dtapline deploy production api-gateway a1b2c3d \
   --api-key cm_xxxxxxxxxxxxx \
   --server-url http://localhost:3000 \
   --git-tag v1.5.0 \
@@ -55,8 +55,8 @@ cloudmatrix deploy production api-gateway a1b2c3d \
 
 ### Using Environment Variable
 ```bash
-export CLOUDMATRIX_API_KEY=cm_xxxxxxxxxxxxx
-cloudmatrix deploy production api-gateway abc123
+export DTAPLINE_API_KEY=cm_xxxxxxxxxxxxx
+dtapline deploy production api-gateway abc123
 ```
 
 ## Parameters
@@ -65,7 +65,7 @@ cloudmatrix deploy production api-gateway abc123
 - `environment` - Environment name (e.g., dev, staging, production)
 - `service` - Service name (e.g., api-gateway, web-frontend)
 - `commitSha` - Git commit SHA
-- `--api-key` - API key (or set `CLOUDMATRIX_API_KEY` env var)
+- `--api-key` - API key (or set `DTAPLINE_API_KEY` env var)
 
 ### Optional
 - `--server-url` - Server URL (default: https://api.cloudmatrix.io)
@@ -83,13 +83,13 @@ See [../../docs/cli-integration.md](../../docs/cli-integration.md) for detailed 
 ### Azure Pipelines
 ```yaml
 - script: |
-    npm install -g @cloud-matrix/cli
-    cloudmatrix deploy \
+    npm install -g @dtapline/cli
+    dtapline deploy \
       $(ENVIRONMENT) \
       $(SERVICE_NAME) \
       $(Build.SourceVersion) \
-      --api-key $(CLOUDMATRIX_API_KEY) \
-      --server-url $(CLOUDMATRIX_SERVER_URL) \
+      --api-key $(DTAPLINE_API_KEY) \
+      --server-url $(DTAPLINE_SERVER_URL) \
       --git-tag $(Build.SourceBranchName) \
       --deployed-by "Azure DevOps"
   displayName: 'Report Deployment'
@@ -99,10 +99,10 @@ See [../../docs/cli-integration.md](../../docs/cli-integration.md) for detailed 
 ```yaml
 - name: Report Deployment
   env:
-    CLOUDMATRIX_API_KEY: ${{ secrets.CLOUDMATRIX_API_KEY }}
+    DTAPLINE_API_KEY: ${{ secrets.DTAPLINE_API_KEY }}
   run: |
-    npm install -g @cloud-matrix/cli
-    cloudmatrix deploy production my-service ${{ github.sha }} \
+    npm install -g @dtapline/cli
+    dtapline deploy production my-service ${{ github.sha }} \
       --git-tag ${{ github.ref_name }}
 ```
 
@@ -126,7 +126,7 @@ const myCommand = Command.make(
 )
 
 // Add to root command
-const rootCommand = Command.make("cloudmatrix").pipe(
+const rootCommand = Command.make("dtapline").pipe(
   Command.withSubcommands([deployCommand, myCommand])
 )
 ```
@@ -189,15 +189,15 @@ Output goes to `dist/`.
 
 ```bash
 # Test help
-node bin/cloudmatrix.js --help
+node bin/dtapline.js --help
 
 # Test deploy command
-node bin/cloudmatrix.js deploy production test-service abc123 \
+node bin/dtapline.js deploy production test-service abc123 \
   --api-key test \
   --server-url http://localhost:3000
 
 # Test with invalid params (should show errors)
-node bin/cloudmatrix.js deploy
+node bin/dtapline.js deploy
 ```
 
 ## Publishing
@@ -212,7 +212,7 @@ npm publish
 
 Users install with:
 ```bash
-npm install -g @cloud-matrix/cli
+npm install -g @dtapline/cli
 ```
 
 ## Error Handling

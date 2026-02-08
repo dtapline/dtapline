@@ -37,15 +37,15 @@
     "removeComments": false,
     "plugins": [{ "name": "@effect/language-service" }],
     "paths": {
-      "@cloud-matrix/ui": ["./packages/ui/src/index.js"],
-      "@cloud-matrix/ui/*": ["./packages/ui/src/*.js"],
-      "@cloud-matrix/ui/test/*": ["./packages/ui/test/*.js"],
-      "@cloud-matrix/domain": ["./packages/domain/src/index.js"],
-      "@cloud-matrix/domain/*": ["./packages/domain/src/*.js"],
-      "@cloud-matrix/domain/test/*": ["./packages/domain/test/*.js"],
-      "@cloud-matrix/server": ["./packages/server/src/index.js"],
-      "@cloud-matrix/server/*": ["./packages/server/src/*.js"],
-      "@cloud-matrix/server/test/*": ["./packages/server/test/*.js"]
+      "@dtapline/ui": ["./packages/ui/src/index.js"],
+      "@dtapline/ui/*": ["./packages/ui/src/*.js"],
+      "@dtapline/ui/test/*": ["./packages/ui/test/*.js"],
+      "@dtapline/domain": ["./packages/domain/src/index.js"],
+      "@dtapline/domain/*": ["./packages/domain/src/*.js"],
+      "@dtapline/domain/test/*": ["./packages/domain/test/*.js"],
+      "@dtapline/api": ["./packages/server/src/index.js"],
+      "@dtapline/api/*": ["./packages/server/src/*.js"],
+      "@dtapline/api/test/*": ["./packages/server/test/*.js"]
     }
   }
 }

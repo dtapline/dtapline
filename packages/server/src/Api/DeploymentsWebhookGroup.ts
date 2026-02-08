@@ -1,5 +1,5 @@
-import { CloudMatrixApi } from "@cloud-matrix/domain/Api"
-import { InvalidApiKey, UnauthorizedApiKey } from "@cloud-matrix/domain/Errors"
+import { DtaplineApi } from "@dtapline/domain/Api"
+import { InvalidApiKey, UnauthorizedApiKey } from "@dtapline/domain/Errors"
 import { HttpApiBuilder } from "@effect/platform"
 import { Effect } from "effect"
 import { ApiKeysRepository } from "../Repositories/ApiKeysRepository.js"
@@ -10,7 +10,7 @@ import { DeploymentService } from "../Services/DeploymentService.js"
  * Handles deployment webhooks with API key authentication
  */
 export const DeploymentsWebhookGroupLive = HttpApiBuilder.group(
-  CloudMatrixApi,
+  DtaplineApi,
   "deploymentsWebhook",
   (handlers) =>
     Effect.gen(function*() {

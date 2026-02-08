@@ -1,7 +1,7 @@
-import type { Deployment } from "@cloud-matrix/domain/Deployment"
-import type { Environment } from "@cloud-matrix/domain/Environment"
-import type { CreateProjectInput, Project, UpdateProjectInput } from "@cloud-matrix/domain/Project"
-import type { Service } from "@cloud-matrix/domain/Service"
+import type { Deployment } from "@dtapline/domain/Deployment"
+import type { Environment } from "@dtapline/domain/Environment"
+import type { CreateProjectInput, Project, UpdateProjectInput } from "@dtapline/domain/Project"
+import type { Service } from "@dtapline/domain/Service"
 import { apiClient } from "./client"
 
 /**

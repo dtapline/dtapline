@@ -1,7 +1,7 @@
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 export default function ProjectSettingsPage() {
   return (
@@ -13,7 +13,7 @@ export default function ProjectSettingsPage() {
           <CardTitle>General</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <Input placeholder="Project name" defaultValue="cloudmatrix" />
+          <Input placeholder="Project name" defaultValue="dtapline" />
           <Input placeholder="Git repository URL" defaultValue="https://github.com/user/cloudmatrix" />
           <Button>Save</Button>
         </CardContent>
@@ -63,5 +63,5 @@ export default function ProjectSettingsPage() {
         </TabsContent>
       </Tabs>
     </div>
-  );
+  )
 }

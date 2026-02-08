@@ -1,4 +1,4 @@
-import { CloudMatrixApi } from "@cloud-matrix/domain/Api"
+import { DtaplineApi } from "@dtapline/domain/Api"
 import { HttpApiBuilder } from "@effect/platform"
 import { Effect } from "effect"
 import { ServerConfigService } from "../Config.js"
@@ -9,7 +9,7 @@ import { ApiKeysRepository } from "../Repositories/ApiKeysRepository.js"
  * Handles listing, creating, and revoking API keys
  */
 export const ApiKeysGroupLive = HttpApiBuilder.group(
-  CloudMatrixApi,
+  DtaplineApi,
   "apiKeys",
   (handlers) =>
     Effect.gen(function*() {
