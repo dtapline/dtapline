@@ -5,8 +5,8 @@ Complete guide to deploy Dtapline infrastructure and enable self-hosting.
 ## Overview
 
 Dtapline tracks its own deployments across 2 environments:
-- **`development`**: Deployed on every merge to `main` (AWS account 780689416838)
-- **`production`**: Deployed when Changesets publishes a release (AWS account 127221304765)
+- **`development`**: Deployed on every merge to `main`
+- **`production`**: Deployed when Changesets publishes a release
 
 Services tracked:
 - **`api`**: Backend API server (AWS Lambda)
@@ -17,12 +17,12 @@ Services tracked:
 
 ## Prerequisites
 
-- [x] AWS account for development: **780689416838**
-- [x] AWS account for production: **127221304765**
-- [x] MongoDB Atlas cluster: **cloudmatrixcluster.ed0pems.mongodb.net**
-- [x] Terraform Cloud organization: **dtapline**
+- [ ] AWS account for development
+- [ ] AWS account for production (or use the same account with different regions)
+- [ ] MongoDB Atlas cluster
+- [ ] Terraform Cloud organization
 - [ ] Netlify account with site created
-- [x] GitHub repository: **dtapline/dtapline**
+- [ ] GitHub repository: **dtapline/dtapline**
 
 ---
 
@@ -38,7 +38,7 @@ If you already have AWS admin access, skip creating a new user and use your exis
 
 Create an IAM user specifically for CI/CD deployments.
 
-#### Development Account (780689416838)
+#### Development Account
 
 ```bash
 # Switch to development account
@@ -59,7 +59,7 @@ aws iam attach-user-policy --user-name dtapline-ci \
 
 > **Note**: For production, consider using a more restrictive policy that only allows Lambda, IAM, API Gateway, and CloudWatch operations.
 
-#### Production Account (127221304765)
+#### Production Account
 
 Repeat the same steps for production account.
 
@@ -107,13 +107,13 @@ Create **TWO** database users (one per environment):
 
 **Development User:**
 - Authentication Method: AWS IAM
-- ARN: `arn:aws:iam::780689416838:role/dtapline-lambda-dev`
+- ARN: `arn:aws:iam::<your-dev-account-id>:role/dtapline-lambda-dev`
 - Database: `dtapline-dev`
 - Roles: `readWrite@dtapline-dev`
 
 **Production User:**
 - Authentication Method: AWS IAM
-- ARN: `arn:aws:iam::127221304765:role/dtapline-lambda-prd`
+- ARN: `arn:aws:iam::<your-prod-account-id>:role/dtapline-lambda-prd`
 - Database: `dtapline-prd`
 - Roles: `readWrite@dtapline-prd`
 

@@ -27,8 +27,8 @@ Simple deployment setup for Dtapline self-hosting using Terraform.
 ### 1. AWS CI User (10 min)
 ```bash
 # Create CI user in both accounts (optional - can use admin)
-aws iam create-user --user-name cloudmatrix-ci
-aws iam create-access-key --user-name cloudmatrix-ci
+aws iam create-user --user-name dtapline-ci
+aws iam create-access-key --user-name dtapline-ci
 ```
 
 ### 2. Terraform Cloud (5 min)

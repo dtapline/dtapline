@@ -29,7 +29,7 @@ npm install -g @dtapline/cli
 ```bash
 dtapline deploy <environment> <service> <commitSha> \
   --api-key YOUR_API_KEY \
-  --server-url https://api.cloudmatrix.io
+  --server-url https://api.dtapline.io
 ```
 
 ### With All Options
@@ -37,7 +37,7 @@ dtapline deploy <environment> <service> <commitSha> \
 ```bash
 dtapline deploy production my-api abc123def \
   --api-key cm_xxxxxxxxxxxxx \
-  --server-url https://cloudmatrix.mycompany.com \
+  --server-url https://dtapline.mycompany.com \
   --git-tag v1.2.3 \
   --pr-url https://github.com/org/repo/pull/123 \
   --deployed-by "Azure DevOps" \
@@ -67,7 +67,7 @@ pool:
   vmImage: 'ubuntu-latest'
 
 variables:
-  - group: cloudmatrix-secrets  # Contains DTAPLINE_API_KEY
+  - group: dtapline-secrets  # Contains DTAPLINE_API_KEY
 
 stages:
   - stage: Build
@@ -129,7 +129,7 @@ jobs:
             production \
             my-service \
             ${{ github.sha }} \
-            --server-url https://api.cloudmatrix.io \
+            --server-url https://api.dtapline.io \
             --git-tag ${{ github.ref_name }} \
             --pr-url ${{ github.event.pull_request.html_url }} \
             --deployed-by "GitHub Actions" \
@@ -149,7 +149,7 @@ Report a deployment to Dtapline API server.
 
 **Options:**
 - `--api-key <key>` - Dtapline API key (or set DTAPLINE_API_KEY env var)
-- `--server-url <url>` - Dtapline API server URL (default: https://api.cloudmatrix.io)
+- `--server-url <url>` - Dtapline API server URL (default: http://localhost:3000)
 - `--git-tag <tag>` - Git tag for this deployment (e.g., v1.2.3)
 - `--pr-url <url>` - Pull request URL
 - `--deployed-by <who>` - Who/what triggered the deployment

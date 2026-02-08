@@ -6,8 +6,8 @@ Quick commands and values for Dtapline deployment.
 
 | Environment | AWS Account | MongoDB Database | Trigger |
 |-------------|-------------|------------------|---------|
-| Development | 780689416838 | dtapline-dev | Push to `main` |
-| Production | 127221304765 | dtapline-prd | Release tag (changesets) |
+| Development | Your Dev Account | dtapline-dev | Push to `main` |
+| Production | Your Prod Account | dtapline-prd | Release tag (changesets) |
 
 ## Terraform Commands
 
@@ -65,39 +65,39 @@ DTAPLINE_SERVER_URL           # Same as production API Gateway
 
 ### Connection Strings
 ```
-Development: mongodb+srv://cloudmatrixcluster.ed0pems.mongodb.net/dtapline-dev?authSource=%24external&authMechanism=MONGODB-AWS
+Development: mongodb+srv://<your-cluster>.mongodb.net/dtapline-dev?authSource=%24external&authMechanism=MONGODB-AWS
 
-Production: mongodb+srv://cloudmatrixcluster.ed0pems.mongodb.net/dtapline-prd?authSource=%24external&authMechanism=MONGODB-AWS
+Production: mongodb+srv://<your-cluster>.mongodb.net/dtapline-prd?authSource=%24external&authMechanism=MONGODB-AWS
 ```
 
 ### IAM Database Users
 
 **Development**:
-- ARN: `arn:aws:iam::780689416838:role/dtapline-lambda-dev`
+- ARN: `arn:aws:iam::<your-dev-account-id>:role/dtapline-lambda-dev`
 - Database: `dtapline-dev`
 - Role: `readWrite`
 
 **Production**:
-- ARN: `arn:aws:iam::127221304765:role/dtapline-lambda-prd`
+- ARN: `arn:aws:iam::<your-prod-account-id>:role/dtapline-lambda-prd`
 - Database: `dtapline-prd`
 - Role: `readWrite`
 
 ## CI User Setup
 
-### Development Account (780689416838)
+### Development Account
 ```bash
-aws iam create-user --user-name cloudmatrix-ci
-aws iam create-access-key --user-name cloudmatrix-ci
+aws iam create-user --user-name dtapline-ci
+aws iam create-access-key --user-name dtapline-ci
 
 # Save access keys as GitHub secrets:
 # AWS_ACCESS_KEY_ID_DEV
 # AWS_SECRET_ACCESS_KEY_DEV
 ```
 
-### Production Account (127221304765)
+### Production Account
 ```bash
-aws iam create-user --user-name cloudmatrix-ci
-aws iam create-access-key --user-name cloudmatrix-ci
+aws iam create-user --user-name dtapline-ci
+aws iam create-access-key --user-name dtapline-ci
 
 # Save access keys as GitHub secrets:
 # AWS_ACCESS_KEY_ID_PROD

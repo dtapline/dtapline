@@ -14,7 +14,7 @@ export default function ProjectSettingsPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           <Input placeholder="Project name" defaultValue="dtapline" />
-          <Input placeholder="Git repository URL" defaultValue="https://github.com/user/cloudmatrix" />
+          <Input placeholder="Git repository URL" defaultValue="https://github.com/dtapline/dtapline" />
           <Button>Save</Button>
         </CardContent>
       </Card>
@@ -33,7 +33,7 @@ export default function ProjectSettingsPage() {
             <CardContent>
               <div className="space-y-2">
                 <Input placeholder="Environment name" defaultValue="development" />
-                <Input placeholder="Target URL or cluster" defaultValue="dev.cloudmatrix.io" />
+                <Input placeholder="Target URL or cluster" defaultValue="dev.dtapline.io" />
                 <Button>Add Environment</Button>
               </div>
             </CardContent>
