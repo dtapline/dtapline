@@ -34,7 +34,7 @@ jobs:
           pnpm tsx packages/cli/src/index.ts deploy \
             development \
             cli \
-            ${{ github.sha }} \
+            ${GITHUB_SHA:0:7} \
             --server-url ${{ vars.DTAPLINE_SERVER_URL }} \
             --status in_progress \
             --deployed-by "GitHub Actions" \
@@ -58,7 +58,7 @@ jobs:
           pnpm tsx packages/cli/src/index.ts deploy \
             development \
             cli \
-            ${{ github.sha }} \
+            ${GITHUB_SHA:0:7} \
             --server-url ${{ vars.DTAPLINE_SERVER_URL }} \
             --status success \
             --deployed-by "GitHub Actions" \
@@ -72,7 +72,7 @@ jobs:
           pnpm tsx packages/cli/src/index.ts deploy \
             development \
             cli \
-            ${{ github.sha }} \
+            ${GITHUB_SHA:0:7} \
             --server-url ${{ vars.DTAPLINE_SERVER_URL }} \
             --status failed \
             --deployed-by "GitHub Actions" \
@@ -118,7 +118,7 @@ jobs:
           pnpm tsx packages/cli/src/index.ts deploy \
             development \
             api \
-            ${{ github.sha }} \
+            ${GITHUB_SHA:0:7} \
             --server-url ${{ vars.DTAPLINE_SERVER_URL }} \
             --status in_progress \
             --deployed-by "GitHub Actions" \
@@ -153,7 +153,7 @@ jobs:
           pnpm tsx packages/cli/src/index.ts deploy \
             development \
             api \
-            ${{ github.sha }} \
+            ${GITHUB_SHA:0:7} \
             --server-url ${{ vars.DTAPLINE_SERVER_URL || steps.terraform.outputs.api_url }} \
             --status success \
             --deployed-by "GitHub Actions" \
@@ -168,7 +168,7 @@ jobs:
           pnpm tsx packages/cli/src/index.ts deploy \
             development \
             api \
-            ${{ github.sha }} \
+            ${GITHUB_SHA:0:7} \
             --server-url ${{ vars.DTAPLINE_SERVER_URL || vars.API_GATEWAY_URL }} \
             --status failed \
             --deployed-by "GitHub Actions" \
@@ -202,7 +202,7 @@ jobs:
           pnpm tsx packages/cli/src/index.ts deploy \
             development \
             ui \
-            ${{ github.sha }} \
+            ${GITHUB_SHA:0:7} \
             --server-url ${{ vars.DTAPLINE_SERVER_URL }} \
             --status in_progress \
             --deployed-by "GitHub Actions" \
@@ -230,7 +230,7 @@ jobs:
           pnpm tsx packages/cli/src/index.ts deploy \
             development \
             ui \
-            ${{ github.sha }} \
+            ${GITHUB_SHA:0:7} \
             --server-url ${{ vars.DTAPLINE_SERVER_URL || vars.API_GATEWAY_URL }} \
             --status success \
             --deployed-by "GitHub Actions" \
@@ -245,7 +245,7 @@ jobs:
           pnpm tsx packages/cli/src/index.ts deploy \
             development \
             ui \
-            ${{ github.sha }} \
+            ${GITHUB_SHA:0:7} \
             --server-url ${{ vars.DTAPLINE_SERVER_URL || vars.API_GATEWAY_URL }} \
             --status failed \
             --deployed-by "GitHub Actions" \
