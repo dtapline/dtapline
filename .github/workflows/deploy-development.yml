@@ -180,6 +180,7 @@ jobs:
     timeout-minutes: 15
     environment:
       name: development
+      url: ${{ steps.deploy.outputs.deploy-url }}
     defaults:
       run:
         working-directory: packages/ui
