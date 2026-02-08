@@ -146,9 +146,6 @@ pnpm build
 
 # Type check
 pnpm check
-
-# Generate Effect exports
-pnpm codegen
 ```
 
 ## Deployment
