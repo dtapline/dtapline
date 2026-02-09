@@ -18,6 +18,8 @@ jobs:
     name: Types
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    # Skip deployment if this is a version bump commit from Changesets
+    if: "!contains(github.event.head_commit.message, 'chore(release): version packages')"
     steps:
       - uses: actions/checkout@v4
       - name: Install dependencies
@@ -28,6 +30,8 @@ jobs:
     name: Lint
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    # Skip deployment if this is a version bump commit from Changesets
+    if: "!contains(github.event.head_commit.message, 'chore(release): version packages')"
     steps:
       - uses: actions/checkout@v4
       - name: Install dependencies
@@ -38,6 +42,8 @@ jobs:
     name: Test
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    # Skip deployment if this is a version bump commit from Changesets
+    if: "!contains(github.event.head_commit.message, 'chore(release): version packages')"
     steps:
       - uses: actions/checkout@v4
       - name: Install dependencies
