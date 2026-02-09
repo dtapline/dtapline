@@ -19,13 +19,22 @@ jobs:
       pull-requests: write
     steps:
       - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PAT_TOKEN }}
       - name: Install dependencies
         uses: ./.github/actions/setup
-      - name: Create Release Pull Request or Publish
+      - name: Create Release Pull Request or Tag Packages
+        id: changesets
         uses: changesets/action@v1
         with:
           version: pnpm changeset version
-          publish: pnpm changeset tag
           commit: "chore(release): version packages"
+          createGithubReleases: false
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
+
+      - name: Create and push tags
+        if: steps.changesets.outputs.hasChangesets == 'false'
+        run: |
+          pnpm changeset tag
+          git push --follow-tags
