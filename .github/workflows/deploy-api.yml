@@ -3,7 +3,7 @@ name: Deploy API to Production
 on:
   push:
     tags:
-      - "@dtapline/api@*"
+      - "@dtapline/api@**"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
