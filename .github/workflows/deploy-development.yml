@@ -17,6 +17,8 @@ jobs:
     name: Deploy CLI Snapshot
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    # Skip deployment if this is a version bump commit from Changesets
+    if: "!contains(github.event.head_commit.message, 'chore(release): version packages')"
     environment:
       name: development
       url: ${{ steps.snapshot.outputs.url }}
@@ -82,6 +84,8 @@ jobs:
     name: Deploy API Server to Development
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    # Skip deployment if this is a version bump commit from Changesets
+    if: "!contains(github.event.head_commit.message, 'chore(release): version packages')"
     environment:
       name: development
       url: ${{ steps.terraform.outputs.api_url }}
@@ -178,6 +182,8 @@ jobs:
     name: Deploy UI to Development
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    # Skip deployment if this is a version bump commit from Changesets
+    if: "!contains(github.event.head_commit.message, 'chore(release): version packages')"
     environment:
       name: development
       url: ${{ steps.deploy.outputs.deploy-url }}
