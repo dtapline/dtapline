@@ -17,8 +17,6 @@
     "dedupe": "pnpm dedupe",
     "test": "vitest",
     "coverage": "vitest --coverage",
-    "changeset-version": "changeset version && node scripts/version.mjs",
-    "changeset-publish": "pnpm build && TEST_DIST= pnpm vitest && changeset publish",
     "gitleaks": "gitleaks detect --source . --verbose --config .gitleaks.toml",
     "gitleaks:staged": "gitleaks protect --staged --verbose --config .gitleaks.toml",
     "gitleaks:report": "gitleaks detect --source . --report-path gitleaks-report.json --config .gitleaks.toml",

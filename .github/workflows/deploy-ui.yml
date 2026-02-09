@@ -1,0 +1,94 @@
+name: Deploy UI to Production
+
+on:
+  push:
+    tags:
+      - "@dtapline/ui@*"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Deploy UI to Production
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment:
+      name: production
+      url: ${{ steps.deploy.outputs.deploy-url }}
+    defaults:
+      run:
+        working-directory: packages/ui
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        uses: ./.github/actions/setup
+
+      - name: Build UI
+        run: pnpm build
+        env:
+          VITE_API_BASE_URL: ${{ vars.API_GATEWAY_URL }}
+
+      - name: Report deployment in progress
+        working-directory: .
+        env:
+          DTAPLINE_API_KEY: ${{ secrets.DTAPLINE_API_KEY }}
+        run: |
+          pnpm tsx packages/cli/src/index.ts deploy \
+            production \
+            ui \
+            ${GITHUB_SHA:0:7} \
+            --server-url ${{ vars.DTAPLINE_SERVER_URL }} \
+            --git-tag ${{ github.ref_name }} \
+            --status in_progress \
+            --deployed-by "GitHub Actions" \
+            --build-url ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+      - name: Deploy to Netlify
+        id: deploy
+        uses: nwtgck/actions-netlify@v3
+        with:
+          publish-dir: "./packages/ui/dist"
+          production-deploy: true
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          deploy-message: "Production deployment ${{ github.ref_name }}"
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ vars.NETLIFY_SITE_ID }}
+
+      - name: Report deployment to Dtapline
+        if: success()
+        working-directory: .
+        env:
+          DTAPLINE_API_KEY: ${{ secrets.DTAPLINE_API_KEY }}
+        run: |
+          pnpm tsx packages/cli/src/index.ts deploy \
+            production \
+            ui \
+            ${GITHUB_SHA:0:7} \
+            --server-url ${{ vars.DTAPLINE_SERVER_URL || vars.API_GATEWAY_URL }} \
+            --git-tag ${{ github.ref_name }} \
+            --status success \
+            --deployed-by "GitHub Actions" \
+            --build-url ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+      - name: Report failed deployment
+        if: failure()
+        working-directory: .
+        env:
+          DTAPLINE_API_KEY: ${{ secrets.DTAPLINE_API_KEY }}
+        run: |
+          pnpm tsx packages/cli/src/index.ts deploy \
+            production \
+            ui \
+            ${GITHUB_SHA:0:7} \
+            --server-url ${{ vars.DTAPLINE_SERVER_URL || vars.API_GATEWAY_URL }} \
+            --git-tag ${{ github.ref_name }} \
+            --status failed \
+            --deployed-by "GitHub Actions" \
+            --build-url ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}

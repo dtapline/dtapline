@@ -1,0 +1,81 @@
+name: Deploy CLI to NPM
+
+on:
+  push:
+    tags:
+      - "@dtapline/cli@*"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    name: Publish CLI to NPM
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment:
+      name: production
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        uses: ./.github/actions/setup
+
+      - name: Build packages
+        run: pnpm build
+
+      - name: Report deployment in progress
+        env:
+          DTAPLINE_API_KEY: ${{ secrets.DTAPLINE_API_KEY }}
+        run: |
+          pnpm tsx packages/cli/src/index.ts deploy \
+            production \
+            cli \
+            ${GITHUB_SHA:0:7} \
+            --server-url ${{ vars.DTAPLINE_SERVER_URL }} \
+            --git-tag ${{ github.ref_name }} \
+            --status in_progress \
+            --deployed-by "GitHub Actions" \
+            --build-url ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+      - name: Publish to NPM
+        working-directory: packages/cli
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          echo "//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}" > ~/.npmrc
+          npm publish --access public
+
+      - name: Report deployment success
+        if: success()
+        env:
+          DTAPLINE_API_KEY: ${{ secrets.DTAPLINE_API_KEY }}
+        run: |
+          pnpm tsx packages/cli/src/index.ts deploy \
+            production \
+            cli \
+            ${GITHUB_SHA:0:7} \
+            --server-url ${{ vars.DTAPLINE_SERVER_URL }} \
+            --git-tag ${{ github.ref_name }} \
+            --status success \
+            --deployed-by "GitHub Actions" \
+            --build-url ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+      - name: Report deployment failure
+        if: failure()
+        env:
+          DTAPLINE_API_KEY: ${{ secrets.DTAPLINE_API_KEY }}
+        run: |
+          pnpm tsx packages/cli/src/index.ts deploy \
+            production \
+            cli \
+            ${GITHUB_SHA:0:7} \
+            --server-url ${{ vars.DTAPLINE_SERVER_URL }} \
+            --git-tag ${{ github.ref_name }} \
+            --status failed \
+            --deployed-by "GitHub Actions" \
+            --build-url ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}

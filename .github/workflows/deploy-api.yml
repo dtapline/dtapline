@@ -1,0 +1,113 @@
+name: Deploy API to Production
+
+on:
+  push:
+    tags:
+      - "@dtapline/api@*"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Deploy API Server to Production
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment:
+      name: production
+      url: ${{ steps.terraform.outputs.api_url }}
+    defaults:
+      run:
+        working-directory: packages/api
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        uses: ./.github/actions/setup
+
+      - name: Bundle Lambda code
+        run: pnpm bundle:lambda
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+          terraform_version: "1.14.4"
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-central-1
+
+      - name: Report deployment in progress
+        working-directory: .
+        env:
+          DTAPLINE_API_KEY: ${{ secrets.DTAPLINE_API_KEY }}
+        run: |
+          pnpm tsx packages/cli/src/index.ts deploy \
+            production \
+            api \
+            ${GITHUB_SHA:0:7} \
+            --server-url ${{ vars.DTAPLINE_SERVER_URL }} \
+            --git-tag ${{ github.ref_name }} \
+            --status in_progress \
+            --deployed-by "GitHub Actions" \
+            --build-url ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+      - name: Terraform Init
+        working-directory: packages/api/infra
+        env:
+          TF_WORKSPACE: dtapline-api-prd
+        run: terraform init
+
+      - name: Terraform Apply
+        id: terraform
+        working-directory: packages/api/infra
+        env:
+          TF_WORKSPACE: dtapline-api-prd
+          TF_VAR_stage: "prd"
+          TF_VAR_mongodb_uri: ${{ secrets.MONGODB_URI }}
+        run: |
+          terraform apply -auto-approve
+
+          # Capture outputs
+          API_URL=$(terraform output -raw api_gateway_url)
+          echo "api_url=$API_URL" >> $GITHUB_OUTPUT
+
+      - name: Report deployment to Dtapline
+        if: success()
+        working-directory: .
+        env:
+          DTAPLINE_API_KEY: ${{ secrets.DTAPLINE_API_KEY }}
+        run: |
+          pnpm tsx packages/cli/src/index.ts deploy \
+            production \
+            api \
+            ${GITHUB_SHA:0:7} \
+            --server-url ${{ vars.DTAPLINE_SERVER_URL || steps.terraform.outputs.api_url }} \
+            --git-tag ${{ github.ref_name }} \
+            --status success \
+            --deployed-by "GitHub Actions" \
+            --build-url ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+      - name: Report failed deployment
+        if: failure()
+        working-directory: .
+        env:
+          DTAPLINE_API_KEY: ${{ secrets.DTAPLINE_API_KEY }}
+        run: |
+          pnpm tsx packages/cli/src/index.ts deploy \
+            production \
+            api \
+            ${GITHUB_SHA:0:7} \
+            --server-url ${{ vars.DTAPLINE_SERVER_URL || vars.API_GATEWAY_URL }} \
+            --git-tag ${{ github.ref_name }} \
+            --status failed \
+            --deployed-by "GitHub Actions" \
+            --build-url ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
