@@ -1,4 +1,5 @@
 import { DtaplineApi } from "@dtapline/domain/Api"
+import { DeploymentNotFound } from "@dtapline/domain/Errors"
 import { HttpApiBuilder } from "@effect/platform"
 import { Effect } from "effect"
 import { ServerConfigService } from "../Config.js"
@@ -105,6 +106,27 @@ export const ProjectsGroupLive = HttpApiBuilder.group(
               limit: urlParams.limit ?? 50,
               offset: urlParams.offset ?? 0
             }
+          }))
+        // GET /api/v1/projects/:projectId/deployments/:deploymentId
+        .handle("getDeployment", ({ path: { deploymentId, projectId } }) =>
+          Effect.gen(function*() {
+            // Verify project exists
+            yield* projectsRepo.findById(projectId)
+
+            // Find deployment by ID
+            const deployment = yield* deploymentsRepo.findById(String(deploymentId))
+
+            // Verify deployment belongs to this project
+            if (String(deployment.projectId) !== projectId) {
+              return yield* Effect.fail(
+                new DeploymentNotFound({
+                  deploymentId: String(deploymentId),
+                  message: "Deployment not found in this project"
+                })
+              )
+            }
+
+            return deployment
           }))
         // GET /api/v1/projects/:projectId/compare
         .handle("compareEnvironments", ({ path: { projectId }, urlParams: { env1, env2 } }) =>

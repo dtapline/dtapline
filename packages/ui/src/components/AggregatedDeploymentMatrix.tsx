@@ -2,6 +2,7 @@ import type { Deployment } from "@dtapline/domain/Deployment"
 import type { Environment } from "@dtapline/domain/Environment"
 import type { Project } from "@dtapline/domain/Project"
 import type { Service } from "@dtapline/domain/Service"
+import { Link } from "@tanstack/react-router"
 import { formatDistance } from "date-fns"
 import { Settings } from "lucide-react"
 import { useState } from "react"
@@ -136,12 +137,13 @@ function ProjectSection({ allEnvironments, projectMatrix }: ProjectSectionProps)
       <tr className="bg-muted/30">
         <td colSpan={allEnvironments.length + 1} className="border p-3">
           <div className="flex items-center justify-between">
-            <a
-              href={`/project/${projectMatrix.projectId}`}
+            <Link
+              to="/project/$projectId"
+              params={{ projectId: projectMatrix.projectId }}
               className="font-semibold hover:underline hover:text-primary"
             >
               {projectName}
-            </a>
+            </Link>
             {project && (
               <Button
                 variant="ghost"
@@ -192,12 +194,20 @@ function ProjectSection({ allEnvironments, projectMatrix }: ProjectSectionProps)
             const isEnvironmentEnabled = enabledEnvironmentIds.has(env.id)
 
             return (
-              <td key={env.id} className={cn("border p-4", !isEnvironmentEnabled && "bg-muted/10")}>
+              <td key={env.id} className={cn("border p-0", !isEnvironmentEnabled && "bg-muted/10")}>
                 {!isEnvironmentEnabled ?
-                  <span className="text-xs text-muted-foreground/50">—</span> :
+                  (
+                    <div className="p-4">
+                      <span className="text-xs text-muted-foreground/50">—</span>
+                    </div>
+                  ) :
                   deployment ?
-                  <DeploymentCell deployment={deployment} /> :
-                  <span className="text-xs text-muted-foreground">Not deployed</span>}
+                  <DeploymentCell projectId={projectMatrix.projectId} deployment={deployment} /> :
+                  (
+                    <div className="p-4">
+                      <span className="text-xs text-muted-foreground">Not deployed</span>
+                    </div>
+                  )}
               </td>
             )
           })}
@@ -216,7 +226,7 @@ function ProjectSection({ allEnvironments, projectMatrix }: ProjectSectionProps)
   )
 }
 
-function DeploymentCell({ deployment }: { deployment: Deployment }) {
+function DeploymentCell({ deployment, projectId }: { projectId: string; deployment: Deployment }) {
   const deployedAt = new Date(deployment.deployedAt)
   const { iconBg, iconColor } = getStatusIconStyle(deployment.status)
   const relativeTime = formatDistance(deployedAt, new Date(), { addSuffix: true })
@@ -230,12 +240,17 @@ function DeploymentCell({ deployment }: { deployment: Deployment }) {
   })
 
   return (
-    <div className="flex items-start gap-3">
+    <Link
+      to="/project/$projectId/deployments/$deploymentId"
+      params={{ projectId, deploymentId: deployment.id }}
+      className="group flex w-full items-start gap-3 p-4 text-left transition-colors duration-150 hover:bg-muted/50"
+    >
       {/* Large status icon box - Octopus Deploy style */}
       <div
         className={cn(
-          "flex h-12 w-12 shrink-0 items-center justify-center rounded",
-          iconBg
+          "flex h-12 w-12 shrink-0 items-center justify-center rounded transition-all duration-150",
+          iconBg,
+          "group-hover:ring-2 group-hover:ring-primary group-hover:ring-offset-2"
         )}
       >
         <DeploymentStatusIcon status={deployment.status} className={cn("h-6 w-6", iconColor)} />
@@ -250,18 +265,8 @@ function DeploymentCell({ deployment }: { deployment: Deployment }) {
         >
           {relativeTime}
         </span>
-        {deployment.buildUrl && (
-          <a
-            href={deployment.buildUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-1 text-xs text-blue-600 hover:underline dark:text-blue-400"
-          >
-            View build
-          </a>
-        )}
       </div>
-    </div>
+    </Link>
   )
 }
 

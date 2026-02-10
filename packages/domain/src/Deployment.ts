@@ -10,9 +10,19 @@ export class DeploymentId extends Schema.String.pipe(Schema.brand("DeploymentId"
 export const DeploymentStatus = Schema.Literal("success", "failed", "in_progress", "rolled_back")
 export type DeploymentStatus = Schema.Schema.Type<typeof DeploymentStatus>
 
+// Status history entry
+export const DeploymentStatusHistoryEntry = Schema.Struct({
+  status: DeploymentStatus,
+  timestamp: Schema.DateFromSelf,
+  cicdBuildId: Schema.optional(Schema.String),
+  cicdBuildUrl: Schema.optional(Schema.String.pipe(Schema.pattern(/^https?:\/\/.+/)))
+})
+export type DeploymentStatusHistoryEntry = Schema.Schema.Type<typeof DeploymentStatusHistoryEntry>
+
 // Deployment schema
 export class Deployment extends Schema.Class<Deployment>("Deployment")({
   id: DeploymentId,
+  deploymentHash: Schema.String, // Deterministic hash for upsert identity
   projectId: ProjectId,
   environmentId: EnvironmentId,
   serviceId: ServiceId,
@@ -27,6 +37,9 @@ export class Deployment extends Schema.Class<Deployment>("Deployment")({
   deployedBy: Schema.optional(Schema.String),
   deployedAt: Schema.DateFromSelf,
   status: DeploymentStatus,
+
+  // Status history - tracks all status changes and retries
+  statusHistory: Schema.Array(DeploymentStatusHistoryEntry),
 
   // Optional rich data
   buildUrl: Schema.optional(Schema.String.pipe(Schema.pattern(/^https?:\/\/.+/))),

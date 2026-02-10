@@ -12,28 +12,28 @@ export function DeploymentStatusIcon({ className, status }: DeploymentStatusIcon
     case "success":
       return (
         <CheckCircle2
-          className={cn("h-4 w-4 text-white", className)}
+          className={cn("h-4 w-4 text-green-600", className)}
           aria-label="Deployment successful"
         />
       )
     case "failed":
       return (
         <XCircle
-          className={cn("h-4 w-4 text-white", className)}
+          className={cn("h-4 w-4 text-red-600", className)}
           aria-label="Deployment failed"
         />
       )
     case "in_progress":
       return (
         <Loader2
-          className={cn("h-4 w-4 animate-spin text-white", className)}
+          className={cn("h-4 w-4 animate-spin text-amber-600", className)}
           aria-label="Deployment in progress"
         />
       )
     case "rolled_back":
       return (
         <RotateCcw
-          className={cn("h-4 w-4 text-white", className)}
+          className={cn("h-4 w-4 text-gray-600", className)}
           aria-label="Deployment rolled back"
         />
       )

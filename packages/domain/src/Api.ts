@@ -13,6 +13,7 @@ import { TestPatternRequest, TestPatternResponse, UpdateVersionPatternInput, Ver
 const ProjectIdFromString = Schema.String.pipe(Schema.compose(ProjectId))
 const EnvironmentIdFromString = Schema.String.pipe(Schema.compose(EnvironmentId))
 const ServiceIdFromString = Schema.String.pipe(Schema.compose(ServiceId))
+const DeploymentIdFromString = Schema.String.pipe(Schema.compose(DeploymentId))
 
 // ============================================================================
 // Webhook API (Public - requires API key)
@@ -144,6 +145,19 @@ export class ProjectsGroup extends HttpApiGroup.make("projects")
       .addError(Errors.ProjectNotFound, { status: 404 })
       .addError(Errors.EnvironmentNotFound, { status: 404 })
       .addError(Errors.ServiceNotFound, { status: 404 })
+      .addError(Errors.DatabaseError, { status: 500 })
+  )
+  .add(
+    HttpApiEndpoint.get("getDeployment", "/api/v1/projects/:projectId/deployments/:deploymentId")
+      .setPath(
+        Schema.Struct({
+          projectId: ProjectIdFromString,
+          deploymentId: DeploymentIdFromString
+        })
+      )
+      .addSuccess(Deployment)
+      .addError(Errors.DeploymentNotFound, { status: 404 })
+      .addError(Errors.ProjectNotFound, { status: 404 })
       .addError(Errors.DatabaseError, { status: 500 })
   )
   .add(

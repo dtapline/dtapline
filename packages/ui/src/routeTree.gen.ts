@@ -15,6 +15,7 @@ import { Route as ProjectsImport } from './routes/projects'
 import { Route as EnvironmentsImport } from './routes/environments'
 import { Route as IndexImport } from './routes/index'
 import { Route as ProjectProjectIdImport } from './routes/project.$projectId'
+import { Route as ProjectProjectIdDeploymentsDeploymentIdImport } from './routes/project.$projectId.deployments.$deploymentId'
 
 // Create/Update Routes
 
@@ -41,6 +42,13 @@ const ProjectProjectIdRoute = ProjectProjectIdImport.update({
   path: '/project/$projectId',
   getParentRoute: () => rootRoute,
 } as any)
+
+const ProjectProjectIdDeploymentsDeploymentIdRoute =
+  ProjectProjectIdDeploymentsDeploymentIdImport.update({
+    id: '/deployments/$deploymentId',
+    path: '/deployments/$deploymentId',
+    getParentRoute: () => ProjectProjectIdRoute,
+  } as any)
 
 // Populate the FileRoutesByPath interface
 
@@ -74,23 +82,44 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProjectProjectIdImport
       parentRoute: typeof rootRoute
     }
+    '/project/$projectId/deployments/$deploymentId': {
+      id: '/project/$projectId/deployments/$deploymentId'
+      path: '/deployments/$deploymentId'
+      fullPath: '/project/$projectId/deployments/$deploymentId'
+      preLoaderRoute: typeof ProjectProjectIdDeploymentsDeploymentIdImport
+      parentRoute: typeof ProjectProjectIdImport
+    }
   }
 }
 
 // Create and export the route tree
 
+interface ProjectProjectIdRouteChildren {
+  ProjectProjectIdDeploymentsDeploymentIdRoute: typeof ProjectProjectIdDeploymentsDeploymentIdRoute
+}
+
+const ProjectProjectIdRouteChildren: ProjectProjectIdRouteChildren = {
+  ProjectProjectIdDeploymentsDeploymentIdRoute:
+    ProjectProjectIdDeploymentsDeploymentIdRoute,
+}
+
+const ProjectProjectIdRouteWithChildren =
+  ProjectProjectIdRoute._addFileChildren(ProjectProjectIdRouteChildren)
+
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/environments': typeof EnvironmentsRoute
   '/projects': typeof ProjectsRoute
-  '/project/$projectId': typeof ProjectProjectIdRoute
+  '/project/$projectId': typeof ProjectProjectIdRouteWithChildren
+  '/project/$projectId/deployments/$deploymentId': typeof ProjectProjectIdDeploymentsDeploymentIdRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/environments': typeof EnvironmentsRoute
   '/projects': typeof ProjectsRoute
-  '/project/$projectId': typeof ProjectProjectIdRoute
+  '/project/$projectId': typeof ProjectProjectIdRouteWithChildren
+  '/project/$projectId/deployments/$deploymentId': typeof ProjectProjectIdDeploymentsDeploymentIdRoute
 }
 
 export interface FileRoutesById {
@@ -98,15 +127,32 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/environments': typeof EnvironmentsRoute
   '/projects': typeof ProjectsRoute
-  '/project/$projectId': typeof ProjectProjectIdRoute
+  '/project/$projectId': typeof ProjectProjectIdRouteWithChildren
+  '/project/$projectId/deployments/$deploymentId': typeof ProjectProjectIdDeploymentsDeploymentIdRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/environments' | '/projects' | '/project/$projectId'
+  fullPaths:
+    | '/'
+    | '/environments'
+    | '/projects'
+    | '/project/$projectId'
+    | '/project/$projectId/deployments/$deploymentId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/environments' | '/projects' | '/project/$projectId'
-  id: '__root__' | '/' | '/environments' | '/projects' | '/project/$projectId'
+  to:
+    | '/'
+    | '/environments'
+    | '/projects'
+    | '/project/$projectId'
+    | '/project/$projectId/deployments/$deploymentId'
+  id:
+    | '__root__'
+    | '/'
+    | '/environments'
+    | '/projects'
+    | '/project/$projectId'
+    | '/project/$projectId/deployments/$deploymentId'
   fileRoutesById: FileRoutesById
 }
 
@@ -114,14 +160,14 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   EnvironmentsRoute: typeof EnvironmentsRoute
   ProjectsRoute: typeof ProjectsRoute
-  ProjectProjectIdRoute: typeof ProjectProjectIdRoute
+  ProjectProjectIdRoute: typeof ProjectProjectIdRouteWithChildren
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   EnvironmentsRoute: EnvironmentsRoute,
   ProjectsRoute: ProjectsRoute,
-  ProjectProjectIdRoute: ProjectProjectIdRoute,
+  ProjectProjectIdRoute: ProjectProjectIdRouteWithChildren,
 }
 
 export const routeTree = rootRoute
@@ -150,7 +196,14 @@ export const routeTree = rootRoute
       "filePath": "projects.tsx"
     },
     "/project/$projectId": {
-      "filePath": "project.$projectId.tsx"
+      "filePath": "project.$projectId.tsx",
+      "children": [
+        "/project/$projectId/deployments/$deploymentId"
+      ]
+    },
+    "/project/$projectId/deployments/$deploymentId": {
+      "filePath": "project.$projectId.deployments.$deploymentId.tsx",
+      "parent": "/project/$projectId"
     }
   }
 }

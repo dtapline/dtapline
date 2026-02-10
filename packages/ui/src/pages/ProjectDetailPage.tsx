@@ -1,4 +1,5 @@
-import { Edit, Settings } from "lucide-react"
+import { Link } from "@tanstack/react-router"
+import { ChevronRight, Edit, Settings } from "lucide-react"
 import { useState } from "react"
 import { ApiKeysList } from "../components/ApiKeysList"
 import { DeploymentMatrix } from "../components/DeploymentMatrix"
@@ -41,6 +42,20 @@ export function ProjectDetailPage({ projectId }: ProjectDetailPageProps) {
     <div className="flex h-full flex-col">
       {/* Header */}
       <div className="border-b px-8 py-6">
+        {/* Breadcrumbs */}
+        <nav className="mb-4 flex items-center gap-2 text-sm text-muted-foreground">
+          <Link
+            to="/projects"
+            className="transition-colors hover:text-foreground"
+          >
+            Projects
+          </Link>
+          <ChevronRight className="h-4 w-4" />
+          <span className="text-foreground">
+            {project.name}
+          </span>
+        </nav>
+
         <div className="flex items-start justify-between">
           <div>
             <h1 className="text-3xl font-bold">{project.name}</h1>
@@ -136,6 +151,7 @@ export function ProjectDetailPage({ projectId }: ProjectDetailPageProps) {
             {matrix ?
               (
                 <DeploymentMatrix
+                  projectId={projectId}
                   environments={matrix.environments}
                   services={matrix.services}
                   deployments={matrix.deployments}
