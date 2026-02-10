@@ -1,11 +1,13 @@
 import type { Deployment } from "@dtapline/domain/Deployment"
 import type { Environment } from "@dtapline/domain/Environment"
 import type { Service } from "@dtapline/domain/Service"
+import { Link } from "@tanstack/react-router"
 import { formatDistance } from "date-fns"
 import { cn } from "../lib/utils"
 import { DeploymentStatusIcon } from "./DeploymentStatusIcon"
 
 interface DeploymentMatrixProps {
+  projectId: string
   environments: ReadonlyArray<Environment>
   services: ReadonlyArray<Service>
   deployments: Record<string, Record<string, Deployment | null>>
@@ -16,6 +18,7 @@ export function DeploymentMatrix({
   deployments,
   environments,
   isLoading = false,
+  projectId,
   services
 }: DeploymentMatrixProps) {
   if (isLoading) {
@@ -102,13 +105,13 @@ export function DeploymentMatrix({
               {environments.map((env) => {
                 const deployment = deployments[env.id]?.[service.id]
                 return (
-                  <td key={env.id} className="border p-4">
+                  <td key={env.id} className="border p-0">
                     {deployment ?
-                      <DeploymentCell deployment={deployment} /> :
+                      <DeploymentCell projectId={projectId} deployment={deployment} /> :
                       (
-                        <span className="text-xs text-muted-foreground">
-                          Not deployed
-                        </span>
+                        <div className="p-4">
+                          <span className="text-xs text-muted-foreground">Not deployed</span>
+                        </div>
                       )}
                   </td>
                 )
@@ -121,7 +124,7 @@ export function DeploymentMatrix({
   )
 }
 
-function DeploymentCell({ deployment }: { deployment: Deployment }) {
+function DeploymentCell({ deployment, projectId }: { projectId: string; deployment: Deployment }) {
   const deployedAt = new Date(deployment.deployedAt)
   const { iconBg, iconColor } = getStatusIconStyle(deployment.status)
   const relativeTime = formatDistance(deployedAt, new Date(), { addSuffix: true })
@@ -135,12 +138,17 @@ function DeploymentCell({ deployment }: { deployment: Deployment }) {
   })
 
   return (
-    <div className="flex items-start gap-3">
+    <Link
+      to="/project/$projectId/deployments/$deploymentId"
+      params={{ projectId, deploymentId: deployment.id }}
+      className="group flex w-full items-start gap-3 p-4 text-left transition-colors duration-150 hover:bg-muted/50"
+    >
       {/* Large status icon box - Octopus Deploy style */}
       <div
         className={cn(
-          "flex h-12 w-12 shrink-0 items-center justify-center rounded",
-          iconBg
+          "flex h-12 w-12 shrink-0 items-center justify-center rounded transition-all duration-150",
+          iconBg,
+          "group-hover:ring-2 group-hover:ring-primary group-hover:ring-offset-2"
         )}
       >
         <DeploymentStatusIcon status={deployment.status} className={cn("h-6 w-6", iconColor)} />
@@ -155,18 +163,8 @@ function DeploymentCell({ deployment }: { deployment: Deployment }) {
         >
           {relativeTime}
         </span>
-        {deployment.buildUrl && (
-          <a
-            href={deployment.buildUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-1 text-xs text-blue-600 hover:underline dark:text-blue-400"
-          >
-            View build
-          </a>
-        )}
       </div>
-    </div>
+    </Link>
   )
 }
 

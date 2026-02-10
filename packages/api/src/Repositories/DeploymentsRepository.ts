@@ -11,14 +11,40 @@ import type { ProjectId } from "@dtapline/domain/Project"
 import type { ServiceId } from "@dtapline/domain/Service"
 import { Context, Effect, Layer, Schema } from "effect"
 import type { ObjectId } from "mongodb"
+import { createHash } from "node:crypto"
 import { MongoDatabase } from "../MongoDB.js"
 import { toObjectId } from "../ObjectIdSchema.js"
+
+/**
+ * Generate deterministic deployment hash from identifiers
+ */
+function generateDeploymentHash(
+  projectId: string,
+  environmentId: string,
+  serviceId: string,
+  commitSha: string,
+  version: string
+): string {
+  const data = `${projectId}:${environmentId}:${serviceId}:${commitSha}:${version}`
+  return createHash("sha256").update(data).digest("hex")
+}
+
+/**
+ * Status history entry in MongoDB
+ */
+interface StatusHistoryDocument {
+  status: DeploymentStatus
+  timestamp: Date
+  cicdBuildId?: string | null
+  cicdBuildUrl?: string | null
+}
 
 /**
  * MongoDB document type for Deployment
  */
 interface DeploymentDocument {
   _id: ObjectId
+  deploymentHash: string // Deterministic hash for upsert
   projectId: string
   environmentId: string
   serviceId: string
@@ -29,6 +55,7 @@ interface DeploymentDocument {
   deployedBy?: string | null
   deployedAt: Date
   status: DeploymentStatus
+  statusHistory: Array<StatusHistoryDocument> // Track all status changes
   buildUrl?: string | null
   releaseNotes?: string | null
   metadata?: Record<string, unknown> | null
@@ -90,26 +117,41 @@ export class DeploymentsRepository extends Context.Tag("DeploymentsRepository")<
 
 /**
  * Helper to convert MongoDB document to Deployment
+ * Handles backward compatibility for old deployments without deploymentHash
  */
-const docToDeployment = (doc: DeploymentDocument): any => ({
-  id: Schema.decodeSync(DeploymentId)(doc._id.toHexString()),
-  projectId: doc.projectId as unknown as ProjectId,
-  environmentId: doc.environmentId as unknown as EnvironmentId,
-  serviceId: doc.serviceId as unknown as ServiceId,
-  version: doc.version,
-  commitSha: doc.commitSha,
-  gitTag: doc.gitTag ?? undefined,
-  pullRequestUrl: doc.pullRequestUrl ?? undefined,
-  deployedBy: doc.deployedBy ?? undefined,
-  deployedAt: doc.deployedAt,
-  status: doc.status,
-  buildUrl: doc.buildUrl ?? undefined,
-  releaseNotes: doc.releaseNotes ?? undefined,
-  metadata: doc.metadata ?? undefined,
-  cicdPlatform: doc.cicdPlatform ?? undefined,
-  cicdBuildUrl: doc.cicdBuildUrl ?? undefined,
-  cicdBuildId: doc.cicdBuildId ?? undefined
-})
+const docToDeployment = (doc: DeploymentDocument): any => {
+  // Lazy migration: generate hash for old deployments
+  const deploymentHash = doc.deploymentHash ||
+    generateDeploymentHash(doc.projectId, doc.environmentId, doc.serviceId, doc.commitSha, doc.version)
+
+  return {
+    id: Schema.decodeSync(DeploymentId)(doc._id.toHexString()),
+    deploymentHash,
+    projectId: doc.projectId as unknown as ProjectId,
+    environmentId: doc.environmentId as unknown as EnvironmentId,
+    serviceId: doc.serviceId as unknown as ServiceId,
+    version: doc.version,
+    commitSha: doc.commitSha,
+    gitTag: doc.gitTag ?? undefined,
+    pullRequestUrl: doc.pullRequestUrl ?? undefined,
+    deployedBy: doc.deployedBy ?? undefined,
+    deployedAt: doc.deployedAt,
+    status: doc.status,
+    // Backward compatibility: empty array for old deployments
+    statusHistory: (doc.statusHistory || []).map((entry) => ({
+      status: entry.status,
+      timestamp: entry.timestamp,
+      cicdBuildId: entry.cicdBuildId ?? undefined,
+      cicdBuildUrl: entry.cicdBuildUrl ?? undefined
+    })),
+    buildUrl: doc.buildUrl ?? undefined,
+    releaseNotes: doc.releaseNotes ?? undefined,
+    metadata: doc.metadata ?? undefined,
+    cicdPlatform: doc.cicdPlatform ?? undefined,
+    cicdBuildUrl: doc.cicdBuildUrl ?? undefined,
+    cicdBuildId: doc.cicdBuildId ?? undefined
+  }
+}
 
 /**
  * Live implementation of DeploymentsRepository
@@ -123,36 +165,75 @@ export const DeploymentsRepositoryLive = Layer.effect(
     return {
       create: (projectId, environmentId, serviceId, version, input) =>
         Effect.gen(function*() {
-          const deploymentDoc: Omit<DeploymentDocument, "_id"> = {
-            projectId,
-            environmentId,
-            serviceId,
-            version,
-            commitSha: input.commitSha,
-            gitTag: input.gitTag ?? null,
-            pullRequestUrl: input.pullRequestUrl ?? null,
-            deployedBy: input.deployedBy ?? null,
-            deployedAt: new Date(),
+          // Generate deterministic hash for upsert
+          const deploymentHash = generateDeploymentHash(projectId, environmentId, serviceId, input.commitSha, version)
+
+          const now = new Date()
+          const statusEntry: StatusHistoryDocument = {
             status: input.status ?? "success",
-            buildUrl: input.buildUrl ?? null,
-            releaseNotes: input.releaseNotes ?? null,
-            metadata: input.metadata ?? null,
-            cicdPlatform: input.cicdPlatform ?? null,
-            cicdBuildUrl: input.cicdBuildUrl ?? null,
-            cicdBuildId: input.cicdBuildId ?? null
+            timestamp: now,
+            cicdBuildId: input.cicdBuildId ?? null,
+            cicdBuildUrl: input.cicdBuildUrl ?? null
           }
 
+          // Upsert: update if hash exists, insert if not
           const result = yield* Effect.tryPromise({
-            try: () => collection.insertOne(deploymentDoc as any),
+            try: () =>
+              collection.findOneAndUpdate(
+                { deploymentHash },
+                {
+                  $set: {
+                    // Update mutable fields
+                    status: input.status ?? "success",
+                    deployedAt: now,
+                    version,
+                    commitSha: input.commitSha,
+                    gitTag: input.gitTag ?? null,
+                    pullRequestUrl: input.pullRequestUrl ?? null,
+                    deployedBy: input.deployedBy ?? null,
+                    buildUrl: input.buildUrl ?? null,
+                    releaseNotes: input.releaseNotes ?? null,
+                    metadata: input.metadata ?? null,
+                    cicdPlatform: input.cicdPlatform ?? null,
+                    cicdBuildUrl: input.cicdBuildUrl ?? null,
+                    cicdBuildId: input.cicdBuildId ?? null
+                  },
+                  $push: {
+                    // Append to status history
+                    statusHistory: statusEntry
+                  },
+                  $setOnInsert: {
+                    // Only set on first insert
+                    deploymentHash,
+                    projectId,
+                    environmentId,
+                    serviceId
+                  }
+                },
+                {
+                  upsert: true,
+                  returnDocument: "after"
+                }
+              ),
             catch: (error) =>
               new DatabaseError({
-                operation: "insertOne",
-                message: "Failed to create deployment",
+                operation: "findOneAndUpdate",
+                message: "Failed to create/update deployment",
                 cause: error
               })
           })
 
-          return docToDeployment({ _id: result.insertedId, ...deploymentDoc })
+          if (!result) {
+            return yield* Effect.fail(
+              new DatabaseError({
+                operation: "findOneAndUpdate",
+                message: "Upsert operation returned null",
+                cause: new Error("Result was null")
+              })
+            )
+          }
+
+          return docToDeployment(result)
         }),
 
       findById: (deploymentId) =>
