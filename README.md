@@ -109,6 +109,25 @@ pnpm gitleaks:report       # Generate JSON report
 
 Gitleaks automatically runs on `git push` via Husky pre-push hook to prevent secrets from being committed.
 
+## Release and Deployment
+
+Dtapline uses **Changesets** for version management and automated deployments:
+
+```sh
+# Create a changeset for your changes
+pnpm changeset
+
+# Commit and push - this creates a "Version Packages" PR
+git add .changeset && git commit -m "chore: add changeset" && git push
+
+# Merge the PR to trigger production deployments
+# - CLI publishes to NPM
+# - API deploys to AWS Lambda
+# - UI deploys to Netlify
+```
+
+See the [Release Pipeline Guide](docs/release-pipeline.md) for complete documentation.
+
 ## Running Code
 
 This template leverages [tsx](https://tsx.is) to allow execution of TypeScript files via NodeJS as if they were written in plain JavaScript.

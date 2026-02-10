@@ -78,6 +78,7 @@ pnpm dedupe        # Deduplicate dependencies (run after adding/updating deps)
 - [Effect Patterns](docs/effect-patterns.md) - Services, errors, schemas, dependency injection
 - [React Patterns](docs/react-patterns.md) - Components, styling, TanStack Router
 - [Testing Guide](docs/testing.md) - Vitest patterns and structure
+- [Release Pipeline](docs/release-pipeline.md) - Changesets workflow and automated deployments
 
 ## Resources
 

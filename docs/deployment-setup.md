@@ -5,10 +5,12 @@ Complete guide to deploy Dtapline infrastructure and enable self-hosting.
 ## Overview
 
 Dtapline tracks its own deployments across 2 environments:
+
 - **`development`**: Deployed on every merge to `main`
-- **`production`**: Deployed when Changesets publishes a release
+- **`production`**: Deployed when package tags are pushed (via Changesets workflow)
 
 Services tracked:
+
 - **`api`**: Backend API server (AWS Lambda)
 - **`ui`**: Frontend (Netlify)
 - **`cli`**: CLI tool (NPM package)
@@ -80,6 +82,7 @@ Repeat the same steps for production account.
 **For EACH workspace**, add these variables:
 
 #### AWS Credentials (Environment Variables, Sensitive)
+
 - `AWS_ACCESS_KEY_ID` - AWS access key for Terraform
 - `AWS_SECRET_ACCESS_KEY` - AWS secret key for Terraform
 
@@ -106,12 +109,14 @@ Repeat the same steps for production account.
 Create **TWO** database users (one per environment):
 
 **Development User:**
+
 - Authentication Method: AWS IAM
 - ARN: `arn:aws:iam::<your-dev-account-id>:role/dtapline-lambda-dev`
 - Database: `dtapline-dev`
 - Roles: `readWrite@dtapline-dev`
 
 **Production User:**
+
 - Authentication Method: AWS IAM
 - ARN: `arn:aws:iam::<your-prod-account-id>:role/dtapline-lambda-prd`
 - Database: `dtapline-prd`
@@ -145,6 +150,7 @@ pnpm bundle:lambda
 This creates `dist/lambda/index.js` - a single bundled file with all dependencies (1.4MB minified CommonJS).
 
 **Bundle optimizations:**
+
 - MongoDB's ESM source used via alias to avoid compatibility issues
 - CommonJS output (handles Node.js built-ins like zlib, timers correctly)
 - Minified and tree-shaken for optimal size
@@ -169,6 +175,7 @@ terraform apply -var-file=environments/development/terraform.tfvars
 ```
 
 **Save outputs:**
+
 ```bash
 terraform output api_gateway_url
 # Example: https://abc123xyz.execute-api.eu-central-1.amazonaws.com
@@ -218,6 +225,7 @@ No separate `aws lambda update-function-code` needed - Terraform handles everyth
 ### 5.2 Get Netlify Credentials
 
 1. **Auth Token**:
+
    - User Settings → Applications → Personal access tokens
    - Create new token → Copy
 
@@ -263,27 +271,28 @@ Server runs at http://localhost:3000
 
 Go to Repository Settings → Secrets and variables → Actions → Secrets
 
-| Secret Name | Value | Where to get |
-|-------------|-------|--------------|
-| `AWS_ACCESS_KEY_ID_DEV` | `AKIA...` | AWS IAM (Step 1) |
-| `AWS_SECRET_ACCESS_KEY_DEV` | `...` | AWS IAM (Step 1) |
-| `AWS_ACCESS_KEY_ID_PROD` | `AKIA...` | AWS IAM (Step 1) |
-| `AWS_SECRET_ACCESS_KEY_PROD` | `...` | AWS IAM (Step 1) |
-| `TF_API_TOKEN` | `...` | Terraform Cloud (Step 2.3) |
-| `DTAPLINE_API_KEY` | `cm_...` | Dtapline UI (Step 6.3) |
-| `NETLIFY_AUTH_TOKEN` | `...` | Netlify (Step 5.2) |
-| `NETLIFY_SITE_ID` | `...` | Netlify (Step 5.2) |
-| `NPM_TOKEN` | `...` | Already exists |
+| Secret Name             | Value                 | Where to get                                                                    |
+| ----------------------- | --------------------- | ------------------------------------------------------------------------------- |
+| `PAT_TOKEN`             | Personal Access Token | GitHub Settings → Developer settings → PAT (needs `repo` and `workflow` scopes) |
+| `AWS_ACCESS_KEY_ID`     | `AKIA...`             | AWS IAM (Step 1)                                                                |
+| `AWS_SECRET_ACCESS_KEY` | `...`                 | AWS IAM (Step 1)                                                                |
+| `TF_API_TOKEN`          | `...`                 | Terraform Cloud (Step 2.3)                                                      |
+| `MONGODB_URI`           | `mongodb+srv://...`   | MongoDB Atlas connection string                                                 |
+| `DTAPLINE_API_KEY`      | `cm_...`              | Dtapline UI (Step 6.3)                                                          |
+| `NETLIFY_AUTH_TOKEN`    | `...`                 | Netlify (Step 5.2)                                                              |
+| `NPM_TOKEN`             | `...`                 | NPM account access token                                                        |
+
+**Important:** `PAT_TOKEN` is required for the release workflow to push tags that trigger production deployments. Create it from a real user account (not a bot) with `repo` and `workflow` scopes.
 
 ### 7.2 Add Variables
 
 Go to Repository Settings → Secrets and variables → Actions → Variables
 
-| Variable Name | Value | Where to get |
-|---------------|-------|--------------|
-| `API_GATEWAY_URL_DEVELOPMENT` | `https://....execute-api.eu-central-1.amazonaws.com` | Terraform output (Step 4.1) |
-| `API_GATEWAY_URL_PRODUCTION` | `https://....execute-api.eu-central-1.amazonaws.com` | Terraform output (Step 4.2) |
-| `DTAPLINE_SERVER_URL` | Same as production API Gateway URL | For CLI reporting |
+| Variable Name         | Value                                                | Where to get                             |
+| --------------------- | ---------------------------------------------------- | ---------------------------------------- |
+| `API_GATEWAY_URL`     | `https://....execute-api.eu-central-1.amazonaws.com` | Terraform output (Step 4.3 - production) |
+| `DTAPLINE_SERVER_URL` | Same as `API_GATEWAY_URL`                            | For CLI deployment reporting             |
+| `NETLIFY_SITE_ID`     | `abc123...`                                          | Netlify Site Settings (Step 5.2)         |
 
 ---
 
@@ -293,6 +302,7 @@ Go to Repository Settings → Secrets and variables → Actions → Variables
 
 1. Create a small change in `packages/api/src/server.ts`
 2. Commit and push to `main`:
+
    ```bash
    git add .
    git commit -m "test: trigger development deployment"
@@ -300,6 +310,7 @@ Go to Repository Settings → Secrets and variables → Actions → Variables
    ```
 
 3. Watch GitHub Actions:
+
    - `.github/workflows/deploy-development.yml` should run
    - Check logs for Lambda deployment
    - Verify Dtapline CLI reporting succeeds
@@ -312,14 +323,17 @@ Go to Repository Settings → Secrets and variables → Actions → Variables
 ### 8.2 Test Production Deployment
 
 1. Create a changeset:
+
    ```bash
    pnpm changeset
    ```
+
    - Select packages to version
    - Choose version bump (patch/minor/major)
    - Write summary
 
 2. Commit changeset:
+
    ```bash
    git add .changeset
    git commit -m "chore: add changeset for release"
@@ -327,13 +341,17 @@ Go to Repository Settings → Secrets and variables → Actions → Variables
    ```
 
 3. Changesets will create a "Version Packages" PR:
+
    - Review the PR
    - Merge when ready
 
-4. After merge:
-   - Changesets publishes to NPM (via `release.yml`)
-   - Creates git tag (e.g., `v1.0.0`)
-   - Tag triggers `.github/workflows/deploy-production.yml`
+4. After merge, the release workflow (`.github/workflows/release.yml`) automatically:
+
+   - Creates package tags (e.g., `@dtapline/cli@0.1.0`)
+   - Tags trigger individual deployment workflows:
+     - `deploy-cli.yml` - Publishes to NPM
+     - `deploy-api.yml` - Deploys to AWS Lambda
+     - `deploy-ui.yml` - Deploys to Netlify
 
 5. Check Dtapline dashboard:
    - Environment: `production`
@@ -345,14 +363,19 @@ Go to Repository Settings → Secrets and variables → Actions → Variables
 ## Summary
 
 You now have:
+
 - ✅ Dtapline tracking its own deployments
 - ✅ 2 environments: `development` and `production`
 - ✅ 3 services: `api`, `ui`, `cli`
 - ✅ Automated deployment via Terraform (no manual Lambda updates)
 - ✅ Single bundled Lambda file (fast cold starts)
 - ✅ Secure infrastructure with IAM authentication
-- ✅ Simple AWS credentials (no OIDC complexity)
+- ✅ Tag-based production deployments via Changesets
 
 **Dashboard URL**: https://your-site.netlify.app/projects/<PROJECT_ID>
 
-Enjoy dogfooding Dtapline! 🚀
+## Next Steps
+
+- See [Release Pipeline](./release-pipeline.md) for detailed documentation on the Changesets workflow
+- Learn how to create releases and trigger production deployments
+- Understand the PAT requirement and tag-based deployment triggers
