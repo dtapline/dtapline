@@ -89,15 +89,19 @@ export const DeploymentServiceLive = Layer.effect(
             }
           }
 
-          // 5. Extract version from git tag using configured pattern
-          const versionPattern = yield* versionPatternsRepo.getPatternForService(
-            projectId,
-            input.service
-          )
-
-          const version = input.gitTag
-            ? extractVersion(input.gitTag, versionPattern) ?? input.commitSha
-            : input.commitSha
+          // 5. Determine version: use explicit version if provided, otherwise extract from git tag
+          let version: string
+          if (input.version) {
+            version = input.version
+          } else if (input.gitTag) {
+            const versionPattern = yield* versionPatternsRepo.getPatternForService(
+              projectId,
+              input.service
+            )
+            version = extractVersion(input.gitTag, versionPattern) ?? input.commitSha.slice(0, 7)
+          } else {
+            version = input.commitSha.slice(0, 7)
+          }
 
           // 6. Record the deployment
           const deployment = yield* deploymentsRepo.create(
@@ -122,15 +126,19 @@ export const DeploymentServiceLive = Layer.effect(
           // 3. Verify service exists
           const service = yield* servicesRepo.findById(serviceId)
 
-          // 4. Extract version from git tag using configured pattern
-          const versionPattern = yield* versionPatternsRepo.getPatternForService(
-            projectId,
-            service.name
-          )
-
-          const version = input.gitTag
-            ? extractVersion(input.gitTag, versionPattern) ?? input.commitSha
-            : input.commitSha
+          // 4. Determine version: use explicit version if provided, otherwise extract from git tag
+          let version: string
+          if (input.version) {
+            version = input.version
+          } else if (input.gitTag) {
+            const versionPattern = yield* versionPatternsRepo.getPatternForService(
+              projectId,
+              service.name
+            )
+            version = extractVersion(input.gitTag, versionPattern) ?? input.commitSha.slice(0, 7)
+          } else {
+            version = input.commitSha.slice(0, 7)
+          }
 
           // 5. Record the deployment
           const deployment = yield* deploymentsRepo.create(

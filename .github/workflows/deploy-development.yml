@@ -36,10 +36,11 @@ jobs:
           pnpm tsx packages/cli/src/index.ts deploy \
             development \
             cli \
-            ${GITHUB_SHA:0:7} \
+            ${{ github.sha }} \
             --server-url ${{ vars.DTAPLINE_SERVER_URL }} \
             --status in_progress \
             --deployed-by "GitHub Actions" \
+            --deployment-version "$(pnpm tsx scripts/get-next-version.ts @dtapline/cli)" \
             --build-url ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
       - name: Create CLI snapshot
@@ -60,10 +61,11 @@ jobs:
           pnpm tsx packages/cli/src/index.ts deploy \
             development \
             cli \
-            ${GITHUB_SHA:0:7} \
+            ${{ github.sha }} \
             --server-url ${{ vars.DTAPLINE_SERVER_URL }} \
             --status success \
             --deployed-by "GitHub Actions" \
+            --deployment-version "$(pnpm tsx scripts/get-next-version.ts @dtapline/cli)" \
             --build-url ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
       - name: Report deployment failure
@@ -74,10 +76,11 @@ jobs:
           pnpm tsx packages/cli/src/index.ts deploy \
             development \
             cli \
-            ${GITHUB_SHA:0:7} \
+            ${{ github.sha }} \
             --server-url ${{ vars.DTAPLINE_SERVER_URL }} \
             --status failed \
             --deployed-by "GitHub Actions" \
+            --deployment-version "$(pnpm tsx scripts/get-next-version.ts @dtapline/cli)" \
             --build-url ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
   deploy-api:
@@ -122,10 +125,11 @@ jobs:
           pnpm tsx packages/cli/src/index.ts deploy \
             development \
             api \
-            ${GITHUB_SHA:0:7} \
+            ${{ github.sha }} \
             --server-url ${{ vars.DTAPLINE_SERVER_URL }} \
             --status in_progress \
             --deployed-by "GitHub Actions" \
+            --deployment-version "$(pnpm tsx scripts/get-next-version.ts @dtapline/api)" \
             --build-url ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
       - name: Terraform Init
@@ -157,10 +161,11 @@ jobs:
           pnpm tsx packages/cli/src/index.ts deploy \
             development \
             api \
-            ${GITHUB_SHA:0:7} \
+            ${{ github.sha }} \
             --server-url ${{ vars.DTAPLINE_SERVER_URL || steps.terraform.outputs.api_url }} \
             --status success \
             --deployed-by "GitHub Actions" \
+            --deployment-version "$(pnpm tsx scripts/get-next-version.ts @dtapline/api)" \
             --build-url ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
       - name: Report failed deployment
@@ -172,10 +177,11 @@ jobs:
           pnpm tsx packages/cli/src/index.ts deploy \
             development \
             api \
-            ${GITHUB_SHA:0:7} \
+            ${{ github.sha }} \
             --server-url ${{ vars.DTAPLINE_SERVER_URL || vars.API_GATEWAY_URL }} \
             --status failed \
             --deployed-by "GitHub Actions" \
+            --deployment-version "$(pnpm tsx scripts/get-next-version.ts @dtapline/api)" \
             --build-url ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
   deploy-ui:
@@ -209,10 +215,11 @@ jobs:
           pnpm tsx packages/cli/src/index.ts deploy \
             development \
             ui \
-            ${GITHUB_SHA:0:7} \
+            ${{ github.sha }} \
             --server-url ${{ vars.DTAPLINE_SERVER_URL }} \
             --status in_progress \
             --deployed-by "GitHub Actions" \
+            --deployment-version "$(pnpm tsx scripts/get-next-version.ts @dtapline/ui)" \
             --build-url ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
       - name: Deploy to Netlify (branch deploy)
@@ -237,10 +244,11 @@ jobs:
           pnpm tsx packages/cli/src/index.ts deploy \
             development \
             ui \
-            ${GITHUB_SHA:0:7} \
+            ${{ github.sha }} \
             --server-url ${{ vars.DTAPLINE_SERVER_URL || vars.API_GATEWAY_URL }} \
             --status success \
             --deployed-by "GitHub Actions" \
+            --deployment-version "$(pnpm tsx scripts/get-next-version.ts @dtapline/ui)" \
             --build-url ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
       - name: Report failed deployment
@@ -252,8 +260,9 @@ jobs:
           pnpm tsx packages/cli/src/index.ts deploy \
             development \
             ui \
-            ${GITHUB_SHA:0:7} \
+            ${{ github.sha }} \
             --server-url ${{ vars.DTAPLINE_SERVER_URL || vars.API_GATEWAY_URL }} \
             --status failed \
             --deployed-by "GitHub Actions" \
+            --deployment-version "$(pnpm tsx scripts/get-next-version.ts @dtapline/ui)" \
             --build-url ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
