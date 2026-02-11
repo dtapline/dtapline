@@ -58,6 +58,7 @@ export class CreateDeploymentInput extends Schema.Struct({
   service: Schema.String.pipe(Schema.minLength(1)),
 
   // Version info
+  version: Schema.optional(Schema.String), // Explicit semantic version (e.g., "1.2.3")
   gitTag: Schema.optional(Schema.String),
   commitSha: Schema.String,
   pullRequestUrl: Schema.optional(Schema.String.pipe(Schema.pattern(/^https?:\/\/.+/))),

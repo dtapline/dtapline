@@ -35,11 +35,12 @@ jobs:
           pnpm tsx packages/cli/src/index.ts deploy \
             production \
             cli \
-            ${GITHUB_SHA:0:7} \
+            ${{ github.sha }} \
             --server-url ${{ vars.DTAPLINE_SERVER_URL }} \
             --git-tag ${{ github.ref_name }} \
             --status in_progress \
             --deployed-by "GitHub Actions" \
+            --deployment-version "${GITHUB_REF_NAME##*@}" \
             --build-url ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
       - name: Publish to NPM
@@ -58,11 +59,12 @@ jobs:
           pnpm tsx packages/cli/src/index.ts deploy \
             production \
             cli \
-            ${GITHUB_SHA:0:7} \
+            ${{ github.sha }} \
             --server-url ${{ vars.DTAPLINE_SERVER_URL }} \
             --git-tag ${{ github.ref_name }} \
             --status success \
             --deployed-by "GitHub Actions" \
+            --deployment-version "${GITHUB_REF_NAME##*@}" \
             --build-url ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
       - name: Report deployment failure
@@ -73,9 +75,10 @@ jobs:
           pnpm tsx packages/cli/src/index.ts deploy \
             production \
             cli \
-            ${GITHUB_SHA:0:7} \
+            ${{ github.sha }} \
             --server-url ${{ vars.DTAPLINE_SERVER_URL }} \
             --git-tag ${{ github.ref_name }} \
             --status failed \
             --deployed-by "GitHub Actions" \
+            --deployment-version "${GITHUB_REF_NAME##*@}" \
             --build-url ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}

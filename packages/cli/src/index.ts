@@ -78,6 +78,11 @@ const releaseNotesOption = Options.text("release-notes").pipe(
   Options.optional
 )
 
+const deploymentVersionOption = Options.text("deployment-version").pipe(
+  Options.withDescription("Semantic version for this deployment (e.g., 1.2.3)"),
+  Options.optional
+)
+
 // ============================================================================
 // Deploy Command
 // ============================================================================
@@ -95,7 +100,8 @@ const deployCommand = Command.make(
     deployedBy: deployedByOption,
     status: statusOption,
     buildUrl: buildUrlOption,
-    releaseNotes: releaseNotesOption
+    releaseNotes: releaseNotesOption,
+    deploymentVersion: deploymentVersionOption
   },
   (args) =>
     Effect.gen(function*() {
@@ -115,6 +121,7 @@ const deployCommand = Command.make(
         environment: args.environment,
         service: args.service,
         commitSha: args.commitSha,
+        ...(Option.isSome(args.deploymentVersion) && { version: args.deploymentVersion.value }),
         ...(Option.isSome(args.gitTag) && { gitTag: args.gitTag.value }),
         ...(Option.isSome(args.prUrl) && { pullRequestUrl: args.prUrl.value }),
         ...(Option.isSome(args.deployedBy) && { deployedBy: args.deployedBy.value }),
@@ -132,6 +139,7 @@ const deployCommand = Command.make(
       yield* Console.log(`  Environment: ${args.environment}`)
       yield* Console.log(`  Service: ${args.service}`)
       yield* Console.log(`  Commit: ${args.commitSha}`)
+      if (Option.isSome(args.deploymentVersion)) yield* Console.log(`  Version: ${args.deploymentVersion.value}`)
       if (Option.isSome(args.gitTag)) yield* Console.log(`  Tag: ${args.gitTag.value}`)
       if (cicdInfo.detected) yield* Console.log(`  CI/CD Platform: ${cicdInfo.platform}`)
       yield* Console.log(`  Status: ${args.status}`)
