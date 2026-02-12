@@ -19,7 +19,7 @@ export function EnvironmentDialog({
 }: EnvironmentDialogProps) {
   const [name, setName] = useState("")
   const [slug, setSlug] = useState("")
-  const [color, setColor] = useState("#5CC8FF")
+  const [color, setColor] = useState("#22D3EE")
   const [order, setOrder] = useState("0")
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(false)
 
@@ -40,13 +40,13 @@ export function EnvironmentDialog({
     if (environment) {
       setName(environment.name)
       setSlug(environment.slug)
-      setColor(environment.color ?? "#5CC8FF")
+      setColor(environment.color ?? "#22D3EE")
       setSlugManuallyEdited(true) // Don't auto-generate when editing
       // Order is managed via drag-and-drop, not editable in dialog
     } else {
       setName("")
       setSlug("")
-      setColor("#5CC8FF")
+      setColor("#22D3EE")
       setOrder("0")
       setSlugManuallyEdited(false)
     }
