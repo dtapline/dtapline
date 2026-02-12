@@ -107,10 +107,10 @@ const docToEnvironment = (doc: EnvironmentDocument): any => ({
  * Uses the dtap logo gradient colors
  */
 const DEFAULT_COLORS = [
-  "#5CC8FF", // cyan (d)
-  "#6EE7A8", // green (t)
-  "#FFD166", // yellow (a)
-  "#9B8CFF" // purple (p)
+  "#22D3EE", // cyan (d)
+  "#10B981", // green (t)
+  "#F59E0B", // yellow (a)
+  "#8B5CF6" // purple (p)
 ]
 
 /**
