@@ -73,7 +73,7 @@ jobs:
         env:
           TF_WORKSPACE: dtapline-api-prd
           TF_VAR_stage: "prd"
-          TF_VAR_mongodb_uri: ${{ secrets.MONGODB_URI }}
+          TF_VAR_mongodb_uri: ${{ vars.MONGODB_URI }}
         run: |
           terraform apply -auto-approve
 
