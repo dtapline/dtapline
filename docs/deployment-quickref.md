@@ -4,14 +4,15 @@ Quick commands and values for Dtapline deployment.
 
 ## Environments
 
-| Environment | AWS Account | MongoDB Database | Trigger |
-|-------------|-------------|------------------|---------|
-| Development | Your Dev Account | dtapline-dev | Push to `main` |
-| Production | Your Prod Account | dtapline-prd | Release tag (changesets) |
+| Environment | AWS Account       | MongoDB Database | Trigger                  |
+| ----------- | ----------------- | ---------------- | ------------------------ |
+| Development | Your Dev Account  | dtapline-dev     | Push to `main`           |
+| Production  | Your Prod Account | dtapline-prd     | Release tag (changesets) |
 
 ## Terraform Commands
 
 ### Development
+
 ```bash
 cd packages/api/infra
 
@@ -28,6 +29,7 @@ terraform output lambda_function_name
 ```
 
 ### Production
+
 ```bash
 cd packages/api/infra
 
@@ -42,10 +44,7 @@ terraform apply -var-file=environments/production/terraform.tfvars
 ## GitHub Secrets Required
 
 ```
-AWS_ACCESS_KEY_ID_DEV         # CI user development
-AWS_SECRET_ACCESS_KEY_DEV     # CI user development
-AWS_ACCESS_KEY_ID_PROD        # CI user production
-AWS_SECRET_ACCESS_KEY_PROD    # CI user production
+AWS_ASSUME_ROLE               # CI role to assume
 DTAPLINE_API_KEY              # From Dtapline UI
 TF_API_TOKEN                  # Terraform Cloud token
 NETLIFY_AUTH_TOKEN            # Netlify personal access token
@@ -64,6 +63,7 @@ DTAPLINE_SERVER_URL           # Same as production API Gateway
 ## MongoDB Atlas Configuration
 
 ### Connection Strings
+
 ```
 Development: mongodb+srv://<your-cluster>.mongodb.net/dtapline-dev?authSource=%24external&authMechanism=MONGODB-AWS
 
@@ -73,11 +73,13 @@ Production: mongodb+srv://<your-cluster>.mongodb.net/dtapline-prd?authSource=%24
 ### IAM Database Users
 
 **Development**:
+
 - ARN: `arn:aws:iam::<your-dev-account-id>:role/dtapline-lambda-dev`
 - Database: `dtapline-dev`
 - Role: `readWrite`
 
 **Production**:
+
 - ARN: `arn:aws:iam::<your-prod-account-id>:role/dtapline-lambda-prd`
 - Database: `dtapline-prd`
 - Role: `readWrite`
@@ -85,28 +87,29 @@ Production: mongodb+srv://<your-cluster>.mongodb.net/dtapline-prd?authSource=%24
 ## CI User Setup
 
 ### Development Account
+
 ```bash
 aws iam create-user --user-name dtapline-ci
 aws iam create-access-key --user-name dtapline-ci
 
-# Save access keys as GitHub secrets:
-# AWS_ACCESS_KEY_ID_DEV
-# AWS_SECRET_ACCESS_KEY_DEV
+# Save assume role ARN as GitHub variables:
+# AWS_ASSUME_ROLE
 ```
 
 ### Production Account
+
 ```bash
 aws iam create-user --user-name dtapline-ci
 aws iam create-access-key --user-name dtapline-ci
 
-# Save access keys as GitHub secrets:
-# AWS_ACCESS_KEY_ID_PROD
-# AWS_SECRET_ACCESS_KEY_PROD
+# Save assume role ARN as GitHub variables:
+# AWS_ASSUME_ROLE
 ```
 
 ## Deployment Flow
 
 ### Development Flow
+
 ```
 1. Push to main
 2. GitHub Actions: check.yml runs
@@ -118,6 +121,7 @@ aws iam create-access-key --user-name dtapline-ci
 ```
 
 ### Production Flow
+
 ```
 1. Create changeset: pnpm changeset
 2. Commit and push
@@ -137,23 +141,27 @@ aws iam create-access-key --user-name dtapline-ci
 ## Useful Commands
 
 ### Check Lambda Status
+
 ```bash
 aws lambda get-function --function-name dtapline-api-development
 aws lambda get-function --function-name dtapline-api-production
 ```
 
 ### View Lambda Logs
+
 ```bash
 aws logs tail /aws/lambda/dtapline-api-development --follow
 aws logs tail /aws/lambda/dtapline-api-production --follow
 ```
 
 ### Test API Gateway
+
 ```bash
 curl https://<api-gateway-url>/api/v1/projects
 ```
 
 ### Deploy Lambda Manually
+
 ```bash
 cd packages/api
 pnpm build
@@ -178,6 +186,7 @@ aws lambda update-function-code \
 **URL Pattern**: `https://<netlify-url>/projects/<project-id>`
 
 Expected view:
+
 ```
          api           ui            cli
 prd     v1.0.0        v1.0.0        v1.0.0

@@ -144,16 +144,15 @@ Each deployment workflow includes:
 
 ### Secrets
 
-| Secret                  | Used By                  | Purpose                          |
-| ----------------------- | ------------------------ | -------------------------------- |
-| `PAT_TOKEN`             | release.yml              | Push tags to trigger deployments |
-| `NPM_TOKEN`             | deploy-cli.yml           | Publish to NPM                   |
-| `AWS_ACCESS_KEY_ID`     | deploy-api.yml           | AWS credentials                  |
-| `AWS_SECRET_ACCESS_KEY` | deploy-api.yml           | AWS credentials                  |
-| `TF_API_TOKEN`          | deploy-api.yml           | Terraform Cloud authentication   |
-| `MONGODB_URI`           | deploy-api.yml           | Production database              |
-| `NETLIFY_AUTH_TOKEN`    | deploy-ui.yml            | Netlify authentication           |
-| `DTAPLINE_API_KEY`      | All deployment workflows | Report deployments               |
+| Secret               | Used By                  | Purpose                          |
+| -------------------- | ------------------------ | -------------------------------- |
+| `PAT_TOKEN`          | release.yml              | Push tags to trigger deployments |
+| `NPM_TOKEN`          | deploy-cli.yml           | Publish to NPM                   |
+| `AWS_ASSUME_ROLE`    | deploy-api.yml           | AWS IAM role ARN                 |
+| `TF_API_TOKEN`       | deploy-api.yml           | Terraform Cloud authentication   |
+| `MONGODB_URI`        | deploy-api.yml           | Production database              |
+| `NETLIFY_AUTH_TOKEN` | deploy-ui.yml            | Netlify authentication           |
+| `DTAPLINE_API_KEY`   | All deployment workflows | Report deployments               |
 
 ### Variables
 

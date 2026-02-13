@@ -5,17 +5,20 @@ Simple deployment setup for Dtapline self-hosting using Terraform.
 ## ✅ What's Included
 
 **Infrastructure:**
+
 - ✓ Server infrastructure (Lambda + API Gateway) in `packages/api/infra/`
 - ✓ Terraform workspaces: 2 (development, production)
 - ✓ Lambda code bundled with esbuild and deployed via Terraform
 - ✓ Simple AWS credentials (no OIDC complexity)
 
 **GitHub Actions:**
+
 - ✓ `deploy-development.yml` - Deploy on push to main
 - ✓ `deploy-production.yml` - Deploy on release tags
 - ✓ Dtapline CLI integration for self-tracking
 
 **Documentation:**
+
 - ✓ `docs/deployment-setup.md` - Complete setup guide
 - ✓ `docs/deployment-quickref.md` - Quick reference
 - ✓ `packages/api/infra/README.md` - Infrastructure guide
@@ -25,6 +28,7 @@ Simple deployment setup for Dtapline self-hosting using Terraform.
 ## 📋 Quick Setup Checklist
 
 ### 1. AWS CI User (10 min)
+
 ```bash
 # Create CI user in both accounts (optional - can use admin)
 aws iam create-user --user-name dtapline-ci
@@ -32,15 +36,18 @@ aws iam create-access-key --user-name dtapline-ci
 ```
 
 ### 2. Terraform Cloud (5 min)
+
 - Create workspaces: `dtapline-api-{environment}`
 - Add AWS credentials to workspaces
 
 ### 3. MongoDB Atlas (10 min)
+
 - Enable IAM authentication
 - Create database users (ARNs from Terraform)
 - Allow AWS IPs: `0.0.0.0/0`
 
 ### 4. Deploy Infrastructure (10 min)
+
 ```bash
 cd packages/api
 
@@ -54,19 +61,23 @@ terraform apply -var-file=terraform.tfvars
 ```
 
 ### 5. Netlify (5 min)
+
 - Create site
 - Get auth token and site ID
 
 ### 6. Dtapline Project (5 min)
+
 - Start local server or deploy
 - Create project
 - Generate API key
 
 ### 7. GitHub Configuration (10 min)
+
 - Add 7 secrets (AWS keys, TF token, API key, Netlify, NPM)
 - Add 2 variables (API Gateway URLs - optional, from Terraform outputs)
 
 ### 8. Test (5 min)
+
 ```bash
 git commit --allow-empty -m "test"
 git push origin main
@@ -78,17 +89,14 @@ git push origin main
 
 ## 🔐 GitHub Secrets Needed
 
-| Secret | Purpose |
-|--------|---------|
-| `AWS_ACCESS_KEY_ID_DEV` | CI user development |
-| `AWS_SECRET_ACCESS_KEY_DEV` | CI user development |
-| `AWS_ACCESS_KEY_ID_PROD` | CI user production |
-| `AWS_SECRET_ACCESS_KEY_PROD` | CI user production |
-| `TF_API_TOKEN` | Terraform Cloud API token |
-| `DTAPLINE_API_KEY` | Dtapline API key |
-| `NETLIFY_AUTH_TOKEN` | Netlify deployment |
-| `NETLIFY_SITE_ID` | Netlify site |
-| `NPM_TOKEN` | NPM publishing |
+| Secret               | Purpose                   |
+| -------------------- | ------------------------- |
+| `AWS_ASSUME_ROLE`    | CI role to assume         |
+| `TF_API_TOKEN`       | Terraform Cloud API token |
+| `DTAPLINE_API_KEY`   | Dtapline API key          |
+| `NETLIFY_AUTH_TOKEN` | Netlify deployment        |
+| `NETLIFY_SITE_ID`    | Netlify site              |
+| `NPM_TOKEN`          | NPM publishing            |
 
 ---
 
@@ -106,10 +114,12 @@ dev     abc1234       abc1234       -
 ```
 
 **Environments tracked:**
+
 - `development` - Every push to main
 - `production` - Release tags only
 
 **Services tracked:**
+
 - `api` - Lambda backend
 - `ui` - Netlify frontend
 - `cli` - NPM package
@@ -119,11 +129,13 @@ dev     abc1234       abc1234       -
 ## 🎯 Deployment Flow
 
 **Development** (continuous):
+
 ```
 Push to main → Bundle Lambda → Terraform Apply → Dtapline tracks it
 ```
 
 **Production** (controlled):
+
 ```
 Create changeset → Merge PR → Tag → Bundle Lambda → Terraform Apply → Dtapline tracks it
 ```
@@ -156,6 +168,7 @@ Create changeset → Merge PR → Tag → Bundle Lambda → Terraform Apply → 
 ## ✨ Why This Approach?
 
 **Simple & Declarative:**
+
 - ✅ Terraform manages everything (infra + code)
 - ✅ No manual Lambda updates via AWS CLI
 - ✅ Single bundled file (faster cold starts)
@@ -163,6 +176,7 @@ Create changeset → Merge PR → Tag → Bundle Lambda → Terraform Apply → 
 - ✅ Standard AWS credentials
 
 **Each Service Owns Its Deployment:**
+
 - Server: Terraform (Lambda)
 - UI: GitHub Action (Netlify)
 - CLI: Changesets (NPM)

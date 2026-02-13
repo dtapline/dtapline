@@ -92,10 +92,7 @@ The Lambda code is updated automatically by GitHub Actions workflows using AWS c
 
 **Required GitHub Secrets:**
 
-- `AWS_ACCESS_KEY_ID_DEV` - Development AWS access key
-- `AWS_SECRET_ACCESS_KEY_DEV` - Development AWS secret key
-- `AWS_ACCESS_KEY_ID_PROD` - Production AWS access key
-- `AWS_SECRET_ACCESS_KEY_PROD` - Production AWS secret key
+- `AWS_ASSUME_ROLE` - Production AWS IAM role ARN for GitHub Actions to assume
 
 ## Setting Up CI User
 

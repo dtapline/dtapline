@@ -83,8 +83,7 @@ Repeat the same steps for production account.
 
 #### AWS Credentials (Environment Variables, Sensitive)
 
-- `AWS_ACCESS_KEY_ID` - AWS access key for Terraform
-- `AWS_SECRET_ACCESS_KEY` - AWS secret key for Terraform
+- `AWS_ASSUME_ROLE` - AWS IAM role ARN to assume for deployments (e.g., `arn:aws:iam::<account-id>:role/dtapline-deploy-role`)
 
 > **Note**: These can be the same credentials from Step 1, or separate admin credentials for Terraform.
 
@@ -271,16 +270,15 @@ Server runs at http://localhost:3000
 
 Go to Repository Settings → Secrets and variables → Actions → Secrets
 
-| Secret Name             | Value                 | Where to get                                                                    |
-| ----------------------- | --------------------- | ------------------------------------------------------------------------------- |
-| `PAT_TOKEN`             | Personal Access Token | GitHub Settings → Developer settings → PAT (needs `repo` and `workflow` scopes) |
-| `AWS_ACCESS_KEY_ID`     | `AKIA...`             | AWS IAM (Step 1)                                                                |
-| `AWS_SECRET_ACCESS_KEY` | `...`                 | AWS IAM (Step 1)                                                                |
-| `TF_API_TOKEN`          | `...`                 | Terraform Cloud (Step 2.3)                                                      |
-| `MONGODB_URI`           | `mongodb+srv://...`   | MongoDB Atlas connection string                                                 |
-| `DTAPLINE_API_KEY`      | `cm_...`              | Dtapline UI (Step 6.3)                                                          |
-| `NETLIFY_AUTH_TOKEN`    | `...`                 | Netlify (Step 5.2)                                                              |
-| `NPM_TOKEN`             | `...`                 | NPM account access token                                                        |
+| Secret Name          | Value                 | Where to get                                                                    |
+| -------------------- | --------------------- | ------------------------------------------------------------------------------- |
+| `PAT_TOKEN`          | Personal Access Token | GitHub Settings → Developer settings → PAT (needs `repo` and `workflow` scopes) |
+| `AWS_ASSUME_ROLE`    | `arn:aws:iam::...`    | AWS IAM (Step 1)                                                                |
+| `TF_API_TOKEN`       | `...`                 | Terraform Cloud (Step 2.3)                                                      |
+| `MONGODB_URI`        | `mongodb+srv://...`   | MongoDB Atlas connection string                                                 |
+| `DTAPLINE_API_KEY`   | `cm_...`              | Dtapline UI (Step 6.3)                                                          |
+| `NETLIFY_AUTH_TOKEN` | `...`                 | Netlify (Step 5.2)                                                              |
+| `NPM_TOKEN`          | `...`                 | NPM account access token                                                        |
 
 **Important:** `PAT_TOKEN` is required for the release workflow to push tags that trigger production deployments. Create it from a real user account (not a bot) with `repo` and `workflow` scopes.
 
