@@ -7,13 +7,11 @@ import {
   MoonIcon,
   MoreVerticalIcon,
   SunIcon,
-  UserCircleIcon,
+  UserCircleIcon
 } from "lucide-react"
 
-import {
-  Avatar,
-  AvatarFallback,
-} from "@/components/ui/avatar"
+import { useTheme } from "@/components/theme-provider"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,18 +22,13 @@ import {
   DropdownMenuSub,
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
-  DropdownMenuTrigger,
+  DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu"
-import {
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  useSidebar,
-} from "@/components/ui/sidebar"
-import { useTheme } from "@/components/theme-provider"
+import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@/components/ui/sidebar"
+import { signOut } from "@/lib/auth-client"
 
 export function NavUser({
-  user,
+  user
 }: {
   user: {
     name: string
@@ -44,7 +37,12 @@ export function NavUser({
   }
 }) {
   const { isMobile } = useSidebar()
-  const { theme, setTheme } = useTheme()
+  const { setTheme, theme } = useTheme()
+
+  const handleSignOut = async () => {
+    await signOut()
+    window.location.href = "/login"
+  }
 
   return (
     <SidebarMenu>
@@ -127,7 +125,7 @@ export function NavUser({
               </DropdownMenuSub>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={handleSignOut}>
               <LogOutIcon />
               Log out
             </DropdownMenuItem>

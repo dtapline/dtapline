@@ -12,8 +12,11 @@ config()
  * Local development server for Dtapline API
  *
  * Starts an HTTP API server on port 3000 with request logging middleware.
- * All dependencies (MongoDB, repositories, services) are automatically
+ * All dependencies (MongoDB, repositories, services, auth) are automatically
  * provided by the AppLive layer.
+ *
+ * Better Auth is mounted at /api/auth/* for handling authentication requests
+ * (sign in, sign up, OAuth callbacks, etc.)
  *
  * @example Run locally:
  * ```bash
@@ -23,9 +26,10 @@ config()
  *
  * Environment variables required:
  * - MONGODB_URI: MongoDB connection string
- * - DEFAULT_USER_ID: User ID for MVP (defaults to "default-user")
- * - DEFAULT_USER_EMAIL: User email for MVP
- * - DEFAULT_USER_NAME: User name for MVP
+ * - AUTH_SECRET: Secret for signing cookies
+ * - AUTH_URL: Base URL for auth (e.g. http://localhost:3000)
+ * - GITHUB_CLIENT_ID: (optional) GitHub OAuth client ID
+ * - GITHUB_CLIENT_SECRET: (optional) GitHub OAuth client secret
  */
 
 // Log startup
@@ -41,7 +45,12 @@ const allowedOrigins = process.env.CORS_ORIGINS?.split(",").map((s) => s.trim())
 console.log(`🌐 CORS enabled for: ${allowedOrigins.join(", ")}`)
 
 const HttpLive = HttpApiBuilder.serve((httpApp) =>
-  HttpMiddleware.logger(HttpMiddleware.cors({ allowedOrigins })(httpApp))
+  HttpMiddleware.logger(
+    HttpMiddleware.cors({
+      allowedOrigins,
+      credentials: true
+    })(httpApp)
+  )
 ).pipe(
   Layer.provide(AppLive),
   Layer.provide(NodeHttpServer.layer(createServer, { port: 3000 })),
@@ -54,4 +63,6 @@ const HttpLive = HttpApiBuilder.serve((httpApp) =>
   Layer.tap(() => Effect.sync(() => console.log("\n✅ Server is ready and listening on http://localhost:3000\n")))
 )
 
-NodeRuntime.runMain(Layer.launch(HttpLive))
+NodeRuntime.runMain(
+  Layer.launch(HttpLive)
+)

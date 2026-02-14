@@ -33,6 +33,7 @@
     "@effect/sql": "^0.49.0",
     "aws4": "^1.13.2",
     "bcryptjs": "^3.0.3",
+    "better-auth": "^1.4.18",
     "dotenv": "^17.2.3",
     "effect": "^3.19.15",
     "mongodb": "^7.0.0",

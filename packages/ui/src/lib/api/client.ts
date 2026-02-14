@@ -35,6 +35,7 @@ export function createApiClient(config: ApiConfig) {
     try {
       const response = await fetch(url, {
         ...options,
+        credentials: "include", // Include cookies for session authentication
         headers: {
           "Content-Type": "application/json",
           ...options?.headers
@@ -88,6 +89,9 @@ export function createApiClient(config: ApiConfig) {
 /**
  * API Client instance
  * Configure the base URL from environment variables
+ *
+ * In development, uses localhost:3000 with CORS
+ * In production, VITE_API_BASE_URL should be set to the actual API URL
  */
 export const apiClient = createApiClient({
   baseUrl: import.meta.env.VITE_API_BASE_URL || "http://localhost:3000"

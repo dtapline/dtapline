@@ -11,7 +11,9 @@
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
+import { Route as SignupImport } from './routes/signup'
 import { Route as ProjectsImport } from './routes/projects'
+import { Route as LoginImport } from './routes/login'
 import { Route as EnvironmentsImport } from './routes/environments'
 import { Route as IndexImport } from './routes/index'
 import { Route as ProjectProjectIdImport } from './routes/project.$projectId'
@@ -19,9 +21,21 @@ import { Route as ProjectProjectIdDeploymentsDeploymentIdImport } from './routes
 
 // Create/Update Routes
 
+const SignupRoute = SignupImport.update({
+  id: '/signup',
+  path: '/signup',
+  getParentRoute: () => rootRoute,
+} as any)
+
 const ProjectsRoute = ProjectsImport.update({
   id: '/projects',
   path: '/projects',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const LoginRoute = LoginImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -68,11 +82,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EnvironmentsImport
       parentRoute: typeof rootRoute
     }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginImport
+      parentRoute: typeof rootRoute
+    }
     '/projects': {
       id: '/projects'
       path: '/projects'
       fullPath: '/projects'
       preLoaderRoute: typeof ProjectsImport
+      parentRoute: typeof rootRoute
+    }
+    '/signup': {
+      id: '/signup'
+      path: '/signup'
+      fullPath: '/signup'
+      preLoaderRoute: typeof SignupImport
       parentRoute: typeof rootRoute
     }
     '/project/$projectId': {
@@ -109,7 +137,9 @@ const ProjectProjectIdRouteWithChildren =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/environments': typeof EnvironmentsRoute
+  '/login': typeof LoginRoute
   '/projects': typeof ProjectsRoute
+  '/signup': typeof SignupRoute
   '/project/$projectId': typeof ProjectProjectIdRouteWithChildren
   '/project/$projectId/deployments/$deploymentId': typeof ProjectProjectIdDeploymentsDeploymentIdRoute
 }
@@ -117,7 +147,9 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/environments': typeof EnvironmentsRoute
+  '/login': typeof LoginRoute
   '/projects': typeof ProjectsRoute
+  '/signup': typeof SignupRoute
   '/project/$projectId': typeof ProjectProjectIdRouteWithChildren
   '/project/$projectId/deployments/$deploymentId': typeof ProjectProjectIdDeploymentsDeploymentIdRoute
 }
@@ -126,7 +158,9 @@ export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
   '/environments': typeof EnvironmentsRoute
+  '/login': typeof LoginRoute
   '/projects': typeof ProjectsRoute
+  '/signup': typeof SignupRoute
   '/project/$projectId': typeof ProjectProjectIdRouteWithChildren
   '/project/$projectId/deployments/$deploymentId': typeof ProjectProjectIdDeploymentsDeploymentIdRoute
 }
@@ -136,21 +170,27 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/environments'
+    | '/login'
     | '/projects'
+    | '/signup'
     | '/project/$projectId'
     | '/project/$projectId/deployments/$deploymentId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/environments'
+    | '/login'
     | '/projects'
+    | '/signup'
     | '/project/$projectId'
     | '/project/$projectId/deployments/$deploymentId'
   id:
     | '__root__'
     | '/'
     | '/environments'
+    | '/login'
     | '/projects'
+    | '/signup'
     | '/project/$projectId'
     | '/project/$projectId/deployments/$deploymentId'
   fileRoutesById: FileRoutesById
@@ -159,14 +199,18 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   EnvironmentsRoute: typeof EnvironmentsRoute
+  LoginRoute: typeof LoginRoute
   ProjectsRoute: typeof ProjectsRoute
+  SignupRoute: typeof SignupRoute
   ProjectProjectIdRoute: typeof ProjectProjectIdRouteWithChildren
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   EnvironmentsRoute: EnvironmentsRoute,
+  LoginRoute: LoginRoute,
   ProjectsRoute: ProjectsRoute,
+  SignupRoute: SignupRoute,
   ProjectProjectIdRoute: ProjectProjectIdRouteWithChildren,
 }
 
@@ -182,7 +226,9 @@ export const routeTree = rootRoute
       "children": [
         "/",
         "/environments",
+        "/login",
         "/projects",
+        "/signup",
         "/project/$projectId"
       ]
     },
@@ -192,8 +238,14 @@ export const routeTree = rootRoute
     "/environments": {
       "filePath": "environments.tsx"
     },
+    "/login": {
+      "filePath": "login.tsx"
+    },
     "/projects": {
       "filePath": "projects.tsx"
+    },
+    "/signup": {
+      "filePath": "signup.tsx"
     },
     "/project/$projectId": {
       "filePath": "project.$projectId.tsx",

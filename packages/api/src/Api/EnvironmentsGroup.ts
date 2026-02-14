@@ -1,7 +1,8 @@
 import { DtaplineApi } from "@dtapline/domain/Api"
 import { HttpApiBuilder } from "@effect/platform"
-import { Config, Effect } from "effect"
+import { Effect } from "effect"
 import { EnvironmentsRepository } from "../Repositories/EnvironmentsRepository.js"
+import { AuthService } from "../Services/AuthService.js"
 
 /**
  * Environments API Group implementation
@@ -12,20 +13,22 @@ export const EnvironmentsGroupLive = HttpApiBuilder.group(
   "environments",
   (handlers) =>
     Effect.gen(function*() {
+      const authService = yield* AuthService
       const environmentsRepo = yield* EnvironmentsRepository
-      const defaultUserId = yield* Config.string("DEFAULT_USER_ID")
 
       return handlers
         // GET /api/v1/environments
-        .handle("listEnvironments", () =>
+        .handle("listEnvironments", ({ request }) =>
           Effect.gen(function*() {
-            const environments = yield* environmentsRepo.findByUserId(defaultUserId, false)
+            const userId = yield* authService.getUserId(request)
+            const environments = yield* environmentsRepo.findByUserId(userId, false)
             return { environments }
           }))
         // POST /api/v1/environments
-        .handle("createEnvironment", ({ payload }) =>
+        .handle("createEnvironment", ({ payload, request }) =>
           Effect.gen(function*() {
-            const environment = yield* environmentsRepo.create(defaultUserId, payload)
+            const userId = yield* authService.getUserId(request)
+            const environment = yield* environmentsRepo.create(userId, payload)
             return { environment }
           }))
         // PUT /api/v1/environments/:environmentId

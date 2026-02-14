@@ -24,5 +24,10 @@ import { AppLive } from "./Layers.js"
  */
 export const handler = LambdaHandler.fromHttpApi(
   Layer.mergeAll(AppLive, HttpServer.layerContext),
-  { middleware: HttpMiddleware.cors({ allowedOrigins: ["*"] }) }
+  {
+    middleware: HttpMiddleware.cors({
+      allowedOrigins: ["*"],
+      credentials: true
+    })
+  }
 )

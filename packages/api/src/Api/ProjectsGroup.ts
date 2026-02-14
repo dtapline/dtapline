@@ -2,11 +2,11 @@ import { DtaplineApi } from "@dtapline/domain/Api"
 import { DeploymentNotFound } from "@dtapline/domain/Errors"
 import { HttpApiBuilder } from "@effect/platform"
 import { Effect } from "effect"
-import { ServerConfigService } from "../Config.js"
 import { DeploymentsRepository } from "../Repositories/DeploymentsRepository.js"
 import { EnvironmentsRepository } from "../Repositories/EnvironmentsRepository.js"
 import { ProjectsRepository } from "../Repositories/ProjectsRepository.js"
 import { ServicesRepository } from "../Repositories/ServicesRepository.js"
+import { AuthService } from "../Services/AuthService.js"
 import { ComparisonService } from "../Services/ComparisonService.js"
 import { MatrixService } from "../Services/MatrixService.js"
 
@@ -19,7 +19,7 @@ export const ProjectsGroupLive = HttpApiBuilder.group(
   "projects",
   (handlers) =>
     Effect.gen(function*() {
-      const config = yield* ServerConfigService
+      const authService = yield* AuthService
       const projectsRepo = yield* ProjectsRepository
       const environmentsRepo = yield* EnvironmentsRepository
       const servicesRepo = yield* ServicesRepository
@@ -27,18 +27,18 @@ export const ProjectsGroupLive = HttpApiBuilder.group(
       const matrixService = yield* MatrixService
       const comparisonService = yield* ComparisonService
 
-      const userId = config.defaultUserId
-
       return handlers
         // GET /api/v1/projects
-        .handle("listProjects", () =>
+        .handle("listProjects", ({ request }) =>
           Effect.gen(function*() {
+            const userId = yield* authService.getUserId(request)
             const projects = yield* projectsRepo.findByUserId(userId)
             return { projects }
           }))
         // POST /api/v1/projects
-        .handle("createProject", ({ payload }) =>
+        .handle("createProject", ({ payload, request }) =>
           Effect.gen(function*() {
+            const userId = yield* authService.getUserId(request)
             const project = yield* projectsRepo.create(userId, payload)
             return { project }
           }))

@@ -3,19 +3,28 @@ import { Schema } from "effect"
 // Branded type for User ID
 export class UserId extends Schema.String.pipe(Schema.brand("UserId")) {}
 
-// User schema
+// User role enum - combines role + plan into single field
+// admin: Full system access, bypasses all limits
+// proUser: Paid plan with unlimited projects
+// freeUser: Free plan with limited projects
+export const UserRole = Schema.Literal("admin", "proUser", "freeUser")
+export type UserRole = Schema.Schema.Type<typeof UserRole>
+
+// Plan limits configuration based on role
+export const RoleLimits = {
+  admin: { maxProjects: Infinity },
+  proUser: { maxProjects: Infinity },
+  freeUser: { maxProjects: 3 }
+} as const
+
+// User schema (aligned with Better Auth structure)
 export class User extends Schema.Class<User>("User")({
   id: UserId,
   email: Schema.String.pipe(Schema.pattern(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)),
   name: Schema.String,
-  createdAt: Schema.DateFromSelf
+  emailVerified: Schema.Boolean,
+  image: Schema.NullOr(Schema.String),
+  role: UserRole,
+  createdAt: Schema.DateFromSelf,
+  updatedAt: Schema.DateFromSelf
 }) {}
-
-// For MVP: Hardcoded default user
-export const DEFAULT_USER_ID = Schema.decodeSync(UserId)("default-user")
-export const DEFAULT_USER = {
-  id: DEFAULT_USER_ID,
-  email: "team@company.com",
-  name: "Development Team",
-  createdAt: new Date()
-} satisfies Schema.Schema.Type<typeof User>

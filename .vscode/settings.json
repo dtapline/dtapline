@@ -4,6 +4,7 @@
   "typescript.enablePromptUseWorkspaceTsdk": true,
   "editor.formatOnSave": true,
   "eslint.format.enable": true,
+  "bun.test.enable": false,
   "[json]": {
     "editor.defaultFormatter": "vscode.json-language-features"
   },
@@ -42,19 +43,5 @@
   "editor.suggestSelection": "recentlyUsed",
   "editor.wordBasedSuggestions": "matchingDocuments",
   "editor.parameterHints.enabled": true,
-  "files.insertFinalNewline": true,
-  "yaml.schemas": {
-    "osx": {
-      "file:/Users/victor/Library/Application Support/Code/User/globalStorage/amazonwebservices.aws-toolkit-vscode/sam.schema.json": [
-        "sam-node/template.yaml",
-        "template.yaml"
-      ],
-      "file:///Users/victor/.vscode/extensions/atlassian.atlascode-3.0.6/resources/schemas/pipelines-schema.json": "bitbucket-pipelines.yml"
-    },
-    "windows": {
-      "file:///c%3A/Users/Victor/.vscode/extensions/atlassian.atlascode-3.0.3/resources/schemas/pipelines-schema.json": "bitbucket-pipelines.yml"
-    },
-    "file:///Users/victor/.vscode/extensions/atlassian.atlascode-3.4.22/resources/schemas/pipelines-schema.json": "bitbucket-pipelines.yml",
-    "https://www.artillery.io/schema.json": []
-  }
+  "files.insertFinalNewline": true
 }

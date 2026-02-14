@@ -1,13 +1,15 @@
 import { Layer } from "effect"
 import { DtaplineApiLive } from "./Api/DtaplineApiLive.js"
+import { BetterAuthLive } from "./Auth.js"
 import { ServerConfigLive } from "./Config.js"
-import { MongoDBLive } from "./MongoDB.js"
+import { MongoClientLive, MongoDBLive } from "./MongoDB.js"
 import { ApiKeysRepositoryLive } from "./Repositories/ApiKeysRepository.js"
 import { DeploymentsRepositoryLive } from "./Repositories/DeploymentsRepository.js"
 import { EnvironmentsRepositoryLive } from "./Repositories/EnvironmentsRepository.js"
 import { ProjectsRepositoryLive } from "./Repositories/ProjectsRepository.js"
 import { ServicesRepositoryLive } from "./Repositories/ServicesRepository.js"
 import { VersionPatternsRepositoryLive } from "./Repositories/VersionPatternsRepository.js"
+import { AuthServiceLive } from "./Services/AuthService.js"
 import { ComparisonServiceLive } from "./Services/ComparisonService.js"
 import { DeploymentServiceLive } from "./Services/DeploymentService.js"
 import { MatrixServiceLive } from "./Services/MatrixService.js"
@@ -17,10 +19,12 @@ import { MatrixServiceLive } from "./Services/MatrixService.js"
  *
  * Layer dependency hierarchy:
  * 1. ServerConfigLive - Configuration from environment
- * 2. MongoDBLive - Database connection (depends on ServerConfigLive)
- * 3. RepositoriesLive - All repositories (depend on MongoDBLive)
- * 4. ServicesLive - Business logic services (depend on RepositoriesLive)
- * 5. DtaplineApiLive - HTTP API (depends on ServicesLive + RepositoriesLive)
+ * 2. MongoDBLive + MongoClientLive - Database connections
+ * 3. BetterAuthLive - Authentication (depends on MongoClientLive)
+ * 4. AuthServiceLive - Auth service wrapper (depends on BetterAuthLive)
+ * 5. RepositoriesLive - All repositories (depend on MongoDBLive)
+ * 6. ServicesLive - Business logic services (depend on RepositoriesLive)
+ * 7. DtaplineApiLive - HTTP API (depends on ServicesLive + RepositoriesLive + AuthServiceLive)
  */
 
 /**
@@ -53,15 +57,34 @@ export const ServicesLive = Layer.mergeAll(
 ).pipe(Layer.provide(RepositoriesLive))
 
 /**
+ * Auth layer composition
+ * Provides: AuthService
+ * Requires: Nothing (all dependencies provided internally)
+ */
+export const AuthLive = AuthServiceLive.pipe(
+  Layer.provide(BetterAuthLive),
+  Layer.provide(MongoClientLive),
+  Layer.provide(MongoDBLive),
+  Layer.provide(ServerConfigLive)
+)
+
+/**
  * Complete application layer ready for HTTP server
  * Provides: Dtapline HTTP API with all dependencies satisfied
  * Requires: Nothing (all dependencies are provided internally)
  *
- * The DtaplineApiLive requires all services and repositories to be available,
+ * The DtaplineApiLive requires all services, repositories, and auth to be available,
  * so we provide them in the correct dependency order.
+ *
+ * Note: We provide BetterAuthLive directly (in addition to AuthLive) because
+ * the AuthGroup needs direct access to BetterAuthInstance to handle auth requests.
  */
 export const AppLive = DtaplineApiLive.pipe(
+  Layer.provide(BetterAuthLive), // Provide Better Auth for AuthGroup
+  Layer.provide(AuthLive), // Provide AuthService for authenticated endpoints
   Layer.provide(ServicesLive),
   Layer.provide(RepositoriesLive),
+  Layer.provide(MongoClientLive),
+  Layer.provide(MongoDBLive),
   Layer.provide(ServerConfigLive)
 )

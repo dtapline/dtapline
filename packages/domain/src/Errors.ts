@@ -154,3 +154,14 @@ export class Forbidden extends Schema.TaggedError<Forbidden>()(
     message: Schema.String
   }
 ) {}
+
+// Plan limit errors
+export class PlanLimitExceeded extends Schema.TaggedError<PlanLimitExceeded>()(
+  "PlanLimitExceeded",
+  {
+    role: Schema.String,
+    resource: Schema.String,
+    limit: Schema.Number,
+    message: Schema.String
+  }
+) {}

@@ -13,6 +13,14 @@ export class MongoDatabase extends Context.Tag("MongoDatabase")<
 >() {}
 
 /**
+ * Service tag for MongoDB client (needed for Better Auth)
+ */
+export class MongoClientTag extends Context.Tag("MongoClient")<
+  MongoClientTag,
+  MongoClient
+>() {}
+
+/**
  * Cached MongoDB client for Lambda warm starts
  * This prevents reconnecting on every Lambda invocation
  */
@@ -24,6 +32,7 @@ let cachedDb: Db | null = null
  * - Reuses connection across Lambda invocations (warm starts)
  * - Properly handles connection lifecycle
  * - Uses Effect resource management for graceful shutdown
+ * - Provides both Db and MongoClient services
  */
 export const MongoDBLive = Layer.scoped(
   MongoDatabase,
@@ -103,6 +112,20 @@ export const MongoDBLive = Layer.scoped(
     )
 
     return db
+  })
+)
+
+/**
+ * Live implementation of MongoClient service
+ * This provides the MongoClient that owns the database
+ */
+export const MongoClientLive = Layer.effect(
+  MongoClientTag,
+  Effect.sync(() => {
+    if (!cachedClient) {
+      throw new Error("MongoClient not initialized. Make sure MongoDBLive is provided first.")
+    }
+    return cachedClient
   })
 )
 

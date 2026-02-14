@@ -7,9 +7,11 @@ export interface ServerConfig {
   readonly mongodbUri: string
   readonly port: number
   readonly corsOrigins: ReadonlyArray<string>
-  readonly defaultUserId: string
-  readonly defaultUserEmail: string
-  readonly defaultUserName: string
+  readonly authSecret: string
+  readonly authUrl: string
+  readonly githubClientId: string | null
+  readonly githubClientSecret: string | null
+  readonly selfHosted: boolean
 }
 
 /**
@@ -35,23 +37,31 @@ export const ServerConfigLive = Layer.effect(
     )
     const corsOrigins = corsOriginsStr.split(",").map((s) => s.trim())
 
-    const defaultUserId = yield* Config.string("DEFAULT_USER_ID").pipe(
-      Config.withDefault("default-user")
+    const authSecret = yield* Config.string("AUTH_SECRET")
+    const authUrl = yield* Config.string("AUTH_URL").pipe(
+      Config.withDefault("http://localhost:3000")
     )
-    const defaultUserEmail = yield* Config.string("DEFAULT_USER_EMAIL").pipe(
-      Config.withDefault("team@company.com")
+
+    const githubClientId = yield* Config.string("GITHUB_CLIENT_ID").pipe(
+      Config.withDefault(null)
     )
-    const defaultUserName = yield* Config.string("DEFAULT_USER_NAME").pipe(
-      Config.withDefault("Development Team")
+    const githubClientSecret = yield* Config.string("GITHUB_CLIENT_SECRET").pipe(
+      Config.withDefault(null)
+    )
+
+    const selfHosted = yield* Config.boolean("SELF_HOSTED").pipe(
+      Config.withDefault(false)
     )
 
     return {
       mongodbUri,
       port,
       corsOrigins,
-      defaultUserId,
-      defaultUserEmail,
-      defaultUserName
+      authSecret,
+      authUrl,
+      githubClientId,
+      githubClientSecret,
+      selfHosted
     }
   })
 )

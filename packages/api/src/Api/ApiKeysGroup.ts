@@ -1,8 +1,8 @@
 import { DtaplineApi } from "@dtapline/domain/Api"
 import { HttpApiBuilder } from "@effect/platform"
 import { Effect } from "effect"
-import { ServerConfigService } from "../Config.js"
 import { ApiKeysRepository } from "../Repositories/ApiKeysRepository.js"
+import { AuthService } from "../Services/AuthService.js"
 
 /**
  * API Keys API Group implementation
@@ -13,10 +13,8 @@ export const ApiKeysGroupLive = HttpApiBuilder.group(
   "apiKeys",
   (handlers) =>
     Effect.gen(function*() {
-      const config = yield* ServerConfigService
+      const authService = yield* AuthService
       const apiKeysRepo = yield* ApiKeysRepository
-
-      const userId = config.defaultUserId
 
       return handlers
         // GET /api/v1/projects/:projectId/api-keys
@@ -26,8 +24,9 @@ export const ApiKeysGroupLive = HttpApiBuilder.group(
             return { apiKeys }
           }))
         // POST /api/v1/projects/:projectId/api-keys
-        .handle("createApiKey", ({ path: { projectId }, payload }) =>
+        .handle("createApiKey", ({ path: { projectId }, payload, request }) =>
           Effect.gen(function*() {
+            const userId = yield* authService.getUserId(request)
             const apiKeyWithSecret = yield* apiKeysRepo.generate(projectId, userId, payload)
             const { keyHash: _keyHash, plainKey, userId: _userId, ...apiKeyResponse } = apiKeyWithSecret
             return {
