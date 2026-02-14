@@ -164,6 +164,7 @@ export class MyEntityNotFound extends Schema.TaggedError<MyEntityNotFound>()(
 ## Dependencies
 
 This package depends only on:
+
 - `effect` - Core Effect library
 - `@effect/platform` - HTTP API definitions
 - `@effect/schema` - Schema definitions and validation
@@ -172,4 +173,4 @@ No cross-package dependencies with `api`, `ui`, or `cli`.
 
 ## License
 
-MIT
+AGPL-3.0-only

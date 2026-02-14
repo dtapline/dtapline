@@ -64,10 +64,10 @@ trigger:
   - main
 
 pool:
-  vmImage: 'ubuntu-latest'
+  vmImage: "ubuntu-latest"
 
 variables:
-  - group: dtapline-secrets  # Contains DTAPLINE_API_KEY
+  - group: dtapline-secrets # Contains DTAPLINE_API_KEY
 
 stages:
   - stage: Build
@@ -76,13 +76,13 @@ stages:
         steps:
           - task: NodeTool@0
             inputs:
-              versionSpec: '20.x'
+              versionSpec: "20.x"
 
           # Your build steps here...
 
           - script: |
               npm install -g @dtapline/cli
-            displayName: 'Install Dtapline CLI'
+            displayName: "Install Dtapline CLI"
 
           - script: |
               dtapline deploy \
@@ -95,7 +95,7 @@ stages:
                 --deployed-by "Azure DevOps" \
                 --build-url $(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId) \
                 --status success
-            displayName: 'Report Deployment to dtapline'
+            displayName: "Report Deployment to dtapline"
             condition: succeeded()
 ```
 
@@ -143,11 +143,13 @@ jobs:
 Report a deployment to Dtapline API server.
 
 **Arguments:**
+
 - `environment` - The deployment environment (e.g., dev, staging, production)
 - `service` - The service name being deployed
 - `commitSha` - Git commit SHA being deployed
 
 **Options:**
+
 - `--api-key <key>` - Dtapline API key (or set DTAPLINE_API_KEY env var)
 - `--server-url <url>` - Dtapline API server URL (default: http://localhost:3000)
 - `--git-tag <tag>` - Git tag for this deployment (e.g., v1.2.3)
@@ -158,6 +160,7 @@ Report a deployment to Dtapline API server.
 - `--release-notes <notes>` - Release notes or changelog
 
 **Global Options:**
+
 - `--help` - Show help
 - `--version` - Show version
 - `--wizard` - Interactive mode
@@ -210,12 +213,14 @@ dtapline deploy production database i7j8k9l \
 ### "API key is required"
 
 Make sure you either:
+
 - Pass `--api-key` flag
 - Set `DTAPLINE_API_KEY` environment variable
 
 ### "Failed to report deployment"
 
 Check:
+
 - API key is valid and not expired
 - API key has `deployments:write` scope
 - Server URL is correct
@@ -247,4 +252,4 @@ node bin/dtapline.js deploy production test-service abc123 --api-key test
 
 ## License
 
-MIT
+AGPL-3.0-only

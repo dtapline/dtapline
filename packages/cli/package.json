@@ -1,7 +1,7 @@
 {
   "name": "@dtapline/cli",
   "version": "0.1.0",
-  "license": "MIT",
+  "license": "AGPL-3.0-only",
   "description": "Dtapline CLI for deployment reporting",
   "repository": {
     "type": "git",

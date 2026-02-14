@@ -106,16 +106,18 @@ pnpm build
 If you see `❌ Cannot connect to MongoDB`:
 
 1. **Check if MongoDB is running:**
+
    ```bash
    pnpm check-mongo
    ```
 
 2. **For local MongoDB:**
+
    ```bash
    # macOS
    brew services list
    brew services start mongodb-community
-   
+
    # Docker
    docker ps
    docker start mongodb
@@ -129,6 +131,7 @@ If you see `❌ Cannot connect to MongoDB`:
 ### Port Already in Use
 
 If port 3000 is already in use, either:
+
 - Stop the other process using port 3000
 - Change the `PORT` in `.env`
 
@@ -137,6 +140,7 @@ If port 3000 is already in use, either:
 The API implements the Dtapline HTTP API specification defined in `@dtapline/domain/Api`.
 
 Main endpoint groups:
+
 - `/api/v1/projects` - Project management
 - `/api/v1/projects/:id/environments` - Environment management
 - `/api/v1/projects/:id/services` - Service management
@@ -169,4 +173,4 @@ The `server.ts` file runs as a standalone Node.js HTTP server.
 
 ## License
 
-MIT
+AGPL-3.0-only
