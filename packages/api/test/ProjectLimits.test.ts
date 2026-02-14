@@ -33,7 +33,6 @@ describe("Project Limits", () => {
       )
 
       const configLayer = Layer.succeed(ServerConfigService, {
-        port: 3000,
         mongodbUri: mongoUri,
         corsOrigins: ["http://localhost:5173"],
         authSecret: "test-secret-key-for-testing-only",

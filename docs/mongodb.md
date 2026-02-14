@@ -3,6 +3,7 @@
 ## Connection Setup
 
 ### Local Development
+
 ```bash
 # macOS with Homebrew
 brew install mongodb-community
@@ -13,6 +14,7 @@ docker run -d -p 27017:27017 --name mongodb mongo:latest
 ```
 
 ### MongoDB Atlas (Cloud)
+
 1. Create cluster at https://www.mongodb.com/cloud/atlas
 2. Get connection string: `mongodb+srv://user:pass@cluster.mongodb.net/dtapline`
 3. Add to `packages/api/.env`:
@@ -21,74 +23,82 @@ docker run -d -p 27017:27017 --name mongodb mongo:latest
    ```
 
 ### Environment Variables
+
 ```bash
 # packages/api/.env
 MONGODB_URI=mongodb://localhost:27017/dtapline  # Local
 # OR
 MONGODB_URI=mongodb+srv://...                       # Atlas
-
-PORT=3000
-DEFAULT_USER_ID=default-user
 ```
 
 ## The Critical Null Handling Pattern
 
 ### The Problem
+
 MongoDB stores optional fields as `null`, but Effect Schema's `optional` type expects `undefined` (or the field to be absent). This causes type errors:
 
 ```typescript
 // ❌ This will fail!
 interface Document {
-  field?: string  // Schema expects: undefined or absent
+  field?: string // Schema expects: undefined or absent
 }
 
 // MongoDB returns:
-{ field: null }  // Type error: null is not assignable to string | undefined
+{
+  field: null
+} // Type error: null is not assignable to string | undefined
 ```
 
 ### The Solution
+
 Always handle null ↔ undefined conversions at the MongoDB boundary:
 
 #### 1. Document Interface (Allow `null`)
+
 ```typescript
 interface ProjectDocument {
   id: string
   name: string
-  description?: string | null  // ✅ Allow null from MongoDB
-  gitRepoUrl?: string | null   // ✅ Allow null from MongoDB
+  description?: string | null // ✅ Allow null from MongoDB
+  gitRepoUrl?: string | null // ✅ Allow null from MongoDB
   createdAt: Date
 }
 ```
 
 #### 2. Reading from DB (Convert `null` → `undefined`)
+
 ```typescript
 const docToProject = (doc: ProjectDocument): Project => ({
   id: Schema.decodeSync(ProjectId)(doc.id),
   name: doc.name,
-  description: doc.description ?? undefined,  // ✅ Convert null to undefined
-  gitRepoUrl: doc.gitRepoUrl ?? undefined,    // ✅ Convert null to undefined
+  description: doc.description ?? undefined, // ✅ Convert null to undefined
+  gitRepoUrl: doc.gitRepoUrl ?? undefined, // ✅ Convert null to undefined
   createdAt: doc.createdAt
 })
 ```
 
 #### 3. Writing to DB (Convert `undefined` → `null`)
+
 ```typescript
 const projectDoc: ProjectDocument = {
   id: crypto.randomUUID(),
   name: input.name,
-  description: input.description ?? null,  // ✅ Convert undefined to null
-  gitRepoUrl: input.gitRepoUrl ?? null,    // ✅ Convert undefined to null
+  description: input.description ?? null, // ✅ Convert undefined to null
+  gitRepoUrl: input.gitRepoUrl ?? null, // ✅ Convert undefined to null
   createdAt: new Date()
 }
 
-yield* Effect.tryPromise({
-  try: () => collection.insertOne(projectDoc),
-  catch: (error) => new DatabaseError({ message: String(error) })
-})
+yield *
+  Effect.tryPromise({
+    try: () => collection.insertOne(projectDoc),
+    catch: (error) => new DatabaseError({ message: String(error) })
+  })
 ```
 
 ### Complete Example
+
 See any repository for the full pattern:
+
 - [ProjectsRepository.ts](../packages/api/src/Repositories/ProjectsRepository.ts)
 - [EnvironmentsRepository.ts](../packages/api/src/Repositories/EnvironmentsRepository.ts)
 - [ServicesRepository.ts](../packages/api/src/Repositories/ServicesRepository.ts)
@@ -101,6 +111,7 @@ See any repository for the full pattern:
 ### Collections
 
 #### `projects`
+
 ```typescript
 {
   _id: ObjectId,
@@ -116,6 +127,7 @@ See any repository for the full pattern:
 ```
 
 #### `environments`
+
 ```typescript
 {
   _id: ObjectId,
@@ -131,6 +143,7 @@ See any repository for the full pattern:
 ```
 
 #### `services`
+
 ```typescript
 {
   _id: ObjectId,
@@ -145,6 +158,7 @@ See any repository for the full pattern:
 ```
 
 #### `deployments`
+
 ```typescript
 {
   _id: ObjectId,
@@ -166,6 +180,7 @@ See any repository for the full pattern:
 ```
 
 #### `apiKeys`
+
 ```typescript
 {
   _id: ObjectId,
@@ -182,6 +197,7 @@ See any repository for the full pattern:
 ```
 
 #### `versionPatterns`
+
 ```typescript
 {
   _id: ObjectId,
@@ -196,6 +212,7 @@ See any repository for the full pattern:
 ## Indexes
 
 ### Critical for Performance
+
 ```javascript
 // Deployments - queries by project + environment + service
 db.deployments.createIndex({ projectId: 1, environmentId: 1, serviceId: 1 })
@@ -215,20 +232,19 @@ db.projects.createIndex({ userId: 1 })
 ## Connection Pooling
 
 ### For Lambda (packages/api/src/Layers.ts)
+
 ```typescript
 const MongoClientLive = Layer.scoped(
   MongoClient.Tag,
-  Effect.gen(function*() {
+  Effect.gen(function* () {
     const client = new MongoClient(MONGODB_URI, {
-      maxPoolSize: 10,  // Smaller pool for Lambda
+      maxPoolSize: 10, // Smaller pool for Lambda
       minPoolSize: 2,
       serverSelectionTimeoutMS: 5000
     })
-    
-    yield* Effect.addFinalizer(() => 
-      Effect.promise(() => client.close())
-    )
-    
+
+    yield* Effect.addFinalizer(() => Effect.promise(() => client.close()))
+
     yield* Effect.promise(() => client.connect())
     return client
   })
@@ -236,9 +252,10 @@ const MongoClientLive = Layer.scoped(
 ```
 
 ### For Traditional Server (same file)
+
 ```typescript
 const client = new MongoClient(MONGODB_URI, {
-  maxPoolSize: 100,  // Larger pool for long-running server
+  maxPoolSize: 100, // Larger pool for long-running server
   minPoolSize: 10,
   serverSelectionTimeoutMS: 5000
 })
@@ -247,6 +264,7 @@ const client = new MongoClient(MONGODB_URI, {
 ## Common Queries
 
 ### Get Latest Deployment per Environment/Service
+
 ```typescript
 // This is what the matrix endpoint does
 const pipeline = [
@@ -264,30 +282,36 @@ const results = await deployments.aggregate(pipeline).toArray()
 ```
 
 ### Find Deployments by Date Range
+
 ```typescript
 const startDate = new Date("2026-01-01")
 const endDate = new Date("2026-01-31")
 
-const deployments = yield* Effect.tryPromise({
-  try: () =>
-    collection
-      .find({
-        projectId,
-        deployedAt: { $gte: startDate, $lte: endDate }
-      })
-      .sort({ deployedAt: -1 })
-      .toArray(),
-  catch: (error) => new DatabaseError({ message: String(error) })
-})
+const deployments =
+  yield *
+  Effect.tryPromise({
+    try: () =>
+      collection
+        .find({
+          projectId,
+          deployedAt: { $gte: startDate, $lte: endDate }
+        })
+        .sort({ deployedAt: -1 })
+        .toArray(),
+    catch: (error) => new DatabaseError({ message: String(error) })
+  })
 ```
 
 ### Get Environment by Name (with Auto-Create)
+
 ```typescript
 // First try to find existing
-const existing = yield* Effect.tryPromise({
-  try: () => collection.findOne({ projectId, name }),
-  catch: (error) => new DatabaseError({ message: String(error) })
-})
+const existing =
+  yield *
+  Effect.tryPromise({
+    try: () => collection.findOne({ projectId, name }),
+    catch: (error) => new DatabaseError({ message: String(error) })
+  })
 
 if (existing) {
   return docToEnvironment(existing)
@@ -299,16 +323,17 @@ const newEnv: EnvironmentDocument = {
   projectId,
   name,
   displayName: name.charAt(0).toUpperCase() + name.slice(1),
-  color: null,  // ✅ Use null for optional fields
+  color: null, // ✅ Use null for optional fields
   order: nextOrder,
   archived: false,
   createdAt: new Date()
 }
 
-yield* Effect.tryPromise({
-  try: () => collection.insertOne(newEnv),
-  catch: (error) => new DatabaseError({ message: String(error) })
-})
+yield *
+  Effect.tryPromise({
+    try: () => collection.insertOne(newEnv),
+    catch: (error) => new DatabaseError({ message: String(error) })
+  })
 
 return docToEnvironment(newEnv)
 ```
@@ -318,21 +343,25 @@ return docToEnvironment(newEnv)
 All MongoDB operations use Effect error handling:
 
 ```typescript
-yield* Effect.tryPromise({
-  try: () => collection.findOne({ id }),
-  catch: (error) => new DatabaseError({ 
-    message: `Failed to find document: ${String(error)}` 
+yield *
+  Effect.tryPromise({
+    try: () => collection.findOne({ id }),
+    catch: (error) =>
+      new DatabaseError({
+        message: `Failed to find document: ${String(error)}`
+      })
   })
-})
 ```
 
 Never use try/catch - always wrap in `Effect.tryPromise`:
+
 - `try` - The async operation
 - `catch` - Convert JS error to tagged Effect error
 
 ## Testing MongoDB Operations
 
 Use in-memory MongoDB for tests:
+
 ```typescript
 import { MongoMemoryServer } from "mongodb-memory-server"
 
@@ -346,6 +375,7 @@ process.env.MONGODB_URI = uri
 ## Troubleshooting
 
 ### Connection Issues
+
 ```bash
 # Check if MongoDB is running
 pnpm --filter @dtapline/api check-mongo
@@ -356,12 +386,15 @@ tail -f /usr/local/var/log/mongodb/mongo.log
 ```
 
 ### Type Errors with Optional Fields
+
 If you see: `Type 'null' is not assignable to type 'string | undefined'`
+
 - Check document interface has `| null`
 - Check converter uses `?? undefined` when reading
 - Check creation uses `?? null` when writing
 
 ### Slow Queries
+
 - Add indexes for frequently queried fields
 - Use `explain()` to analyze query plans:
   ```javascript

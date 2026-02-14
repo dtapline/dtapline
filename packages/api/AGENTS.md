@@ -24,12 +24,9 @@ Server runs on http://localhost:3000
 ## Environment Variables
 
 Required in `.env`:
+
 ```bash
 MONGODB_URI=mongodb://localhost:27017/dtapline
-PORT=3000
-DEFAULT_USER_ID=default-user
-DEFAULT_USER_EMAIL=dev@dtapline.io
-DEFAULT_USER_NAME=Developer
 ```
 
 See [README.md](./README.md) for MongoDB setup instructions.
@@ -64,10 +61,11 @@ src/
 3. See [../../docs/effect-patterns.md](../../docs/effect-patterns.md#api-endpoints)
 
 Example:
+
 ```typescript
 // In ApiGroup.ts
 return handlers.handle("myEndpoint", ({ payload }) =>
-  Effect.gen(function*() {
+  Effect.gen(function* () {
     const repo = yield* MyRepository
     return yield* repo.doSomething(payload)
   })
@@ -90,25 +88,26 @@ export const MyRepository = Context.GenericTag<MyRepository>("MyRepository")
 // 3. Implement as Layer
 export const MyRepositoryLive = Layer.effect(
   MyRepository,
-  Effect.gen(function*() {
+  Effect.gen(function* () {
     const db = yield* MongoDatabase
     const collection = db.collection<MyDocument>("myCollection")
-    
+
     return MyRepository.of({
-      create: (input) => Effect.gen(function*() {
-        // Remember the null handling pattern!
-        const doc: MyDocument = {
-          id: crypto.randomUUID(),
-          field: input.field ?? null  // ✅ undefined → null
-        }
-        
-        yield* Effect.tryPromise({
-          try: () => collection.insertOne(doc),
-          catch: (error) => new DatabaseError({ message: String(error) })
+      create: (input) =>
+        Effect.gen(function* () {
+          // Remember the null handling pattern!
+          const doc: MyDocument = {
+            id: crypto.randomUUID(),
+            field: input.field ?? null // ✅ undefined → null
+          }
+
+          yield* Effect.tryPromise({
+            try: () => collection.insertOne(doc),
+            catch: (error) => new DatabaseError({ message: String(error) })
+          })
+
+          return docToEntity(doc)
         })
-        
-        return docToEntity(doc)
-      })
     })
   })
 )
@@ -119,6 +118,7 @@ export const MyRepositoryLive = Layer.effect(
 **Critical:** Always handle null ↔ undefined conversions.
 
 See [../../docs/mongodb.md](../../docs/mongodb.md) for:
+
 - The null handling pattern
 - Schema design
 - Indexes
@@ -151,12 +151,15 @@ pnpm check
 ## Deployment
 
 ### AWS Lambda
+
 Use `src/lambda.ts` as the handler. Optimized for serverless with connection pooling.
 
 ### Traditional Server
+
 Use `src/server.ts`. Run with PM2 or systemd.
 
 ### Docker
+
 ```dockerfile
 FROM node:20-alpine
 WORKDIR /app
@@ -169,12 +172,16 @@ CMD ["node", "dist/server.js"]
 ## Troubleshooting
 
 ### MongoDB Connection Failed
+
 ```bash
 pnpm check-mongo
 ```
+
 See [README.md](./README.md#troubleshooting) for solutions.
 
 ### Type Errors
+
 If you see: `Type 'null' is not assignable to type 'string | undefined'`
+
 - You forgot the null handling pattern
 - See [../../docs/mongodb.md](../../docs/mongodb.md#the-critical-null-handling-pattern)

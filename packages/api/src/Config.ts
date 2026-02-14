@@ -5,7 +5,6 @@ import { Config, Context, Effect, Layer } from "effect"
  */
 export interface ServerConfig {
   readonly mongodbUri: string
-  readonly port: number
   readonly corsOrigins: ReadonlyArray<string>
   readonly authSecret: string
   readonly authUrl: string
@@ -29,9 +28,6 @@ export const ServerConfigLive = Layer.effect(
   ServerConfigService,
   Effect.gen(function*() {
     const mongodbUri = yield* Config.string("MONGODB_URI")
-    const port = yield* Config.number("PORT").pipe(
-      Config.withDefault(3000)
-    )
     const corsOriginsStr = yield* Config.string("CORS_ORIGINS").pipe(
       Config.withDefault("http://localhost:5173")
     )
@@ -55,7 +51,6 @@ export const ServerConfigLive = Layer.effect(
 
     return {
       mongodbUri,
-      port,
       corsOrigins,
       authSecret,
       authUrl,

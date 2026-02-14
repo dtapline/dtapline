@@ -31,7 +31,6 @@ Create `.env` file in `packages/api/`:
 
 ```sh
 MONGODB_URI=mongodb+srv://your-connection-string
-PORT=3000
 ```
 
 ### Development

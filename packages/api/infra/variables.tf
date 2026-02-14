@@ -19,3 +19,38 @@ variable "mongodb_uri" {
   type        = string
   sensitive   = true
 }
+
+# ============================================================================
+# Better Auth Configuration
+# ============================================================================
+
+variable "auth_secret" {
+  description = "Secret key for signing JWT tokens and session cookies (generate with: openssl rand -base64 32)"
+  type        = string
+  sensitive   = true
+}
+
+variable "auth_url" {
+  description = "Base URL for authentication callbacks (e.g., https://api.dtapline.io for production)"
+  type        = string
+}
+
+variable "cors_origins" {
+  description = "Comma-separated list of allowed CORS origins (e.g., https://dtapline.io)"
+  type        = string
+  default     = "*"
+}
+
+variable "github_client_id" {
+  description = "GitHub OAuth client ID (optional, enables GitHub login)"
+  type        = string
+  default     = ""
+  sensitive   = true
+}
+
+variable "github_client_secret" {
+  description = "GitHub OAuth client secret (optional)"
+  type        = string
+  default     = ""
+  sensitive   = true
+}

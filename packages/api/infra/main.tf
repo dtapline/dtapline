@@ -46,10 +46,17 @@ module "lambda" {
   stage         = var.stage
 
   env_vars = {
-    MONGODB_URI        = var.mongodb_uri
-    DEFAULT_USER_ID    = "default-user"
-    DEFAULT_USER_EMAIL = "team@dtapline.io"
-    DEFAULT_USER_NAME  = "d.t.a.p.line team"
+    # MongoDB
+    MONGODB_URI = var.mongodb_uri
+
+    # Better Auth (required)
+    AUTH_SECRET  = var.auth_secret
+    AUTH_URL     = var.auth_url
+    CORS_ORIGINS = var.cors_origins
+
+    # GitHub OAuth (optional)
+    GITHUB_CLIENT_ID     = var.github_client_id
+    GITHUB_CLIENT_SECRET = var.github_client_secret
   }
 }
 

@@ -1,0 +1,55 @@
+# ============================================================================
+# Dtapline API - Terraform Variables Example
+# ============================================================================
+# Copy this file to terraform.tfvars and fill in your values
+# ============================================================================
+
+# Deployment stage (dev or prd)
+stage = "dev"
+
+# AWS Region
+aws_region = "eu-central-1"
+
+# ============================================================================
+# MongoDB Configuration
+# ============================================================================
+
+# MongoDB connection URI
+# For MongoDB Atlas with AWS IAM authentication:
+mongodb_uri = "mongodb+srv://your-cluster.mongodb.net/dtapline?authSource=%24external&authMechanism=MONGODB-AWS"
+
+# For standard MongoDB connection:
+# mongodb_uri = "mongodb+srv://username:password@your-cluster.mongodb.net/dtapline"
+
+# ============================================================================
+# Better Auth Configuration
+# ============================================================================
+
+# Secret key for signing JWT tokens and session cookies
+# Generate with: openssl rand -base64 32
+auth_secret = "your-secret-key-here-generate-with-openssl-rand-base64-32"
+
+# Base URL for authentication callbacks (your API Gateway URL)
+# For dev: https://your-api-gateway-url.execute-api.eu-central-1.amazonaws.com
+# For prd: https://api.dtapline.io (with custom domain)
+auth_url = "https://your-api-gateway-url.execute-api.eu-central-1.amazonaws.com"
+
+# Comma-separated list of allowed CORS origins (your frontend URLs). Default is "*" (allow all), but you should restrict this in production.
+# For dev: "http://localhost:5173,https://dev.dtapline.io"
+# For prd: "https://dtapline.io"
+cors_origins = "https://dtapline.io"
+
+# ============================================================================
+# GitHub OAuth Configuration
+# ============================================================================
+
+# To enable GitHub OAuth, create an OAuth App at:
+# https://github.com/settings/developers
+#
+# Configuration:
+#   - Homepage URL: https://dtapline.io (your frontend URL)
+#   - Authorization callback URL: https://api.dtapline.io/api/auth/callback/github
+#
+# Then fill in your credentials:
+github_client_id     = ""  # Leave empty to disable GitHub OAuth
+github_client_secret = ""

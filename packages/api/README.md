@@ -63,16 +63,16 @@ The server will start on http://localhost:3000
 See `.env.example` for all available configuration options:
 
 ### Required
+
 - `MONGODB_URI` - MongoDB connection string (required)
 - `AUTH_SECRET` - Secret key for JWT tokens (generate with `openssl rand -base64 32`)
 - `AUTH_URL` - Base URL for authentication callbacks (e.g., `http://localhost:3000`)
 - `CORS_ORIGINS` - Comma-separated list of allowed origins (e.g., `http://localhost:5173`)
 
 ### Optional
-- `PORT` - Server port (default: 3000)
+
 - `GITHUB_CLIENT_ID` - GitHub OAuth client ID (optional, enables GitHub login)
 - `GITHUB_CLIENT_SECRET` - GitHub OAuth client secret (optional)
-- `SELF_HOSTED` - Set to "true" for self-hosted deployments (gives users pro plan by default)
 
 ### Setting Up GitHub OAuth (Optional)
 
@@ -175,13 +175,6 @@ If you see `❌ Cannot connect to MongoDB`:
    - Make sure `MONGODB_URI` is set correctly
    - For local: `mongodb://localhost:27017/dtapline`
    - For Atlas: `mongodb+srv://user:pass@cluster.mongodb.net/dtapline`
-
-### Port Already in Use
-
-If port 3000 is already in use, either:
-
-- Stop the other process using port 3000
-- Change the `PORT` in `.env`
 
 ## API Documentation
 
