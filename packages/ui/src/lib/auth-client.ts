@@ -14,7 +14,7 @@ import { createAuthClient } from "better-auth/react"
  * Cookies will be sent with credentials: "include".
  */
 export const authClient = createAuthClient({
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:3000",
+  baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:3000",
   // Fetch credentials to include cookies
   fetchOptions: {
     credentials: "include"

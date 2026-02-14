@@ -133,13 +133,19 @@ import { useProjects, useProject } from "../lib/hooks/use-projects"
 function MyComponent() {
   // List all projects
   const { data: projects, isLoading } = useProjects()
-  
+
   // Get single project
   const { data: project } = useProject(projectId)
-  
+
   if (isLoading) return <div>Loading...</div>
-  
-  return <div>{projects?.map(p => <div key={p.id}>{p.name}</div>)}</div>
+
+  return (
+    <div>
+      {projects?.map((p) => (
+        <div key={p.id}>{p.name}</div>
+      ))}
+    </div>
+  )
 }
 ```
 
@@ -159,7 +165,7 @@ export function useMyData() {
 
 export function useCreateMyData() {
   const queryClient = useQueryClient()
-  
+
   return useMutation({
     mutationFn: (input: CreateInput) => api.createMyData(input),
     onSuccess: () => {
@@ -203,6 +209,7 @@ Use utility classes:
 ```
 
 Common patterns:
+
 - Spacing: `p-4`, `px-8`, `py-2`, `gap-4`, `space-y-2`
 - Layout: `flex`, `grid`, `items-center`, `justify-between`
 - Typography: `text-xl`, `font-bold`, `text-muted-foreground`
@@ -230,12 +237,13 @@ Build output goes to `dist/`.
 
 ```bash
 # .env (optional)
-VITE_API_URL=http://localhost:3000
+VITE_API_BASE_URL=http://localhost:3000
 ```
 
 Access in code:
+
 ```typescript
-const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3000"
+const apiUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000"
 ```
 
 ## Common Tasks
@@ -274,7 +282,7 @@ function MyForm() {
   const form = useForm({
     resolver: zodResolver(schema)
   })
-  
+
   return <form onSubmit={form.handleSubmit(onSubmit)}>...</form>
 }
 ```
@@ -288,6 +296,7 @@ After adding/removing routes, restart dev server to regenerate route tree.
 ### API Connection Failed
 
 Check that server is running on http://localhost:3000:
+
 ```bash
 cd ../api && pnpm dev
 ```
@@ -295,6 +304,7 @@ cd ../api && pnpm dev
 ### Component Not Found
 
 If importing shadcn component fails, install it:
+
 ```bash
 pnpm dlx shadcn@latest add <component-name>
 ```
