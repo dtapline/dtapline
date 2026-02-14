@@ -62,11 +62,59 @@ The server will start on http://localhost:3000
 
 See `.env.example` for all available configuration options:
 
+### Required
 - `MONGODB_URI` - MongoDB connection string (required)
-- `DEFAULT_USER_ID` - User ID for MVP (default: "default-user")
-- `DEFAULT_USER_EMAIL` - User email for display
-- `DEFAULT_USER_NAME` - User name for display
+- `AUTH_SECRET` - Secret key for JWT tokens (generate with `openssl rand -base64 32`)
+- `AUTH_URL` - Base URL for authentication callbacks (e.g., `http://localhost:3000`)
+- `CORS_ORIGINS` - Comma-separated list of allowed origins (e.g., `http://localhost:5173`)
+
+### Optional
 - `PORT` - Server port (default: 3000)
+- `GITHUB_CLIENT_ID` - GitHub OAuth client ID (optional, enables GitHub login)
+- `GITHUB_CLIENT_SECRET` - GitHub OAuth client secret (optional)
+- `SELF_HOSTED` - Set to "true" for self-hosted deployments (gives users pro plan by default)
+
+### Setting Up GitHub OAuth (Optional)
+
+To enable "Sign in with GitHub":
+
+**Important:** You need **separate OAuth Apps** for development and production environments.
+
+#### Local Development Setup:
+
+1. Go to https://github.com/settings/developers
+2. Click "New OAuth App"
+3. Fill in the details:
+   - **Application name:** Dtapline (Development)
+   - **Homepage URL:** `http://localhost:5173` ← Your frontend URL
+   - **Authorization callback URL:** `http://localhost:3000/api/auth/callback/github` ← Your backend URL
+4. Click "Register application"
+5. Copy the **Client ID** and generate a new **Client Secret**
+6. Add to your `.env`:
+   ```bash
+   GITHUB_CLIENT_ID=your_dev_client_id_here
+   GITHUB_CLIENT_SECRET=your_dev_client_secret_here
+   CORS_ORIGINS=http://localhost:5173,http://localhost:3000
+   AUTH_URL=http://localhost:3000
+   ```
+7. Restart the server
+
+#### Production Setup:
+
+1. Create another OAuth App with:
+   - **Application name:** Dtapline
+   - **Homepage URL:** `https://yourdomain.com` ← Your production frontend
+   - **Authorization callback URL:** `https://api.yourdomain.com/api/auth/callback/github` ← Your production API
+2. Set environment variables in your deployment platform (not in code)
+
+#### How OAuth Flow Works:
+
+1. User clicks "Continue with GitHub" → Frontend initiates OAuth
+2. User authorizes on GitHub → GitHub redirects to backend callback
+3. Backend processes OAuth → Creates session and redirects to frontend
+4. User lands back on frontend → Authenticated!
+
+The "Continue with GitHub" button will automatically appear on the login/signup pages when credentials are configured.
 
 ## Testing the API
 

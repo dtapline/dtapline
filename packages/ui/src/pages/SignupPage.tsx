@@ -1,8 +1,10 @@
+import { GithubIcon } from "@/components/icons/GithubIcon"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { signUp, useSession } from "@/lib/auth-client"
+import { Separator } from "@/components/ui/separator"
+import { signIn, signUp, useSession } from "@/lib/auth-client"
 import { useNavigate } from "@tanstack/react-router"
 import { useEffect, useState } from "react"
 
@@ -66,6 +68,24 @@ export default function SignupPage() {
     }
   }
 
+  const handleGithubSignIn = async () => {
+    setError(null)
+    setIsLoading(true)
+
+    try {
+      // Use full frontend URL for OAuth callback redirect
+      const frontendUrl = window.location.origin
+      await signIn.social({
+        provider: "github",
+        callbackURL: `${frontendUrl}/`
+      })
+    } catch (err) {
+      console.error("GitHub signup error:", err)
+      setError("Failed to sign up with GitHub. Please try again.")
+      setIsLoading(false)
+    }
+  }
+
   return (
     <div className="flex items-center justify-center min-h-screen bg-background">
       <Card className="w-full max-w-md">
@@ -76,6 +96,24 @@ export default function SignupPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full"
+            onClick={handleGithubSignIn}
+            disabled={isLoading}
+          >
+            <GithubIcon className="mr-2 h-4 w-4" />
+            Continue with GitHub
+          </Button>
+
+          <div className="relative my-4">
+            <Separator />
+            <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-background px-2 text-xs text-muted-foreground">
+              or sign up with email
+            </span>
+          </div>
+
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="name">Name</Label>
