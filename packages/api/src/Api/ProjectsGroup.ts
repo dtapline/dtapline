@@ -1,5 +1,6 @@
 import { DtaplineApi } from "@dtapline/domain/Api"
-import { DeploymentNotFound } from "@dtapline/domain/Errors"
+import { DeploymentNotFound, PlanLimitExceeded } from "@dtapline/domain/Errors"
+import { RoleLimits } from "@dtapline/domain/User"
 import { HttpApiBuilder } from "@effect/platform"
 import { Effect } from "effect"
 import { DeploymentsRepository } from "../Repositories/DeploymentsRepository.js"
@@ -38,8 +39,27 @@ export const ProjectsGroupLive = HttpApiBuilder.group(
         // POST /api/v1/projects
         .handle("createProject", ({ payload, request }) =>
           Effect.gen(function*() {
-            const userId = yield* authService.getUserId(request)
-            const project = yield* projectsRepo.create(userId, payload)
+            // Get authenticated user
+            const user = yield* authService.getCurrentUser(request)
+
+            // Check project limit for the user's role
+            const limit = RoleLimits[user.role].maxProjects
+            if (limit !== Infinity) {
+              const existingProjects = yield* projectsRepo.findByUserId(user.id)
+              if (existingProjects.length >= limit) {
+                return yield* Effect.fail(
+                  new PlanLimitExceeded({
+                    role: user.role,
+                    resource: "projects",
+                    limit,
+                    message:
+                      `You have reached the maximum number of projects (${limit}) for your plan. Upgrade to create more projects.`
+                  })
+                )
+              }
+            }
+
+            const project = yield* projectsRepo.create(user.id, payload)
             return { project }
           }))
         // GET /api/v1/projects/:projectId

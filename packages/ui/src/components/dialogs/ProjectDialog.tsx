@@ -2,6 +2,7 @@ import type { Project } from "@dtapline/domain/Project"
 import { useEffect, useState } from "react"
 import { useEnvironments } from "../../lib/hooks/use-environments"
 import { useCreateProject, useUpdateProject } from "../../lib/hooks/use-projects"
+import { Alert, AlertDescription } from "../ui/alert"
 import { Button } from "../ui/button"
 import { Checkbox } from "../ui/checkbox"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "../ui/dialog"
@@ -24,6 +25,7 @@ export function ProjectDialog({
   const [name, setName] = useState("")
   const [description, setDescription] = useState("")
   const [selectedEnvironmentIds, setSelectedEnvironmentIds] = useState<ReadonlyArray<string>>([])
+  const [error, setError] = useState<string | null>(null)
 
   const { data: environments } = useEnvironments()
   const createMutation = useCreateProject()
@@ -42,7 +44,9 @@ export function ProjectDialog({
       // When creating a new project, select all environments by default
       setSelectedEnvironmentIds(environments?.map((env) => env.id) ?? [])
     }
-  }, [project, environments])
+    // Clear error when dialog opens/closes or project changes
+    setError(null)
+  }, [project, environments, open])
 
   const toggleEnvironment = (environmentId: string) => {
     setSelectedEnvironmentIds((prev) =>
@@ -63,6 +67,7 @@ export function ProjectDialog({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    setError(null) // Clear any previous errors
 
     const input = {
       name,
@@ -80,6 +85,9 @@ export function ProjectDialog({
           onSuccess: (data) => {
             onOpenChange(false)
             onSuccess?.(data.project)
+          },
+          onError: (err: any) => {
+            setError(err.data?.message || err.message || "Failed to update project")
           }
         }
       )
@@ -88,6 +96,9 @@ export function ProjectDialog({
         onSuccess: (data) => {
           onOpenChange(false)
           onSuccess?.(data.project)
+        },
+        onError: (err: any) => {
+          setError(err.data?.message || err.message || "Failed to create project")
         }
       })
     }
@@ -105,6 +116,11 @@ export function ProjectDialog({
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
+          {error && (
+            <Alert variant="destructive" className="mb-4">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
           <div className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="name">Name</Label>

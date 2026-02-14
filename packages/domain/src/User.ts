@@ -12,9 +12,9 @@ export type UserRole = Schema.Schema.Type<typeof UserRole>
 
 // Plan limits configuration based on role
 export const RoleLimits = {
-  admin: { maxProjects: Infinity },
-  proUser: { maxProjects: Infinity },
-  freeUser: { maxProjects: 3 }
+  admin: { maxProjects: Infinity, maxServices: Infinity },
+  proUser: { maxProjects: Infinity, maxServices: Infinity },
+  freeUser: { maxProjects: 1, maxServices: 3 }
 } as const
 
 // User schema (aligned with Better Auth structure)

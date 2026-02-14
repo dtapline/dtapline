@@ -1,6 +1,7 @@
 import type { Service } from "@dtapline/domain/Service"
 import { useEffect, useState } from "react"
 import { useCreateService, useUpdateService } from "../../lib/hooks/use-services"
+import { Alert, AlertDescription } from "../ui/alert"
 import { Button } from "../ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "../ui/dialog"
 import { Input } from "../ui/input"
@@ -19,6 +20,7 @@ export function ServiceDialog({ onOpenChange, open, projectId, service }: Servic
   const [repositoryUrl, setRepositoryUrl] = useState("")
   const [iconUrl, setIconUrl] = useState("")
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const createMutation = useCreateService()
   const updateMutation = useUpdateService()
@@ -47,7 +49,9 @@ export function ServiceDialog({ onOpenChange, open, projectId, service }: Servic
       setIconUrl("")
       setSlugManuallyEdited(false)
     }
-  }, [service])
+    // Clear error when dialog opens/closes or service changes
+    setError(null)
+  }, [service, open])
 
   // Auto-generate slug when name changes (only if slug hasn't been manually edited)
   const handleNameChange = (value: string) => {
@@ -59,6 +63,7 @@ export function ServiceDialog({ onOpenChange, open, projectId, service }: Servic
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    setError(null) // Clear any previous errors
 
     if (isEditing) {
       updateMutation.mutate(
@@ -74,6 +79,9 @@ export function ServiceDialog({ onOpenChange, open, projectId, service }: Servic
         {
           onSuccess: () => {
             onOpenChange(false)
+          },
+          onError: (err: any) => {
+            setError(err.data?.message || err.message || "Failed to update service")
           }
         }
       )
@@ -91,6 +99,9 @@ export function ServiceDialog({ onOpenChange, open, projectId, service }: Servic
         {
           onSuccess: () => {
             onOpenChange(false)
+          },
+          onError: (err: any) => {
+            setError(err.data?.message || err.message || "Failed to create service")
           }
         }
       )
@@ -109,6 +120,11 @@ export function ServiceDialog({ onOpenChange, open, projectId, service }: Servic
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
+          {error && (
+            <Alert variant="destructive" className="mb-4">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
           <div className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="name">Name</Label>
