@@ -22,22 +22,22 @@ export const DeploymentsWebhookGroupLive = HttpApiBuilder.group(
           // 1. Extract API key from Authorization header
           const authHeader = request.headers.authorization
           if (!authHeader) {
-            yield* Effect.fail(new InvalidApiKey({ message: "Missing Authorization header" }))
+            return yield* Effect.fail(new InvalidApiKey({ message: "Missing Authorization header" }))
           }
-          const match = authHeader!.match(/^Bearer\s+(.+)$/i)
+          const match = authHeader.match(/^Bearer\s+(.+)$/i)
           if (!match) {
-            yield* Effect.fail(
+            return yield* Effect.fail(
               new InvalidApiKey({ message: "Invalid Authorization header format. Expected: Bearer <api-key>" })
             )
           }
-          const plainKey = match![1]
+          const plainKey = match[1]
 
           // 2. Validate API key
           const apiKey = yield* apiKeysRepo.validate(plainKey)
 
           // 3. Check if API key has deployments:write scope
           if (!apiKey.scopes.includes("deployments:write")) {
-            yield* Effect.fail(
+            return yield* Effect.fail(
               new UnauthorizedApiKey({
                 message: "API key does not have 'deployments:write' scope"
               })
