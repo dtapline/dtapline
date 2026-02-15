@@ -2,15 +2,16 @@ import * as HttpLayerRouter from "@effect/platform/HttpLayerRouter"
 import type * as HttpServerRequest from "@effect/platform/HttpServerRequest"
 import * as HttpServerResponse from "@effect/platform/HttpServerResponse"
 import { Effect } from "effect"
-import { Readable } from "node:stream"
-import type { ReadableStream as WebReadableStream } from "stream/web"
 import { BetterAuthInstance } from "./Auth.js"
 
 /**
  * Effect HTTP handler for Better Auth endpoints
  *
  * Converts Effect HttpServerRequest to standard Web Request,
- * calls Better Auth handler, and converts Response back to Effect HttpServerResponse
+ * calls Better Auth handler, and converts Response back to Effect HttpServerResponse.
+ *
+ * Uses HttpServerResponse.fromWeb() to properly handle multiple Set-Cookie headers
+ * which is critical for OAuth state persistence (prevents state_security_mismatch errors).
  */
 export const betterAuthHandler = (req: HttpServerRequest.HttpServerRequest) =>
   Effect.gen(function*() {
@@ -48,22 +49,11 @@ export const betterAuthHandler = (req: HttpServerRequest.HttpServerRequest) =>
     // Call Better Auth handler
     const webResponse = yield* Effect.promise(() => auth.handler(request))
 
-    // Convert Web Response headers to Effect headers
-    const responseHeaders: Record<string, string> = {}
-    webResponse.headers.forEach((value: string, key: string) => {
-      responseHeaders[key] = value
-    })
-
-    // Convert Web Response body stream to Node.js stream
-    const stream = webResponse.body
-      ? Readable.fromWeb(webResponse.body as WebReadableStream)
-      : null
-
-    // Return Effect HttpServerResponse
-    return HttpServerResponse.raw(stream).pipe(
-      HttpServerResponse.setStatus(webResponse.status),
-      HttpServerResponse.setHeaders(responseHeaders)
-    )
+    // Convert Web Response to Effect HttpServerResponse using fromWeb()
+    // This properly preserves multiple Set-Cookie headers (via getSetCookie()),
+    // which is essential for OAuth flows where Better Auth sets both a state
+    // cookie and other cookies on the same response.
+    return HttpServerResponse.fromWeb(webResponse)
   }).pipe(
     Effect.catchAll((error) =>
       Effect.logError(error).pipe(
