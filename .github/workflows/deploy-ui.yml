@@ -33,6 +33,7 @@ jobs:
         run: pnpm build
         env:
           VITE_API_BASE_URL: ${{ vars.API_GATEWAY_URL }}
+          VITE_DISABLE_SOCIAL_LOGIN: ${{ vars.DISABLE_SOCIAL_LOGIN }}
 
       - name: Report deployment in progress
         working-directory: .
