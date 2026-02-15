@@ -34,6 +34,7 @@ export class DeploymentsWebhookGroup extends HttpApiGroup.make("deploymentsWebho
       .addError(Errors.InvalidApiKey, { status: 401 })
       .addError(Errors.ApiKeyExpired, { status: 401 })
       .addError(Errors.ProjectNotFound, { status: 404 })
+      .addError(Errors.PlanLimitExceeded, { status: 403 })
       .addError(Errors.ValidationError, { status: 400 })
       .addError(Errors.DatabaseError, { status: 500 })
   )

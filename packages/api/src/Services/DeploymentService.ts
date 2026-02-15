@@ -1,5 +1,11 @@
 import type { CreateDeploymentInput, Deployment } from "@dtapline/domain/Deployment"
-import type { DatabaseError, EnvironmentNotFound, ProjectNotFound, ServiceNotFound } from "@dtapline/domain/Errors"
+import type {
+  DatabaseError,
+  EnvironmentNotFound,
+  PlanLimitExceeded,
+  ProjectNotFound,
+  ServiceNotFound
+} from "@dtapline/domain/Errors"
 import { extractVersion } from "@dtapline/domain/Utils/VersionExtractor"
 import { Context, Effect, Layer } from "effect"
 import { DeploymentsRepository } from "../Repositories/DeploymentsRepository.js"
@@ -26,7 +32,7 @@ export class DeploymentService extends Context.Tag("DeploymentService")<
     readonly processWebhook: (
       projectId: string,
       input: typeof CreateDeploymentInput.Type
-    ) => Effect.Effect<Deployment, ProjectNotFound | DatabaseError>
+    ) => Effect.Effect<Deployment, ProjectNotFound | DatabaseError | PlanLimitExceeded>
 
     /**
      * Record a deployment manually (from API, not webhook)

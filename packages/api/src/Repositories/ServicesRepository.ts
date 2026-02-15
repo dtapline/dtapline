@@ -1,10 +1,19 @@
-import { DatabaseError, ServiceAlreadyExists, ServiceHasDeployments, ServiceNotFound } from "@dtapline/domain/Errors"
+import type { ProjectNotFound } from "@dtapline/domain/Errors"
+import {
+  DatabaseError,
+  PlanLimitExceeded,
+  ServiceAlreadyExists,
+  ServiceHasDeployments,
+  ServiceNotFound
+} from "@dtapline/domain/Errors"
 import type { ProjectId } from "@dtapline/domain/Project"
 import type { CreateServiceInput, Service, UpdateServiceInput } from "@dtapline/domain/Service"
 import { ServiceId } from "@dtapline/domain/Service"
+import { RoleLimits } from "@dtapline/domain/User"
 import { Context, Effect, Layer, Schema } from "effect"
 import { ObjectId } from "mongodb"
 import { MongoDatabase } from "../MongoDB.js"
+import { ProjectsRepository } from "./ProjectsRepository.js"
 
 /**
  * MongoDB document type for Service
@@ -50,7 +59,7 @@ export class ServicesRepository extends Context.Tag("ServicesRepository")<
       slug: string,
       name?: string,
       repositoryUrl?: string
-    ) => Effect.Effect<Service, DatabaseError>
+    ) => Effect.Effect<Service, DatabaseError | PlanLimitExceeded | ProjectNotFound>
 
     readonly update: (
       serviceId: string,
@@ -94,6 +103,7 @@ export const ServicesRepositoryLive = Layer.effect(
   Effect.gen(function*() {
     const db = yield* MongoDatabase
     const collection = db.collection<ServiceDocument>("services")
+    const projectsRepo = yield* ProjectsRepository
 
     return {
       create: (projectId, input) =>
@@ -225,6 +235,60 @@ export const ServicesRepositoryLive = Layer.effect(
 
           if (existing) {
             return docToService(existing)
+          }
+
+          // Before creating, check plan limits
+          // Get the project to access the userId and their role
+          const project = yield* projectsRepo.findById(projectId)
+
+          // Get the user's role from the project's user
+          const usersCollection = db.collection("user")
+          const user = yield* Effect.tryPromise({
+            try: () => usersCollection.findOne({ id: project.userId }),
+            catch: (error) =>
+              new DatabaseError({
+                operation: "findOne",
+                message: "Failed to find user",
+                cause: error
+              })
+          })
+
+          if (!user) {
+            return yield* Effect.fail(
+              new DatabaseError({
+                operation: "findOne",
+                message: `User not found for project ${projectId}`,
+                cause: null
+              })
+            )
+          }
+
+          const userRole = (user.role || "freeUser") as keyof typeof RoleLimits
+          const limit = RoleLimits[userRole].maxServices
+
+          // Check if the limit would be exceeded
+          if (limit !== Infinity) {
+            const existingServices = yield* Effect.tryPromise({
+              try: () => collection.find({ projectId, archived: false }).toArray(),
+              catch: (error) =>
+                new DatabaseError({
+                  operation: "find",
+                  message: "Failed to count services",
+                  cause: error
+                })
+            })
+
+            if (existingServices.length >= limit) {
+              return yield* Effect.fail(
+                new PlanLimitExceeded({
+                  role: userRole,
+                  resource: "services",
+                  limit,
+                  message:
+                    `You have reached the maximum number of services (${limit}) for your plan. Upgrade to create more services.`
+                })
+              )
+            }
           }
 
           // Create new service with auto-generated name if needed

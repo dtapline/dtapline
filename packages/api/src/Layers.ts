@@ -32,11 +32,13 @@ import { MatrixServiceLive } from "./Services/MatrixService.js"
  * Provides: ProjectsRepository, EnvironmentsRepository, ServicesRepository,
  *           DeploymentsRepository, ApiKeysRepository, VersionPatternsRepository
  * Requires: MongoDB, ServerConfigService
+ *
+ * Note: ServicesRepository depends on ProjectsRepository, so we provide it explicitly
  */
 export const RepositoriesLive = Layer.mergeAll(
   ProjectsRepositoryLive,
   EnvironmentsRepositoryLive,
-  ServicesRepositoryLive,
+  ServicesRepositoryLive.pipe(Layer.provide(ProjectsRepositoryLive)),
   DeploymentsRepositoryLive,
   ApiKeysRepositoryLive,
   VersionPatternsRepositoryLive
