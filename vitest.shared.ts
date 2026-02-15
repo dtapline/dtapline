@@ -2,8 +2,8 @@ import * as path from "node:path"
 import type { UserConfig } from "vitest/config"
 
 const alias = (name: string) => ({
-  [`${name}/test`]: path.join(__dirname, "packages", name, "test"),
-  [`${name}`]: path.join(__dirname, "packages", name, "src")
+  [`@dtapline/${name}/test`]: path.join(__dirname, "packages", name, "test"),
+  [`@dtapline/${name}`]: path.join(__dirname, "packages", name, "src")
 })
 
 // This is a workaround, see https://github.com/vitest-dev/vitest/issues/4744
