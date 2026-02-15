@@ -46,6 +46,12 @@ export const BetterAuthLive = Layer.effect(
         }
       },
 
+      account: {
+        accountLinking: {
+          enabled: true
+        }
+      },
+
       emailAndPassword: {
         enabled: true,
         requireEmailVerification: false // Set to true in production with email service
