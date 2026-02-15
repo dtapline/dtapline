@@ -33,17 +33,19 @@ pnpm dedupe        # Deduplicate dependencies (run after adding/updating deps)
 
 ## Critical Rules
 
-1. **ESM imports in Effect packages:** Use `.js` extensions in relative imports
+1. **No automatic commits or pushes:** NEVER commit or push code without explicit user consent. Always ask the user before running `git commit` or `git push` commands.
+
+2. **ESM imports in Effect packages:** Use `.js` extensions in relative imports
 
    ```typescript
    import { TodosRepository } from "./TodosRepository.js" // Required!
    ```
 
-2. **Effect error handling:** Never use try/catch. Use `Effect.catchTag` for tagged errors.
+3. **Effect error handling:** Never use try/catch. Use `Effect.catchTag` for tagged errors.
 
-3. **Deduplicate dependencies:** After adding or updating dependencies, always run `pnpm dedupe` to keep the lock file optimized and prevent duplicate package versions
+4. **Deduplicate dependencies:** After adding or updating dependencies, always run `pnpm dedupe` to keep the lock file optimized and prevent duplicate package versions
 
-4. **MongoDB null handling:** MongoDB stores optional fields as `null`, but Effect Schema expects `undefined`
+5. **MongoDB null handling:** MongoDB stores optional fields as `null`, but Effect Schema expects `undefined`
 
    ```typescript
    // Document interface
