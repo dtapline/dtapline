@@ -1,5 +1,4 @@
 import {
-  BellIcon,
   CheckIcon,
   CreditCardIcon,
   LogOutIcon,
@@ -26,6 +25,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@/components/ui/sidebar"
 import { signOut } from "@/lib/auth-client"
+import { useNavigate } from "@tanstack/react-router"
 
 export function NavUser({
   user
@@ -39,6 +39,7 @@ export function NavUser({
 }) {
   const { isMobile } = useSidebar()
   const { setTheme, theme } = useTheme()
+  const navigate = useNavigate()
 
   const handleSignOut = async () => {
     await signOut()
@@ -89,17 +90,13 @@ export function NavUser({
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate({ to: "/account" })}>
                 <UserCircleIcon />
                 Account
               </DropdownMenuItem>
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate({ to: "/billing" })}>
                 <CreditCardIcon />
                 Billing
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <BellIcon />
-                Notifications
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuSub>

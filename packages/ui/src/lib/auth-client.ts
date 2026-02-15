@@ -26,7 +26,7 @@ export const authClient = createAuthClient({
  *
  * Usage:
  * ```tsx
- * import { useSession } from '@/lib/auth-client'
+ * import { useSession, updateUser, changePassword } from '@/lib/auth-client'
  *
  * function MyComponent() {
  *   const { data: session, isPending, refetch } = useSession()
@@ -39,8 +39,14 @@ export const authClient = createAuthClient({
  * ```
  */
 export const {
+  changePassword,
+  deleteUser,
+  linkSocial,
+  listAccounts,
   signIn,
   signOut,
   signUp,
+  unlinkAccount,
+  updateUser,
   useSession
 } = authClient

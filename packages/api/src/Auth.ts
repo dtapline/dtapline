@@ -66,6 +66,9 @@ export const BetterAuthLive = Layer.effect(
             defaultValue: config.selfHosted ? "proUser" : "freeUser",
             required: true
           }
+        },
+        deleteUser: {
+          enabled: true
         }
       },
 

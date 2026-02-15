@@ -15,6 +15,8 @@ import { Route as SignupImport } from './routes/signup'
 import { Route as ProjectsImport } from './routes/projects'
 import { Route as LoginImport } from './routes/login'
 import { Route as EnvironmentsImport } from './routes/environments'
+import { Route as BillingImport } from './routes/billing'
+import { Route as AccountImport } from './routes/account'
 import { Route as IndexImport } from './routes/index'
 import { Route as ProjectProjectIdImport } from './routes/project.$projectId'
 import { Route as ProjectProjectIdDeploymentsDeploymentIdImport } from './routes/project.$projectId.deployments.$deploymentId'
@@ -42,6 +44,18 @@ const LoginRoute = LoginImport.update({
 const EnvironmentsRoute = EnvironmentsImport.update({
   id: '/environments',
   path: '/environments',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const BillingRoute = BillingImport.update({
+  id: '/billing',
+  path: '/billing',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const AccountRoute = AccountImport.update({
+  id: '/account',
+  path: '/account',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -73,6 +87,20 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexImport
+      parentRoute: typeof rootRoute
+    }
+    '/account': {
+      id: '/account'
+      path: '/account'
+      fullPath: '/account'
+      preLoaderRoute: typeof AccountImport
+      parentRoute: typeof rootRoute
+    }
+    '/billing': {
+      id: '/billing'
+      path: '/billing'
+      fullPath: '/billing'
+      preLoaderRoute: typeof BillingImport
       parentRoute: typeof rootRoute
     }
     '/environments': {
@@ -136,6 +164,8 @@ const ProjectProjectIdRouteWithChildren =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/account': typeof AccountRoute
+  '/billing': typeof BillingRoute
   '/environments': typeof EnvironmentsRoute
   '/login': typeof LoginRoute
   '/projects': typeof ProjectsRoute
@@ -146,6 +176,8 @@ export interface FileRoutesByFullPath {
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/account': typeof AccountRoute
+  '/billing': typeof BillingRoute
   '/environments': typeof EnvironmentsRoute
   '/login': typeof LoginRoute
   '/projects': typeof ProjectsRoute
@@ -157,6 +189,8 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
+  '/account': typeof AccountRoute
+  '/billing': typeof BillingRoute
   '/environments': typeof EnvironmentsRoute
   '/login': typeof LoginRoute
   '/projects': typeof ProjectsRoute
@@ -169,6 +203,8 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/account'
+    | '/billing'
     | '/environments'
     | '/login'
     | '/projects'
@@ -178,6 +214,8 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/account'
+    | '/billing'
     | '/environments'
     | '/login'
     | '/projects'
@@ -187,6 +225,8 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/account'
+    | '/billing'
     | '/environments'
     | '/login'
     | '/projects'
@@ -198,6 +238,8 @@ export interface FileRouteTypes {
 
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AccountRoute: typeof AccountRoute
+  BillingRoute: typeof BillingRoute
   EnvironmentsRoute: typeof EnvironmentsRoute
   LoginRoute: typeof LoginRoute
   ProjectsRoute: typeof ProjectsRoute
@@ -207,6 +249,8 @@ export interface RootRouteChildren {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AccountRoute: AccountRoute,
+  BillingRoute: BillingRoute,
   EnvironmentsRoute: EnvironmentsRoute,
   LoginRoute: LoginRoute,
   ProjectsRoute: ProjectsRoute,
@@ -225,6 +269,8 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/",
+        "/account",
+        "/billing",
         "/environments",
         "/login",
         "/projects",
@@ -234,6 +280,12 @@ export const routeTree = rootRoute
     },
     "/": {
       "filePath": "index.tsx"
+    },
+    "/account": {
+      "filePath": "account.tsx"
+    },
+    "/billing": {
+      "filePath": "billing.tsx"
     },
     "/environments": {
       "filePath": "environments.tsx"
