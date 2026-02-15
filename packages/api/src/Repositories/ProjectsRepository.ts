@@ -5,7 +5,7 @@ import { ProjectId } from "@dtapline/domain/Project"
 import type { UserId } from "@dtapline/domain/User"
 import { Context, Effect, Layer, Schema } from "effect"
 import type { ObjectId } from "mongodb"
-import { MongoDatabase } from "../MongoDB.js"
+import { MongoClientTag, MongoDatabase } from "../MongoDB.js"
 import { toObjectId } from "../ObjectIdSchema.js"
 
 /**
@@ -82,6 +82,7 @@ export const ProjectsRepositoryLive = Layer.effect(
   ProjectsRepository,
   Effect.gen(function*() {
     const db = yield* MongoDatabase
+    const client = yield* MongoClientTag
     const collection = db.collection<ProjectDocument>("projects")
 
     return {
@@ -219,24 +220,62 @@ export const ProjectsRepositoryLive = Layer.effect(
 
       delete: (projectId) =>
         Effect.gen(function*() {
-          const result = yield* Effect.tryPromise({
-            try: () => collection.deleteOne({ _id: toObjectId(projectId) }),
-            catch: (error) =>
-              new DatabaseError({
-                operation: "deleteOne",
-                message: "Failed to delete project",
-                cause: error
-              })
-          })
+          // Acquire MongoDB session with automatic cleanup
+          yield* Effect.acquireUseRelease(
+            // Acquire: Start a new session
+            Effect.sync(() => client.startSession()),
+            // Use: Run transaction
+            (session) =>
+              Effect.tryPromise({
+                try: async () => {
+                  await session.withTransaction(async () => {
+                    // 1. Delete all deployments for this project
+                    await db.collection("deployments").deleteMany(
+                      { projectId: projectId as string },
+                      { session }
+                    )
 
-          if (result.deletedCount === 0) {
-            return yield* Effect.fail(
-              new ProjectNotFound({
-                projectId,
-                message: `Project with ID ${projectId} not found`
-              })
-            )
-          }
+                    // 2. Delete all services for this project
+                    await db.collection("services").deleteMany(
+                      { projectId: projectId as string },
+                      { session }
+                    )
+
+                    // 3. Delete all API keys for this project
+                    await db.collection("api_keys").deleteMany(
+                      { projectId: projectId as string },
+                      { session }
+                    )
+
+                    // 4. Finally, delete the project itself
+                    const result = await collection.deleteOne(
+                      { _id: toObjectId(projectId) },
+                      { session }
+                    )
+
+                    if (result.deletedCount === 0) {
+                      throw new Error(`Project with ID ${projectId} not found`)
+                    }
+                  })
+                },
+                catch: (error) => {
+                  // Check if it's a "not found" error
+                  if (error instanceof Error && error.message.includes("not found")) {
+                    return new ProjectNotFound({
+                      projectId,
+                      message: error.message
+                    })
+                  }
+                  return new DatabaseError({
+                    operation: "transaction",
+                    message: "Failed to delete project and related data",
+                    cause: error
+                  })
+                }
+              }),
+            // Release: Always end session (even on error/interruption)
+            (session) => Effect.promise(() => session.endSession())
+          )
         }),
 
       exists: (userId, name) =>

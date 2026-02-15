@@ -4,8 +4,10 @@ import { useState } from "react"
 import { ApiKeysList } from "../components/ApiKeysList"
 import { DeploymentMatrix } from "../components/DeploymentMatrix"
 import { ProjectDialog } from "../components/dialogs/ProjectDialog"
+import { ProjectDangerZone } from "../components/ProjectDangerZone"
 import { ServicesList } from "../components/ServicesList"
 import { Button } from "../components/ui/button"
+import { Separator } from "../components/ui/separator"
 import { useEnvironments } from "../lib/hooks/use-environments"
 import { useProject, useProjectMatrix } from "../lib/hooks/use-projects"
 
@@ -183,14 +185,21 @@ export function ProjectDetailPage({ projectId }: ProjectDetailPageProps) {
         )}
 
         {activeTab === "settings" && (
-          <div>
-            <div className="mb-6">
+          <div className="space-y-6">
+            <div>
               <h2 className="text-xl font-semibold">Project Settings</h2>
               <p className="text-sm text-muted-foreground">
                 Configure project settings and API keys
               </p>
             </div>
+
+            {/* API Keys Section */}
             <ApiKeysList projectId={projectId} />
+
+            <Separator />
+
+            {/* Danger Zone */}
+            <ProjectDangerZone projectId={projectId} projectName={project.name} />
           </div>
         )}
       </div>
