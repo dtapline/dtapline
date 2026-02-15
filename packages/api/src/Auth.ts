@@ -38,6 +38,14 @@ export const BetterAuthLive = Layer.effect(
       secret: config.authSecret,
       trustedOrigins: [...config.corsOrigins],
 
+      advanced: {
+        // Set default cookie attributes to ensure secure cookies with SameSite=None for OAuth flows when using netlify.app subdomains.
+        defaultCookieAttributes: {
+          sameSite: "None",
+          secure: true
+        }
+      },
+
       emailAndPassword: {
         enabled: true,
         requireEmailVerification: false // Set to true in production with email service
