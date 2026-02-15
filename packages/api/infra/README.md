@@ -132,7 +132,7 @@ The following environment variables are automatically configured:
 | `MONGODB_URI`          | MongoDB connection string   | ✅       |
 | `AUTH_SECRET`          | Secret for signing cookies  | ✅       |
 | `AUTH_URL`             | Base URL for auth callbacks | ✅       |
-| `CORS_ORIGINS`         | Allowed CORS origins        | Optional |
+| `CORS_ORIGINS`         | Allowed CORS origins        | ✅       |
 | `GITHUB_CLIENT_ID`     | GitHub OAuth client ID      | Optional |
 | `GITHUB_CLIENT_SECRET` | GitHub OAuth client secret  | Optional |
 

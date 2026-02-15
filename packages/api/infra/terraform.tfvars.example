@@ -34,7 +34,7 @@ auth_secret = "your-secret-key-here-generate-with-openssl-rand-base64-32"
 # For prd: https://api.dtapline.io (with custom domain)
 auth_url = "https://your-api-gateway-url.execute-api.eu-central-1.amazonaws.com"
 
-# Comma-separated list of allowed CORS origins (your frontend URLs). Default is "*" (allow all), but you should restrict this in production.
+# Comma-separated list of allowed CORS origins (your frontend URLs).
 # For dev: "http://localhost:5173,https://dev.dtapline.io"
 # For prd: "https://dtapline.io"
 cors_origins = "https://dtapline.io"

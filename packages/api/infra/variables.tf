@@ -38,7 +38,6 @@ variable "auth_url" {
 variable "cors_origins" {
   description = "Comma-separated list of allowed CORS origins (e.g., https://dtapline.io)"
   type        = string
-  default     = "*"
 }
 
 variable "github_client_id" {

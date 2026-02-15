@@ -147,7 +147,7 @@ jobs:
           TF_VAR_mongodb_uri: ${{ vars.MONGODB_URI }}
           TF_VAR_auth_secret: ${{ secrets.AUTH_SECRET }}
           TF_VAR_auth_url: ${{ vars.API_GATEWAY_URL }}
-          # TODO: TF_VAR_cors_origins: ${{ vars.CORS_ORIGINS }}
+          TF_VAR_cors_origins: ${{ vars.CORS_ORIGINS }}
           TF_VAR_github_client_id: ${{ vars.GH_OAUTH_CLIENT_ID }}
           TF_VAR_github_client_secret: ${{ secrets.GH_OAUTH_CLIENT_SECRET }}
         run: |
