@@ -35,6 +35,22 @@ provider "aws" {
 }
 
 # ============================================================================
+# WebSocket (real-time deployment updates)
+# Declared before Lambda so its outputs can be referenced in Lambda env vars
+# ============================================================================
+
+module "websocket" {
+  source = "./modules/websocket"
+
+  service_name         = "dtapline-api-${var.stage}"
+  ws_lambda_source_dir = "${path.module}/../dist/ws-lambda"
+
+  ws_lambda_env_vars = {
+    AUTH_URL = var.auth_url
+  }
+}
+
+# ============================================================================
 # Lambda Function
 # ============================================================================
 
@@ -57,6 +73,10 @@ module "lambda" {
     # GitHub OAuth (optional)
     GITHUB_CLIENT_ID     = var.github_client_id
     GITHUB_CLIENT_SECRET = var.github_client_secret
+
+    # WebSocket broadcasting
+    WS_API_URL           = module.websocket.websocket_api_url
+    WS_CONNECTIONS_TABLE = module.websocket.connections_table_name
   }
 }
 
@@ -69,6 +89,45 @@ module "api_gateway" {
 
   api_name   = "dtapline-api-${var.stage}"
   lambda_arn = module.lambda.function_arn
+}
+
+# ============================================================================
+# IAM policies for API Lambda to broadcast via WebSocket
+# Defined here (not in websocket module) to avoid circular module dependencies
+# ============================================================================
+
+# Allow the API Lambda to scan DynamoDB connections table
+resource "aws_iam_role_policy" "api_lambda_ws_dynamodb" {
+  name   = "ws-connections-scan"
+  role   = module.lambda.role_name
+  policy = data.aws_iam_policy_document.api_lambda_ws_dynamodb.json
+}
+
+data "aws_iam_policy_document" "api_lambda_ws_dynamodb" {
+  statement {
+    effect = "Allow"
+    actions = [
+      "dynamodb:Scan"
+    ]
+    resources = [module.websocket.connections_table_arn]
+  }
+}
+
+# Allow the API Lambda to post messages to WebSocket connections
+resource "aws_iam_role_policy" "api_lambda_ws_manage" {
+  name   = "ws-manage-connections"
+  role   = module.lambda.role_name
+  policy = data.aws_iam_policy_document.api_lambda_ws_manage.json
+}
+
+data "aws_iam_policy_document" "api_lambda_ws_manage" {
+  statement {
+    effect = "Allow"
+    actions = [
+      "execute-api:ManageConnections"
+    ]
+    resources = ["${module.websocket.websocket_api_execution_arn}/*"]
+  }
 }
 
 # ============================================================================

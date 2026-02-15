@@ -18,12 +18,19 @@
     "build-cjs": "babel build/esm --plugins @babel/transform-export-namespace-from --plugins @babel/transform-modules-commonjs --out-dir build/cjs --source-maps",
     "build-annotate": "babel build/esm --plugins annotate-pure-calls --out-dir build/esm --source-maps",
     "bundle:lambda": "esbuild src/lambda.ts --bundle --platform=node --target=node20 --outfile=dist/lambda/index.js --external:@aws-sdk/* --alias:mongodb=mongodb/src --main-fields=module,main --tree-shaking=true --minify --sourcemap",
+    "bundle:ws-lambda": "esbuild src/websocket-lambda.ts --bundle --platform=node --target=node20 --outfile=dist/ws-lambda/index.js --external:@aws-sdk/* --main-fields=module,main --tree-shaking=true --minify --sourcemap",
     "check": "tsc -b tsconfig.json",
     "test": "vitest",
     "coverage": "vitest --coverage"
   },
   "dependencies": {
+    "@aws-sdk/client-apigatewaymanagementapi": "^3.990.0",
+    "@aws-sdk/client-dynamodb": "^3.990.0",
+    "@aws-sdk/lib-dynamodb": "^3.990.0",
     "@dtapline/domain": "workspace:^",
+    "@effect-aws/client-api-gateway-management-api": "^1.10.9",
+    "@effect-aws/client-dynamodb": "^1.10.9",
+    "@effect-aws/dynamodb": "^1.0.3",
     "@effect-aws/lambda": "^1.5.2",
     "@effect-aws/powertools-logger": "^1.5.1",
     "@effect/platform": "^0.94.2",
@@ -34,7 +41,8 @@
     "dotenv": "^17.2.3",
     "effect": "^3.19.15",
     "mongodb": "^7.0.0",
-    "socks": "^2.8.7"
+    "socks": "^2.8.7",
+    "ws": "^8.19.0"
   },
   "effect": {
     "generateExports": {
@@ -49,7 +57,9 @@
     }
   },
   "devDependencies": {
+    "@types/aws-lambda": "^8.10.160",
     "@types/bcryptjs": "^3.0.0",
+    "@types/ws": "^8.18.1",
     "esbuild": "^0.25.2"
   }
 }

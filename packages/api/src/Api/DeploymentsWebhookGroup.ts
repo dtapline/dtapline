@@ -3,6 +3,7 @@ import { InvalidApiKey, UnauthorizedApiKey } from "@dtapline/domain/Errors"
 import { HttpApiBuilder } from "@effect/platform"
 import { Effect } from "effect"
 import { ApiKeysRepository } from "../Repositories/ApiKeysRepository.js"
+import { BroadcastService } from "../Services/BroadcastService.js"
 import { DeploymentService } from "../Services/DeploymentService.js"
 
 /**
@@ -16,6 +17,7 @@ export const DeploymentsWebhookGroupLive = HttpApiBuilder.group(
     Effect.gen(function*() {
       const deploymentService = yield* DeploymentService
       const apiKeysRepo = yield* ApiKeysRepository
+      const broadcastService = yield* BroadcastService
 
       return handlers.handle("createDeployment", ({ payload, request }) =>
         Effect.gen(function*() {
@@ -54,6 +56,22 @@ export const DeploymentsWebhookGroupLive = HttpApiBuilder.group(
             String(apiKey.projectId),
             payload
           )
+
+          // 6. Broadcast deployment update to connected WebSocket clients
+          yield* broadcastService.sendToUser(String(apiKey.userId), {
+            action: "deployment-created",
+            message: {
+              projectId: String(apiKey.projectId),
+              deployment: {
+                id: deployment.id,
+                environmentId: deployment.environmentId,
+                serviceId: deployment.serviceId,
+                version: deployment.version,
+                status: deployment.status,
+                deployedAt: deployment.deployedAt.toISOString()
+              }
+            }
+          })
 
           return {
             id: deployment.id,
