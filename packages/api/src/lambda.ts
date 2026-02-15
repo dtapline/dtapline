@@ -48,9 +48,6 @@ export const handler = LambdaHandler.fromHttpApi(
   {
     middleware: HttpMiddleware.cors({
       allowedOrigins: corsOrigins,
-      allowedMethods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-      allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept", "Origin"],
-      exposedHeaders: ["Set-Cookie"],
       credentials: true
     })
   }
