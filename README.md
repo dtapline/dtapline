@@ -4,6 +4,10 @@
 
 Dtapline helps teams answer questions like "What version is running in production?" and "When was the last deployment to staging?" with a simple 2D matrix dashboard. Integrate with your CI/CD pipeline to automatically report deployments.
 
+![Dtapline Dashboard](assets/showcase.png)
+
+_Inspired by [Octopus Deploy](https://octopus.com/)'s deployment dashboard. And designed for open-source projects._
+
 ## Quick Start
 
 ### CLI Usage
