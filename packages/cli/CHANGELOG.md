@@ -1,5 +1,11 @@
 # @dtapline/cli
 
+## 0.3.1
+
+### Patch Changes
+
+- [`82f9e0a`](https://github.com/dtapline/dtapline/commit/82f9e0a05e079e51f8a8d30c1bb0b533b73222f2) Thanks @floydspace! - fix default api domain set in cli
+
 ## 0.3.0
 
 ### Minor Changes
