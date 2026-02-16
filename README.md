@@ -22,7 +22,7 @@ pnpm --package=@dtapline/cli dlx dtapline deploy \
   api-service \
   abc123def456 \
   --status success \
-  --deployment-version v1.2.3 \
+  --deployed-version v1.2.3 \
   --deployed-by "Jenkins" \
 ```
 

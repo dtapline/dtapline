@@ -48,7 +48,7 @@ jobs:
             --git-tag ${{ github.ref_name }} \
             --status in_progress \
             --deployed-by "GitHub Actions" \
-            --deployment-version "${GITHUB_REF_NAME##*@}" \
+            --deployed-version "${GITHUB_REF_NAME##*@}" \
             --build-url ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
       - name: Deploy to Netlify
@@ -77,7 +77,7 @@ jobs:
             --git-tag ${{ github.ref_name }} \
             --status success \
             --deployed-by "GitHub Actions" \
-            --deployment-version "${GITHUB_REF_NAME##*@}" \
+            --deployed-version "${GITHUB_REF_NAME##*@}" \
             --build-url ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
       - name: Report failed deployment
@@ -94,5 +94,5 @@ jobs:
             --git-tag ${{ github.ref_name }} \
             --status failed \
             --deployed-by "GitHub Actions" \
-            --deployment-version "${GITHUB_REF_NAME##*@}" \
+            --deployed-version "${GITHUB_REF_NAME##*@}" \
             --build-url ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}

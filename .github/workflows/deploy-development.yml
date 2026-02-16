@@ -41,7 +41,7 @@ jobs:
             --server-url ${{ vars.DTAPLINE_SERVER_URL }} \
             --status in_progress \
             --deployed-by "GitHub Actions" \
-            --deployment-version "$(pnpm tsx scripts/get-next-version.ts @dtapline/cli)" \
+            --deployed-version "$(pnpm tsx scripts/get-next-version.ts @dtapline/cli)" \
             --build-url ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
       - name: Create CLI snapshot
@@ -66,7 +66,7 @@ jobs:
             --server-url ${{ vars.DTAPLINE_SERVER_URL }} \
             --status success \
             --deployed-by "GitHub Actions" \
-            --deployment-version "$(pnpm tsx scripts/get-next-version.ts @dtapline/cli)" \
+            --deployed-version "$(pnpm tsx scripts/get-next-version.ts @dtapline/cli)" \
             --build-url ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
       - name: Report deployment failure
@@ -81,7 +81,7 @@ jobs:
             --server-url ${{ vars.DTAPLINE_SERVER_URL }} \
             --status failed \
             --deployed-by "GitHub Actions" \
-            --deployment-version "$(pnpm tsx scripts/get-next-version.ts @dtapline/cli)" \
+            --deployed-version "$(pnpm tsx scripts/get-next-version.ts @dtapline/cli)" \
             --build-url ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
   deploy-api:
@@ -129,7 +129,7 @@ jobs:
             --server-url ${{ vars.DTAPLINE_SERVER_URL }} \
             --status in_progress \
             --deployed-by "GitHub Actions" \
-            --deployment-version "$(pnpm tsx scripts/get-next-version.ts @dtapline/api)" \
+            --deployed-version "$(pnpm tsx scripts/get-next-version.ts @dtapline/api)" \
             --build-url ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
       - name: Terraform Init
@@ -170,7 +170,7 @@ jobs:
             --server-url ${{ vars.DTAPLINE_SERVER_URL || steps.terraform.outputs.api_url }} \
             --status success \
             --deployed-by "GitHub Actions" \
-            --deployment-version "$(pnpm tsx scripts/get-next-version.ts @dtapline/api)" \
+            --deployed-version "$(pnpm tsx scripts/get-next-version.ts @dtapline/api)" \
             --build-url ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
       - name: Report failed deployment
@@ -186,7 +186,7 @@ jobs:
             --server-url ${{ vars.DTAPLINE_SERVER_URL || vars.API_GATEWAY_URL }} \
             --status failed \
             --deployed-by "GitHub Actions" \
-            --deployment-version "$(pnpm tsx scripts/get-next-version.ts @dtapline/api)" \
+            --deployed-version "$(pnpm tsx scripts/get-next-version.ts @dtapline/api)" \
             --build-url ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
   deploy-ui:
@@ -225,7 +225,7 @@ jobs:
             --server-url ${{ vars.DTAPLINE_SERVER_URL }} \
             --status in_progress \
             --deployed-by "GitHub Actions" \
-            --deployment-version "$(pnpm tsx scripts/get-next-version.ts @dtapline/ui)" \
+            --deployed-version "$(pnpm tsx scripts/get-next-version.ts @dtapline/ui)" \
             --build-url ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
       - name: Deploy to Netlify (branch deploy)
@@ -254,7 +254,7 @@ jobs:
             --server-url ${{ vars.DTAPLINE_SERVER_URL || vars.API_GATEWAY_URL }} \
             --status success \
             --deployed-by "GitHub Actions" \
-            --deployment-version "$(pnpm tsx scripts/get-next-version.ts @dtapline/ui)" \
+            --deployed-version "$(pnpm tsx scripts/get-next-version.ts @dtapline/ui)" \
             --build-url ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
       - name: Report failed deployment
@@ -270,5 +270,5 @@ jobs:
             --server-url ${{ vars.DTAPLINE_SERVER_URL || vars.API_GATEWAY_URL }} \
             --status failed \
             --deployed-by "GitHub Actions" \
-            --deployment-version "$(pnpm tsx scripts/get-next-version.ts @dtapline/ui)" \
+            --deployed-version "$(pnpm tsx scripts/get-next-version.ts @dtapline/ui)" \
             --build-url ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}

@@ -69,6 +69,7 @@ dtapline deploy production api-gateway abc123
 
 ### Optional
 - `--server-url` - Server URL (default: http://localhost:3000)
+- `--deployed-version` - Version for this deployment (e.g., v1.2.3)
 - `--git-tag` - Git tag (e.g., v1.2.3)
 - `--pr-url` - Pull request URL
 - `--deployed-by` - Who/what triggered the deployment

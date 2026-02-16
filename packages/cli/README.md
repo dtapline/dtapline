@@ -38,7 +38,7 @@ dtapline deploy <environment> <service> <commitSha> \
 dtapline deploy production my-api abc123def \
   --api-key cm_xxxxxxxxxxxxx \
   --server-url https://dtapline.mycompany.com \
-  --deployment-version v1.2.3 \
+  --deployed-version v1.2.3 \
   --pr-url https://github.com/org/repo/pull/123 \
   --deployed-by "Azure DevOps" \
   --status success \
@@ -52,7 +52,7 @@ dtapline deploy production my-api abc123def \
 export DTAPLINE_API_KEY=cm_xxxxxxxxxxxxx
 
 dtapline deploy staging web-frontend def456ghi \
-  --deployment-version v2.0.0-rc1
+  --deployed-version v2.0.0-rc1
 ```
 
 ## Azure Pipelines Integration
@@ -91,7 +91,7 @@ stages:
                 $(Build.SourceVersion) \
                 --api-key $(DTAPLINE_API_KEY) \
                 --server-url $(DTAPLINE_SERVER_URL) \
-                --deployment-version $(Build.SourceBranchName) \
+                --deployed-version $(Build.SourceBranchName) \
                 --deployed-by "Azure DevOps" \
                 --build-url $(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId) \
                 --status success
@@ -130,7 +130,7 @@ jobs:
             my-service \
             ${{ github.sha }} \
             --server-url https://api.dtapline.io \
-            --deployment-version ${{ github.ref_name }} \
+            --deployed-version ${{ github.ref_name }} \
             --pr-url ${{ github.event.pull_request.html_url }} \
             --deployed-by "GitHub Actions" \
             --build-url ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
@@ -152,7 +152,7 @@ Report a deployment to Dtapline API server.
 
 - `--api-key <key>` - Dtapline API key (or set DTAPLINE_API_KEY env var)
 - `--server-url <url>` - Dtapline API server URL (default: http://localhost:3000)
-- `--deployment-version <tag>` - Git tag for this deployment (e.g., v1.2.3)
+- `--deployed-version <tag>` - Version for this deployment (e.g., v1.2.3)
 - `--pr-url <url>` - Pull request URL
 - `--deployed-by <who>` - Who/what triggered the deployment
 - `--status <status>` - Deployment status: success, failed, in_progress, rolled_back (default: success)
@@ -184,7 +184,7 @@ API keys should have `deployments:write` scope.
 ```bash
 dtapline deploy production api-gateway a1b2c3d \
   --api-key cm_xxxxxxxxxxxxx \
-  --deployment-version v1.5.0 \
+  --deployed-version v1.5.0 \
   --deployed-by "Jenkins" \
   --status success
 ```
@@ -203,7 +203,7 @@ dtapline deploy staging frontend e4f5g6h \
 ```bash
 dtapline deploy production database i7j8k9l \
   --api-key cm_xxxxxxxxxxxxx \
-  --deployment-version v1.4.9 \
+  --deployed-version v1.4.9 \
   --status rolled_back \
   --release-notes "Rolling back due to performance issues"
 ```
