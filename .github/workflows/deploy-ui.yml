@@ -32,7 +32,7 @@ jobs:
       - name: Build UI
         run: pnpm build
         env:
-          VITE_API_BASE_URL: ${{ vars.API_GATEWAY_URL }}
+          VITE_API_BASE_URL: ${{ vars.API_BASE_URL }}
           VITE_DISABLE_SOCIAL_LOGIN: ${{ vars.DISABLE_SOCIAL_LOGIN }}
 
       - name: Report deployment in progress
@@ -73,7 +73,7 @@ jobs:
             production \
             ui \
             ${{ github.sha }} \
-            --server-url ${{ vars.DTAPLINE_SERVER_URL || vars.API_GATEWAY_URL }} \
+            --server-url ${{ vars.DTAPLINE_SERVER_URL || vars.API_BASE_URL }} \
             --git-tag ${{ github.ref_name }} \
             --status success \
             --deployed-by "GitHub Actions" \
@@ -90,7 +90,7 @@ jobs:
             production \
             ui \
             ${{ github.sha }} \
-            --server-url ${{ vars.DTAPLINE_SERVER_URL || vars.API_GATEWAY_URL }} \
+            --server-url ${{ vars.DTAPLINE_SERVER_URL || vars.API_BASE_URL }} \
             --git-tag ${{ github.ref_name }} \
             --status failed \
             --deployed-by "GitHub Actions" \

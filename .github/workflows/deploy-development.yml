@@ -146,7 +146,7 @@ jobs:
           TF_VAR_stage: "dev"
           TF_VAR_mongodb_uri: ${{ vars.MONGODB_URI }}
           TF_VAR_auth_secret: ${{ secrets.AUTH_SECRET }}
-          TF_VAR_auth_url: ${{ vars.API_GATEWAY_URL }}
+          TF_VAR_auth_url: ${{ vars.API_BASE_URL }}
           TF_VAR_cors_origins: ${{ vars.CORS_ORIGINS }}
           TF_VAR_github_client_id: ${{ vars.GH_OAUTH_CLIENT_ID }}
           TF_VAR_github_client_secret: ${{ secrets.GH_OAUTH_CLIENT_SECRET }}
@@ -183,7 +183,7 @@ jobs:
             development \
             api \
             ${{ github.sha }} \
-            --server-url ${{ vars.DTAPLINE_SERVER_URL || vars.API_GATEWAY_URL }} \
+            --server-url ${{ vars.DTAPLINE_SERVER_URL || vars.API_BASE_URL }} \
             --status failed \
             --deployed-by "GitHub Actions" \
             --deployed-version "$(pnpm tsx scripts/get-next-version.ts @dtapline/api)" \
@@ -210,7 +210,7 @@ jobs:
       - name: Build UI
         run: pnpm build
         env:
-          VITE_API_BASE_URL: ${{ vars.API_GATEWAY_URL }}
+          VITE_API_BASE_URL: ${{ vars.API_BASE_URL }}
           VITE_DISABLE_SOCIAL_LOGIN: ${{ vars.DISABLE_SOCIAL_LOGIN }}
 
       - name: Report deployment in progress
@@ -251,7 +251,7 @@ jobs:
             development \
             ui \
             ${{ github.sha }} \
-            --server-url ${{ vars.DTAPLINE_SERVER_URL || vars.API_GATEWAY_URL }} \
+            --server-url ${{ vars.DTAPLINE_SERVER_URL || vars.API_BASE_URL }} \
             --status success \
             --deployed-by "GitHub Actions" \
             --deployed-version "$(pnpm tsx scripts/get-next-version.ts @dtapline/ui)" \
@@ -267,7 +267,7 @@ jobs:
             development \
             ui \
             ${{ github.sha }} \
-            --server-url ${{ vars.DTAPLINE_SERVER_URL || vars.API_GATEWAY_URL }} \
+            --server-url ${{ vars.DTAPLINE_SERVER_URL || vars.API_BASE_URL }} \
             --status failed \
             --deployed-by "GitHub Actions" \
             --deployed-version "$(pnpm tsx scripts/get-next-version.ts @dtapline/ui)" \

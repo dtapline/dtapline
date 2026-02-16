@@ -160,7 +160,7 @@ Each deployment workflow includes:
 | --------------------- | ------------------------ | -------------------------- |
 | `NETLIFY_SITE_ID`     | deploy-ui.yml            | Netlify site identifier    |
 | `DTAPLINE_SERVER_URL` | All deployment workflows | API endpoint for reporting |
-| `API_GATEWAY_URL`     | deploy-ui.yml            | Backend URL for frontend   |
+| `API_BASE_URL`     | deploy-ui.yml            | Backend URL for frontend   |
 
 ## Troubleshooting
 

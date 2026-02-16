@@ -1,5 +1,5 @@
 ---
-"@dtapline/api": minor
+"@dtapline/api": patch
 ---
 
 Add custom domain support for API Gateway with automatic ACM certificate creation

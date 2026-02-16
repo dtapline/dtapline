@@ -288,8 +288,8 @@ Go to Repository Settings → Secrets and variables → Actions → Variables
 
 | Variable Name         | Value                                                | Where to get                             |
 | --------------------- | ---------------------------------------------------- | ---------------------------------------- |
-| `API_GATEWAY_URL`     | `https://....execute-api.eu-central-1.amazonaws.com` | Terraform output (Step 4.3 - production) |
-| `DTAPLINE_SERVER_URL` | Same as `API_GATEWAY_URL`                            | For CLI deployment reporting             |
+| `API_BASE_URL`        | `https://....execute-api.eu-central-1.amazonaws.com` | Terraform output (Step 4.3 - production) |
+| `DTAPLINE_SERVER_URL` | Same as `API_BASE_URL`                               | For CLI deployment reporting             |
 | `NETLIFY_SITE_ID`     | `abc123...`                                          | Netlify Site Settings (Step 5.2)         |
 
 ---
