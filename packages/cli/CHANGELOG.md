@@ -1,5 +1,13 @@
 # @dtapline/cli
 
+## 0.3.0
+
+### Minor Changes
+
+- [`11ab320`](https://github.com/dtapline/dtapline/commit/11ab32007efaa95da8ffaa552e86656ed1b504c0) Thanks @floydspace! - Rename `--deployment-version` CLI parameter to `--deployed-version` for consistency with `--deployed-by` and improved brevity.
+
+  **BREAKING CHANGE:** Users must update their CI/CD scripts to use `--deployed-version` instead of `--deployment-version`. The old parameter name will no longer be recognized.
+
 ## 0.2.2
 
 ### Patch Changes

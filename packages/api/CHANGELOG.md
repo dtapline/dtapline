@@ -1,5 +1,11 @@
 # @dtapline/api
 
+## 0.2.2
+
+### Patch Changes
+
+- [`7580bd5`](https://github.com/dtapline/dtapline/commit/7580bd59ad3e1b5a3bec4f0d55a47639a82d0539) Thanks @floydspace! - fix object id bug
+
 ## 0.2.1
 
 ### Patch Changes
