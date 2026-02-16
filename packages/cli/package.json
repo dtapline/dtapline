@@ -1,6 +1,7 @@
 {
   "name": "@dtapline/cli",
   "version": "0.2.1",
+  "type": "module",
   "license": "AGPL-3.0-only",
   "description": "Dtapline CLI for deployment reporting",
   "repository": {
@@ -9,8 +10,8 @@
     "directory": "packages/cli"
   },
   "bin": {
-    "dtapline": "./dist/index.js",
-    "dtap": "./dist/index.js"
+    "dtapline": "./dist/index.cjs",
+    "dtap": "./dist/index.cjs"
   },
   "files": [
     "dist",
@@ -20,9 +21,7 @@
     "access": "public"
   },
   "scripts": {
-    "build": "pnpm clean && pnpm bundle",
-    "bundle": "esbuild src/index.ts --bundle --platform=node --target=node20 --outfile=dist/index.js --format=cjs --banner:js=\"#!/usr/bin/env node\"",
-    "bundle:analyze": "pnpm bundle --metafile=dist/meta.json --analyze",
+    "build": "tsdown",
     "clean": "rm -rf dist",
     "check": "tsc -b tsconfig.json",
     "test": "vitest"
@@ -34,7 +33,8 @@
     "effect": "^3.19.15"
   },
   "devDependencies": {
+    "@dtapline/domain": "workspace:*",
     "@types/node": "^22.0.0",
-    "esbuild": "^0.25.0"
+    "tsdown": "^0.20.3"
   }
 }
