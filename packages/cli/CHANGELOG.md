@@ -1,5 +1,13 @@
 # @dtapline/cli
 
+## 0.2.1
+
+### Patch Changes
+
+- [`dca903e`](https://github.com/dtapline/dtapline/commit/dca903ea19f439000ad2dd55dc3c873028272a6b) Thanks @floydspace! - Fix npm installation error by removing unused workspace dependency
+
+  Removed `@dtapline/domain` dependency from CLI package.json. This dependency was causing installation failures when users installed the CLI from npm because `@dtapline/domain` is a private workspace package not published to npm. The dependency was never actually used in the CLI code - all functionality is self-contained and bundled with esbuild.
+
 ## 0.2.0
 
 ### Minor Changes
