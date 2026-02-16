@@ -1,55 +1,10 @@
 # Dtapline
 
-A deployment tracking dashboard that helps teams visualize and manage deployments across multiple environments and services in a 2D matrix view.
+**Track and visualize deployments across your environments and services.**
 
-## Project Structure
-
-This is a monorepo with 4 packages:
-
-- **`packages/domain`** - Core domain models and schemas (Effect-TS)
-- **`packages/api`** - HTTP API server with MongoDB (Effect Platform)
-- **`packages/ui`** - React 19 dashboard with TanStack Router and Tailwind CSS
-- **`packages/cli`** - CLI tool for CI/CD integration (Effect CLI)
+Dtapline helps teams answer questions like "What version is running in production?" and "When was the last deployment to staging?" with a simple 2D matrix dashboard. Integrate with your CI/CD pipeline to automatically report deployments.
 
 ## Quick Start
-
-### Prerequisites
-
-- Node.js 18+ and pnpm 9.10.0
-- MongoDB Atlas account (or local MongoDB)
-- Gitleaks installed (for secret scanning)
-
-### Installation
-
-```sh
-pnpm install
-```
-
-### Environment Setup
-
-Create `.env` file in `packages/api/`:
-
-```sh
-MONGODB_URI=mongodb+srv://your-connection-string
-```
-
-### Development
-
-**Start the API server:**
-
-```sh
-cd packages/api
-pnpm dev
-```
-
-**Start the UI App:**
-
-```sh
-cd packages/ui
-pnpm dev
-```
-
-Visit http://localhost:5173 to access the dashboard.
 
 ### CLI Usage
 
@@ -62,15 +17,16 @@ cd packages/cli
 export DTAPLINE_API_KEY=cm_xxxxxxxxxxxxx
 
 # Report a deployment
-node bin/dtapline.js deploy \
+pnpm --package=@dtapline/cli dlx dtapline deploy \
   production \
   api-service \
   abc123def456 \
-  --git-tag v1.2.3 \
-  --deployed-by "Azure Pipelines"
+  --status success \
+  --deployment-version v1.2.3 \
+  --deployed-by "Jenkins" \
 ```
 
-See `packages/cli/README.md` for full documentation.
+See [packages/cli/README.md](packages/cli/README.md) for full documentation.
 
 ## Operations
 

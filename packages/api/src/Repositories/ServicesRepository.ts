@@ -244,7 +244,7 @@ export const ServicesRepositoryLive = Layer.effect(
           // Get the user's role from the project's user
           const usersCollection = db.collection("user")
           const user = yield* Effect.tryPromise({
-            try: () => usersCollection.findOne({ id: String(project.userId) }),
+            try: () => usersCollection.findOne({ _id: new ObjectId(project.userId) }),
             catch: (error) =>
               new DatabaseError({
                 operation: "findOne",

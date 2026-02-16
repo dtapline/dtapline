@@ -98,7 +98,7 @@ stages:
                       $(Build.SourceVersion) \
                       --api-key $(DTAPLINE_API_KEY) \
                       --server-url $(DTAPLINE_SERVER_URL) \
-                      --git-tag "$(Build.SourceBranchName)" \
+                      --deployment-version "$(Build.SourceBranchName)" \
                       --deployed-by "Azure DevOps" \
                       --build-url "$(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)" \
                       --status success
@@ -135,7 +135,7 @@ stages:
                       $(Build.SourceVersion) \
                       --api-key $(DTAPLINE_API_KEY) \
                       --server-url $(DTAPLINE_SERVER_URL) \
-                      --git-tag "$(Build.SourceBranchName)" \
+                      --deployment-version "$(Build.SourceBranchName)" \
                       --deployed-by "Azure DevOps" \
                       --build-url "$(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)" \
                       --status success \
