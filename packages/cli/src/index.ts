@@ -9,8 +9,16 @@ import { detectCICD } from "./cicd-detect.js"
  * Reports deployment information to Dtapline API server via webhook
  */
 
-// Version injected at build time by tsdown
-declare const __VERSION__: string
+// Get version: use build-time injected constant or dev placeholder
+function getVersion(): string {
+  try {
+    // __VERSION__ is replaced at build time by tsup
+    return __VERSION__
+  } catch {
+    // Fallback for running source directly (e.g., with tsx)
+    return "dev"
+  }
+}
 
 // Response schema for type safety
 const DeploymentResponse = Schema.Struct({
@@ -202,7 +210,7 @@ const rootCommand = Command.make("dtapline").pipe(
 
 const cli = Command.run(rootCommand, {
   name: "Dtapline CLI",
-  version: __VERSION__
+  version: getVersion()
 })
 
 const MainLayer = Layer.mergeAll(

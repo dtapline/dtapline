@@ -1,6 +1,6 @@
 {
   "name": "@dtapline/cli",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "type": "module",
   "license": "AGPL-3.0-only",
   "description": "Dtapline CLI for deployment reporting",
@@ -21,7 +21,7 @@
     "access": "public"
   },
   "scripts": {
-    "build": "tsdown",
+    "build": "tsup",
     "clean": "rm -rf dist",
     "check": "tsc -b tsconfig.json",
     "test": "vitest"
@@ -35,6 +35,6 @@
   "devDependencies": {
     "@dtapline/domain": "workspace:*",
     "@types/node": "^22.0.0",
-    "tsdown": "^0.20.3"
+    "tsup": "^8.3.5"
   }
 }

@@ -1,5 +1,16 @@
 # @dtapline/cli
 
+## 0.2.2
+
+### Patch Changes
+
+- [`9c56497`](https://github.com/dtapline/dtapline/commit/9c56497b0b0095c4c4acff6207d8385ab8ffc963) Thanks @floydspace! - Fix npm installation error and improve build process
+
+  - Fixed npm installation by bundling internal `@dtapline/domain` package while keeping Effect dependencies external
+  - Version is now dynamically injected from package.json at build time instead of being hardcoded
+  - Migrated from manual esbuild to tsup for better TypeScript-first bundling experience
+  - Cleaner build configuration with TypeScript config file
+
 ## 0.2.1
 
 ### Patch Changes

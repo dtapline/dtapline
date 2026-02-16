@@ -1,5 +1,5 @@
 import { readFileSync } from "fs"
-import { defineConfig } from "tsdown"
+import { defineConfig } from "tsup"
 
 // Read version from package.json
 const pkg = JSON.parse(readFileSync("./package.json", "utf-8"))
@@ -10,6 +10,7 @@ export default defineConfig({
   platform: "node",
   target: "node20",
   outDir: "dist",
+  bundle: true,
   shims: true,
   clean: true,
   banner: {
