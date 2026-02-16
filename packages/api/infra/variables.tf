@@ -31,12 +31,12 @@ variable "auth_secret" {
 }
 
 variable "auth_url" {
-  description = "Base URL for authentication callbacks (e.g., https://api.dtapline.io for production)"
+  description = "Base URL for authentication callbacks (e.g., https://api.dtapline.com for production)"
   type        = string
 }
 
 variable "cors_origins" {
-  description = "Comma-separated list of allowed CORS origins (e.g., https://dtapline.io)"
+  description = "Comma-separated list of allowed CORS origins (e.g., https://dtapline.com)"
   type        = string
 }
 

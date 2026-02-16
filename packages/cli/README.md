@@ -29,7 +29,7 @@ npm install -g @dtapline/cli
 ```bash
 dtapline deploy <environment> <service> <commitSha> \
   --api-key YOUR_API_KEY \
-  --server-url https://api.dtapline.io
+  --server-url https://api.dtapline.com
 ```
 
 ### With All Options
@@ -129,7 +129,7 @@ jobs:
             production \
             my-service \
             ${{ github.sha }} \
-            --server-url https://api.dtapline.io \
+            --server-url https://api.dtapline.com \
             --deployed-version ${{ github.ref_name }} \
             --pr-url ${{ github.event.pull_request.html_url }} \
             --deployed-by "GitHub Actions" \

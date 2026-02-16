@@ -31,13 +31,13 @@ auth_secret = "your-secret-key-here-generate-with-openssl-rand-base64-32"
 
 # Base URL for authentication callbacks (your API Gateway URL)
 # For dev: https://your-api-gateway-url.execute-api.eu-central-1.amazonaws.com
-# For prd: https://api.dtapline.io (with custom domain)
+# For prd: https://api.dtapline.com (with custom domain)
 auth_url = "https://your-api-gateway-url.execute-api.eu-central-1.amazonaws.com"
 
 # Comma-separated list of allowed CORS origins (your frontend URLs).
-# For dev: "http://localhost:5173,https://dev.dtapline.io"
-# For prd: "https://dtapline.io"
-cors_origins = "https://dtapline.io"
+# For dev: "http://localhost:5173,https://dev.dtapline.com"
+# For prd: "https://dtapline.com"
+cors_origins = "https://dtapline.com"
 
 # ============================================================================
 # GitHub OAuth Configuration
@@ -47,8 +47,8 @@ cors_origins = "https://dtapline.io"
 # https://github.com/settings/developers
 #
 # Configuration:
-#   - Homepage URL: https://dtapline.io (your frontend URL)
-#   - Authorization callback URL: https://api.dtapline.io/api/auth/callback/github
+#   - Homepage URL: https://dtapline.com (your frontend URL)
+#   - Authorization callback URL: https://api.dtapline.com/api/auth/callback/github
 #
 # Then fill in your credentials:
 github_client_id     = ""  # Leave empty to disable GitHub OAuth

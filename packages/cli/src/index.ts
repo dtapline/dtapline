@@ -56,7 +56,7 @@ const apiKeyOption = Options.text("api-key").pipe(
 
 const serverUrlOption = Options.text("server-url").pipe(
   Options.withDescription("Dtapline API server URL"),
-  Options.withDefault("https://api.dtapline.io")
+  Options.withDefault("https://api.dtapline.com")
 )
 
 const gitTagOption = Options.text("git-tag").pipe(

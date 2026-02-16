@@ -66,8 +66,8 @@ mongodb_uri = "mongodb+srv://..."
 
 # Better Auth (required)
 auth_secret  = "..."  # Generate with: openssl rand -base64 32
-auth_url     = "https://api.dtapline.io"  # Your API Gateway URL
-cors_origins = "https://dtapline.io"      # Your frontend URL
+auth_url     = "https://api.dtapline.com"  # Your API Gateway URL
+cors_origins = "https://dtapline.com"      # Your frontend URL
 
 # GitHub OAuth (optional)
 github_client_id     = "..."
@@ -82,8 +82,8 @@ To enable "Sign in with GitHub":
 
 1. Create GitHub OAuth App at https://github.com/settings/developers
 2. Configure:
-   - **Homepage URL**: Your frontend URL (e.g., `https://dtapline.io`)
-   - **Callback URL**: Your API URL + `/api/auth/callback/github` (e.g., `https://api.dtapline.io/api/auth/callback/github`)
+   - **Homepage URL**: Your frontend URL (e.g., `https://dtapline.com`)
+   - **Callback URL**: Your API URL + `/api/auth/callback/github` (e.g., `https://api.dtapline.com/api/auth/callback/github`)
 3. Add Client ID and Secret to `terraform.tfvars`
 
 **Note:** Create separate OAuth Apps for development and production.
