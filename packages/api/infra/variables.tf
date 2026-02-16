@@ -53,3 +53,13 @@ variable "github_client_secret" {
   default     = ""
   sensitive   = true
 }
+
+# ============================================================================
+# Custom Domain Configuration
+# ============================================================================
+
+variable "custom_domain_name" {
+  description = "Custom domain name for API Gateway (e.g., api.dtapline.com). Leave empty to use default API Gateway URL. Certificate will be created automatically."
+  type        = string
+  default     = ""
+}

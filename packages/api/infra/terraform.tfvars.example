@@ -53,3 +53,29 @@ cors_origins = "https://dtapline.com"
 # Then fill in your credentials:
 github_client_id     = ""  # Leave empty to disable GitHub OAuth
 github_client_secret = ""
+
+# ============================================================================
+# Custom Domain Configuration (Optional)
+# ============================================================================
+
+# Custom domain name for API Gateway
+# For production: api.dtapline.com
+# For development: development--api.dtapline.com (or leave empty to use API Gateway URL)
+#
+# When set, Terraform will automatically:
+# 1. Create an ACM certificate for the domain (with deletion protection)
+# 2. Output DNS validation records for you to add to Netlify
+# 3. Configure API Gateway custom domain mapping
+#
+# You only need to:
+# 1. Set this variable
+# 2. Run terraform apply
+# 3. Add the validation DNS records to Netlify (from terraform output)
+# 4. Add the API CNAME to Netlify (from terraform output)
+#
+# Note: Certificates are protected from accidental deletion (prevent_destroy = true)
+# and will auto-renew automatically by AWS.
+custom_domain_name = ""
+
+# Example:
+# custom_domain_name = "api.dtapline.com"

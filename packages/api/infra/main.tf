@@ -70,3 +70,43 @@ module "api_gateway" {
   api_name   = "dtapline-api-${var.stage}"
   lambda_arn = module.lambda.function_arn
 }
+
+# ============================================================================
+# ACM Certificate (Optional - for custom domain)
+# ============================================================================
+
+resource "aws_acm_certificate" "api" {
+  count = var.custom_domain_name != "" ? 1 : 0
+
+  domain_name       = var.custom_domain_name
+  validation_method = "DNS"
+
+  lifecycle {
+    create_before_destroy = true
+
+    # Prevent accidental deletion of certificate
+    # To delete: manually remove this block, then run terraform destroy
+    prevent_destroy = true
+  }
+
+  tags = {
+    Name = "dtapline-api-${var.stage}"
+  }
+}
+
+# ============================================================================
+# Custom Domain (Optional)
+# ============================================================================
+
+module "custom_domain" {
+  source = "./modules/custom-domain"
+  count  = var.custom_domain_name != "" ? 1 : 0
+
+  domain_name     = var.custom_domain_name
+  certificate_arn = aws_acm_certificate.api[0].arn
+  api_id          = module.api_gateway.api_id
+  stage_name      = "$default"
+
+  # Wait for certificate to be issued before creating custom domain
+  depends_on = [aws_acm_certificate.api]
+}

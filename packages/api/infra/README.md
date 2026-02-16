@@ -25,6 +25,9 @@ infra/
 - **API Gateway**: HTTP API (v2) with Lambda proxy integration
 - **CloudWatch Log Groups**: For Lambda and API Gateway logs
 - **Lambda Alias**: For stable endpoint (`dev` or `prd`)
+- **ACM Certificate** (optional): Automatically created for custom domain with deletion protection
+- **Custom Domain** (optional): API Gateway custom domain with ACM certificate
+
 
 ## Prerequisites
 
@@ -76,7 +79,114 @@ github_client_secret = "..."
 
 See `terraform.tfvars.example` for detailed documentation.
 
-### 3. GitHub OAuth Setup (Optional)
+### 3. Custom Domain Setup (Optional but Recommended for Production)
+
+To use a custom domain like `api.dtapline.com` instead of the default API Gateway URL:
+
+#### Step 1: Configure Terraform Variable
+
+Add to `terraform.tfvars`:
+
+```hcl
+# Production
+custom_domain_name = "api.dtapline.com"
+
+# Development (optional)
+custom_domain_name = "development--api.dtapline.com"
+```
+
+#### Step 2: Run Terraform Apply
+
+```bash
+terraform apply
+```
+
+Terraform will:
+- ✅ Create an ACM certificate for your domain
+- ✅ Output DNS validation records needed
+- ⏳ Wait for you to add DNS records (certificate status will be "PENDING_VALIDATION")
+
+#### Step 3: Add Certificate Validation DNS Records to Netlify
+
+After `terraform apply`, get the validation records:
+
+```bash
+terraform output certificate_validation_records
+```
+
+Example output:
+```json
+{
+  "api.dtapline.com" = {
+    "name"  = "_abc123.api.dtapline.com"
+    "type"  = "CNAME"
+    "value" = "_xyz789.acm-validations.aws."
+  }
+}
+```
+
+In Netlify DNS:
+1. Go to: **Site Settings → Domain Management → DNS**
+2. Add CNAME record:
+   - **Name**: `_abc123.api` (remove `.dtapline.com` from the name)
+   - **Type**: CNAME
+   - **Value**: `_xyz789.acm-validations.aws.`
+   - **TTL**: 3600
+
+**⚠️ IMPORTANT:** Netlify automatically appends your domain (`.dtapline.com`), so you must ONLY enter the subdomain part in the Name field. 
+
+**DO NOT enter:**
+- ❌ `_abc123.api.dtapline.com` (wrong - has domain suffix)
+- ❌ `_abc123.api.dtapline.com.dtapline.com` (wrong - double domain)
+
+**DO enter:**
+- ✅ `_abc123.api` (correct - subdomain only)
+
+#### Step 4: Wait for Certificate Validation
+
+Wait 5-15 minutes, then check status:
+
+```bash
+terraform output certificate_status
+# Should show: "ISSUED"
+```
+
+Once issued, you can proceed to the next step.
+
+#### Step 5: Add API Subdomain CNAME to Netlify
+
+Get the API Gateway target domain:
+
+```bash
+terraform output api_gateway_target_domain
+# Example: d-abc123xyz.execute-api.eu-central-1.amazonaws.com
+```
+
+In Netlify DNS:
+1. Add CNAME record:
+   - **Name**: `api` (for production) or `development--api` (for dev)
+   - **Type**: CNAME
+   - **Value**: [paste the target domain from above]
+   - **TTL**: 3600
+
+**⚠️ IMPORTANT:** Again, only enter the subdomain part without `.dtapline.com`:
+- ✅ Correct: `api` or `development--api`
+- ❌ Wrong: `api.dtapline.com` or `development--api.dtapline.com`
+
+#### Step 6: Verify
+
+Wait 5-10 minutes for DNS propagation, then test:
+
+```bash
+curl https://api.dtapline.com/health
+```
+
+**Important Notes:**
+- Certificate is created automatically by Terraform - no manual ACM setup needed
+- Keep the validation CNAME record forever (don't delete it)
+- For development, custom domain is optional - API Gateway URL works fine
+
+### 4. GitHub OAuth Setup (Optional)
 
 To enable "Sign in with GitHub":
 
@@ -87,6 +197,96 @@ To enable "Sign in with GitHub":
 3. Add Client ID and Secret to `terraform.tfvars`
 
 **Note:** Create separate OAuth Apps for development and production.
+
+## Environment-Specific Configuration
+
+### Development (`dtapline-api-dev`)
+
+```hcl
+stage = "dev"
+
+# Option 1: Use API Gateway URL (simpler, no DNS needed)
+auth_url     = "https://xyz123.execute-api.eu-central-1.amazonaws.com"
+cors_origins = "http://localhost:5173,https://development--dtapline.netlify.app"
+
+# Option 2: Use custom subdomain (requires DNS setup)
+custom_domain_name = "development--api.dtapline.com"
+auth_url           = "https://development--api.dtapline.com"
+cors_origins       = "http://localhost:5173,https://development--dtapline.netlify.app"
+```
+
+### Production (`dtapline-api-prd`)
+
+```hcl
+stage = "prd"
+
+# Always use custom domain for production
+custom_domain_name = "api.dtapline.com"
+auth_url           = "https://api.dtapline.com"
+cors_origins       = "https://dtapline.com"
+```
+
+**Note:** Certificate is created automatically by Terraform - no need to specify `certificate_arn`.
+
+## Certificate Management
+
+### Certificate Protection
+
+The ACM certificate is protected from accidental deletion with `prevent_destroy = true`. This means:
+
+✅ **Safe from `terraform destroy`** - Certificate won't be deleted
+✅ **Safe from variable changes** - Changing `custom_domain_name` won't delete the old certificate
+✅ **Safe from accidents** - Prevents costly re-validation cycles
+
+### Why Protection is Important
+
+ACM certificates require DNS validation, which can take 5-30 minutes. Accidentally deleting a certificate would:
+- Break your API domain immediately
+- Require re-creating the certificate
+- Require DNS validation again
+- Cause downtime during validation
+
+### Intentionally Deleting a Certificate
+
+If you really need to delete the certificate (e.g., switching to a different domain):
+
+1. **Remove the protection** in `main.tf`:
+   ```hcl
+   resource "aws_acm_certificate" "api" {
+     # ... other config ...
+     
+     lifecycle {
+       create_before_destroy = true
+       # prevent_destroy = true  # Comment this out
+     }
+   }
+   ```
+
+2. **Apply the change**:
+   ```bash
+   terraform apply  # Updates the lifecycle policy
+   ```
+
+3. **Destroy the certificate**:
+   ```bash
+   # Option 1: Remove custom domain (safest)
+   # Set custom_domain_name = "" in terraform.tfvars
+   terraform apply
+   
+   # Option 2: Destroy specific resource
+   terraform destroy -target=aws_acm_certificate.api
+   ```
+
+4. **Re-enable protection** after cleanup (restore the `prevent_destroy` line)
+
+### Certificate Renewal
+
+ACM certificates auto-renew automatically! You don't need to do anything:
+- AWS automatically renews certificates before expiration
+- Uses the same DNS validation records you added during setup
+- No downtime or manual intervention required
+
+**Important:** Keep the validation CNAME record in Netlify DNS forever - it's needed for auto-renewal.
 
 ## Deployment
 
@@ -138,12 +338,20 @@ The following environment variables are automatically configured:
 
 ## Outputs
 
-| Output                 | Description               |
-| ---------------------- | ------------------------- |
-| `api_gateway_url`      | API Gateway endpoint URL  |
-| `lambda_function_name` | Lambda function name      |
-| `lambda_function_arn`  | Lambda function ARN       |
-| `lambda_role_arn`      | Lambda execution role ARN |
+| Output                            | Description                                                |
+| --------------------------------- | ---------------------------------------------------------- |
+| `api_url`                         | Base API URL (custom domain or API Gateway URL)           |
+| `api_gateway_url`                 | Default API Gateway endpoint URL                           |
+| `custom_domain_name`              | Custom domain name (if configured)                         |
+| `api_gateway_target_domain`       | CNAME target for DNS record (if custom domain)             |
+| `certificate_validation_records`  | DNS records to add to Netlify for certificate validation  |
+| `certificate_arn`                 | ARN of the ACM certificate (if custom domain)              |
+| `certificate_status`              | Certificate validation status (ISSUED or PENDING)          |
+| `lambda_function_name`            | Lambda function name                                       |
+| `lambda_function_arn`             | Lambda function ARN                                        |
+| `lambda_role_arn`                 | Lambda execution role ARN                                  |
+
+**Note:** Use `api_url` for your frontend `VITE_API_BASE_URL` configuration.
 
 ## GitHub Actions Integration
 
