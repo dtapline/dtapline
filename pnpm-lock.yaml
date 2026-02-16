@@ -183,9 +183,6 @@ importers:
 
   packages/cli:
     dependencies:
-      '@dtapline/domain':
-        specifier: workspace:^
-        version: link:../domain/dist
       '@effect/cli':
         specifier: ^0.73.1
         version: 0.73.1(@effect/platform@0.94.5(effect@3.19.17))(@effect/printer-ansi@0.47.0(@effect/typeclass@0.38.0(effect@3.19.17))(effect@3.19.17))(@effect/printer@0.47.0(@effect/typeclass@0.38.0(effect@3.19.17))(effect@3.19.17))(effect@3.19.17)

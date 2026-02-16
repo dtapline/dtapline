@@ -22,12 +22,12 @@
   "scripts": {
     "build": "pnpm clean && pnpm bundle",
     "bundle": "esbuild src/index.ts --bundle --platform=node --target=node20 --outfile=dist/index.js --format=cjs --banner:js=\"#!/usr/bin/env node\"",
+    "bundle:analyze": "pnpm bundle --metafile=dist/meta.json --analyze",
     "clean": "rm -rf dist",
     "check": "tsc -b tsconfig.json",
     "test": "vitest"
   },
   "dependencies": {
-    "@dtapline/domain": "workspace:^",
     "@effect/cli": "^0.73.1",
     "@effect/platform": "^0.94.2",
     "@effect/platform-node": "^0.104.1",
