@@ -1,0 +1,7 @@
+<svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+  <!-- Letter "d." derived from main logo -->
+  <text x="16" y="24" text-anchor="middle" font-size="24" font-weight="500" font-family="Inter, system-ui, -apple-system, BlinkMacSystemFont, sans-serif">
+    <tspan fill="#22D3EE">d</tspan>
+    <tspan fill="#67E8F9">.</tspan>
+  </text>
+</svg>
