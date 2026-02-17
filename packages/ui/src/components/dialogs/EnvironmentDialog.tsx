@@ -2,6 +2,7 @@ import type { Environment } from "@dtapline/domain/Environment"
 import { useEffect, useState } from "react"
 import { useCreateEnvironment, useUpdateEnvironment } from "../../lib/hooks/use-environments"
 import { Button } from "../ui/button"
+import { ColorPicker } from "../ui/color-picker"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "../ui/dialog"
 import { Input } from "../ui/input"
 import { Label } from "../ui/label"
@@ -143,29 +144,12 @@ export function EnvironmentDialog({
               </p>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="color">Color</Label>
-              <div className="flex gap-2">
-                <Input
-                  id="color"
-                  type="color"
-                  value={color}
-                  onChange={(e) => setColor(e.target.value)}
-                  className="h-10 w-20"
-                />
-                <Input
-                  type="text"
-                  value={color}
-                  onChange={(e) => setColor(e.target.value)}
-                  placeholder="#3b82f6"
-                  pattern="^#[0-9A-Fa-f]{6}$"
-                  maxLength={7}
-                />
-              </div>
-              <p className="text-xs text-muted-foreground">
-                A color to represent this environment
-              </p>
-            </div>
+            <ColorPicker
+              label="Color"
+              value={color}
+              onChange={setColor}
+              description="A color to represent this environment"
+            />
 
             {!isEditing && (
               <div className="space-y-2">
