@@ -1,5 +1,17 @@
 # @dtapline/ui
 
+## 0.3.0
+
+### Minor Changes
+
+- [`f3bd40c`](https://github.com/dtapline/dtapline/commit/f3bd40cfbd32d2be9ed554438468e85d9a1db305) Thanks @floydspace! - Add color picker with DTAP preset colors and react-colorful for custom colors
+
+### Patch Changes
+
+- [`c6f5d38`](https://github.com/dtapline/dtapline/commit/c6f5d382f9db86fe76362392363b04ebfebf6517) Thanks @floydspace! - Add Settings placeholder page and link Get Help to GitHub issues
+
+- [`e11c783`](https://github.com/dtapline/dtapline/commit/e11c78353a76bc692649abe1a2e1455ff9361e93) Thanks @floydspace! - Update favicon and page title to use Dtapline branding
+
 ## 0.2.1
 
 ### Patch Changes
