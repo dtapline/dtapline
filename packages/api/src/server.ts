@@ -44,14 +44,8 @@ const allowedOrigins = process.env.CORS_ORIGINS?.split(",").map((s) => s.trim())
 ]
 console.log(`🌐 CORS enabled for: ${allowedOrigins.join(", ")}`)
 
-const HttpLive = HttpApiBuilder.serve((httpApp) =>
-  HttpMiddleware.logger(
-    HttpMiddleware.cors({
-      allowedOrigins,
-      credentials: true
-    })(httpApp)
-  )
-).pipe(
+const HttpLive = HttpApiBuilder.serve(HttpMiddleware.logger).pipe(
+  Layer.provide(HttpApiBuilder.middlewareCors({ allowedOrigins, credentials: true })),
   Layer.provide(AppLive),
   Layer.provide(NodeHttpServer.layer(createServer, { port: 3000 })),
   Layer.tapErrorCause((cause) =>

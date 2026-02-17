@@ -2,6 +2,7 @@ import type { ApiKeyResponse } from "@dtapline/domain/ApiKey"
 import { CheckCircle2, Copy } from "lucide-react"
 import { useState } from "react"
 import { useCreateApiKey } from "../../lib/hooks/use-api-keys"
+import { Alert, AlertDescription } from "../ui/alert"
 import { Button } from "../ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "../ui/dialog"
 import { Input } from "../ui/input"
@@ -19,11 +20,13 @@ export function ApiKeyDialog({ onOpenChange, open, projectId }: ApiKeyDialogProp
   const [name, setName] = useState("")
   const [createdKey, setCreatedKey] = useState<ApiKeyResponseType | null>(null)
   const [copied, setCopied] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const createMutation = useCreateApiKey()
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    setError(null)
 
     createMutation.mutate(
       {
@@ -37,6 +40,9 @@ export function ApiKeyDialog({ onOpenChange, open, projectId }: ApiKeyDialogProp
         onSuccess: (data) => {
           setCreatedKey(data)
           setName("")
+        },
+        onError: (err: Error) => {
+          setError(err.message || "Failed to create API key")
         }
       }
     )
@@ -53,6 +59,7 @@ export function ApiKeyDialog({ onOpenChange, open, projectId }: ApiKeyDialogProp
   const handleClose = () => {
     setCreatedKey(null)
     setCopied(false)
+    setError(null)
     onOpenChange(false)
   }
 
@@ -127,6 +134,11 @@ export function ApiKeyDialog({ onOpenChange, open, projectId }: ApiKeyDialogProp
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
+          {error && (
+            <Alert variant="destructive" className="mb-4">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
           <div className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="name">Key Name</Label>

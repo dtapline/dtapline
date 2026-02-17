@@ -7,14 +7,16 @@ export class UserId extends Schema.String.pipe(Schema.brand("UserId")) {}
 // admin: Full system access, bypasses all limits
 // proUser: Paid plan with unlimited projects
 // freeUser: Free plan with limited projects
-export const UserRole = Schema.Literal("admin", "proUser", "freeUser")
+// demoUser: Read-only demo account with pre-seeded data
+export const UserRole = Schema.Literal("admin", "proUser", "freeUser", "demoUser")
 export type UserRole = Schema.Schema.Type<typeof UserRole>
 
 // Plan limits configuration based on role
 export const RoleLimits = {
   admin: { maxProjects: Infinity, maxServices: Infinity },
   proUser: { maxProjects: Infinity, maxServices: Infinity },
-  freeUser: { maxProjects: 1, maxServices: 3 }
+  freeUser: { maxProjects: 1, maxServices: 3 },
+  demoUser: { maxProjects: 0, maxServices: 0 } // Read-only, cannot create
 } as const
 
 // User schema (aligned with Better Auth structure)

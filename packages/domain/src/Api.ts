@@ -1,4 +1,5 @@
-import { HttpApi, HttpApiEndpoint, HttpApiGroup } from "@effect/platform"
+import { HttpApi, HttpApiEndpoint, HttpApiGroup, HttpApiMiddleware } from "@effect/platform"
+import { Forbidden } from "@effect/platform/HttpApiError"
 import { Schema } from "effect"
 import { ApiKeyResponse, CreateApiKeyInput } from "./ApiKey.js"
 import { CreateDeploymentInput, Deployment, DeploymentFilters, DeploymentId } from "./Deployment.js"
@@ -64,6 +65,7 @@ export class ProjectsGroup extends HttpApiGroup.make("projects")
         })
       )
       .addError(Errors.Unauthorized, { status: 401 })
+      .addError(Errors.Forbidden, { status: 403 })
       .addError(Errors.PlanLimitExceeded, { status: 403 })
       .addError(Errors.ProjectAlreadyExists, { status: 409 })
       .addError(Errors.ValidationError, { status: 400 })
@@ -87,6 +89,7 @@ export class ProjectsGroup extends HttpApiGroup.make("projects")
         })
       )
       .addError(Errors.Unauthorized, { status: 401 })
+      .addError(Errors.Forbidden, { status: 403 })
       .addError(Errors.ProjectNotFound, { status: 404 })
       .addError(Errors.ValidationError, { status: 400 })
       .addError(Errors.DatabaseError, { status: 500 })
@@ -96,6 +99,7 @@ export class ProjectsGroup extends HttpApiGroup.make("projects")
       .setPath(Schema.Struct({ projectId: ProjectIdFromString }))
       .addSuccess(Schema.Void)
       .addError(Errors.Unauthorized, { status: 401 })
+      .addError(Errors.Forbidden, { status: 403 })
       .addError(Errors.ProjectNotFound, { status: 404 })
       .addError(Errors.DatabaseError, { status: 500 })
   )
@@ -241,6 +245,7 @@ export class EnvironmentsGroup extends HttpApiGroup.make("environments")
         })
       )
       .addError(Errors.Unauthorized, { status: 401 })
+      .addError(Errors.Forbidden, { status: 403 })
       .addError(Errors.EnvironmentAlreadyExists, { status: 409 })
       .addError(Errors.ValidationError, { status: 400 })
       .addError(Errors.DatabaseError, { status: 500 })
@@ -257,6 +262,7 @@ export class EnvironmentsGroup extends HttpApiGroup.make("environments")
         })
       )
       .addError(Errors.Unauthorized, { status: 401 })
+      .addError(Errors.Forbidden, { status: 403 })
       .addError(Errors.EnvironmentNotFound, { status: 404 })
       .addError(Errors.ValidationError, { status: 400 })
       .addError(Errors.DatabaseError, { status: 500 })
@@ -268,6 +274,7 @@ export class EnvironmentsGroup extends HttpApiGroup.make("environments")
       }))
       .addSuccess(Schema.Void)
       .addError(Errors.Unauthorized, { status: 401 })
+      .addError(Errors.Forbidden, { status: 403 })
       .addError(Errors.EnvironmentNotFound, { status: 404 })
       .addError(Errors.DatabaseError, { status: 500 })
   )
@@ -283,6 +290,7 @@ export class EnvironmentsGroup extends HttpApiGroup.make("environments")
       )
       .addSuccess(Schema.Void)
       .addError(Errors.Unauthorized, { status: 401 })
+      .addError(Errors.Forbidden, { status: 403 })
       .addError(Errors.EnvironmentNotFound, { status: 404 })
       .addError(Errors.DatabaseError, { status: 500 })
   )
@@ -293,6 +301,7 @@ export class EnvironmentsGroup extends HttpApiGroup.make("environments")
       }))
       .addSuccess(Schema.Void)
       .addError(Errors.Unauthorized, { status: 401 })
+      .addError(Errors.Forbidden, { status: 403 })
       .addError(Errors.EnvironmentNotFound, { status: 404 })
       .addError(Errors.EnvironmentHasDeployments, { status: 409 })
       .addError(Errors.DatabaseError, { status: 500 })
@@ -326,6 +335,7 @@ export class ServicesGroup extends HttpApiGroup.make("services")
         })
       )
       .addError(Errors.Unauthorized, { status: 401 })
+      .addError(Errors.Forbidden, { status: 403 })
       .addError(Errors.PlanLimitExceeded, { status: 403 })
       .addError(Errors.ProjectNotFound, { status: 404 })
       .addError(Errors.ServiceAlreadyExists, { status: 409 })
@@ -345,6 +355,7 @@ export class ServicesGroup extends HttpApiGroup.make("services")
         })
       )
       .addError(Errors.Unauthorized, { status: 401 })
+      .addError(Errors.Forbidden, { status: 403 })
       .addError(Errors.ServiceNotFound, { status: 404 })
       .addError(Errors.ValidationError, { status: 400 })
       .addError(Errors.DatabaseError, { status: 500 })
@@ -357,6 +368,7 @@ export class ServicesGroup extends HttpApiGroup.make("services")
       }))
       .addSuccess(Schema.Void)
       .addError(Errors.Unauthorized, { status: 401 })
+      .addError(Errors.Forbidden, { status: 403 })
       .addError(Errors.ServiceNotFound, { status: 404 })
       .addError(Errors.DatabaseError, { status: 500 })
   )
@@ -368,6 +380,7 @@ export class ServicesGroup extends HttpApiGroup.make("services")
       }))
       .addSuccess(Schema.Void)
       .addError(Errors.Unauthorized, { status: 401 })
+      .addError(Errors.Forbidden, { status: 403 })
       .addError(Errors.ServiceNotFound, { status: 404 })
       .addError(Errors.ServiceHasDeployments, { status: 409 })
       .addError(Errors.DatabaseError, { status: 500 })
@@ -397,6 +410,7 @@ export class ApiKeysGroup extends HttpApiGroup.make("apiKeys")
       .setPayload(CreateApiKeyInput)
       .addSuccess(ApiKeyResponse)
       .addError(Errors.Unauthorized, { status: 401 })
+      .addError(Errors.Forbidden, { status: 403 })
       .addError(Errors.ProjectNotFound, { status: 404 })
       .addError(Errors.ValidationError, { status: 400 })
       .addError(Errors.DatabaseError, { status: 500 })
@@ -409,6 +423,7 @@ export class ApiKeysGroup extends HttpApiGroup.make("apiKeys")
       }))
       .addSuccess(Schema.Void)
       .addError(Errors.Unauthorized, { status: 401 })
+      .addError(Errors.Forbidden, { status: 403 })
       .addError(Errors.ApiKeyNotFound, { status: 404 })
       .addError(Errors.DatabaseError, { status: 500 })
   )
@@ -433,6 +448,7 @@ export class VersionPatternsGroup extends HttpApiGroup.make("versionPatterns")
       .setPayload(UpdateVersionPatternInput)
       .addSuccess(VersionPattern)
       .addError(Errors.Unauthorized, { status: 401 })
+      .addError(Errors.Forbidden, { status: 403 })
       .addError(Errors.ProjectNotFound, { status: 404 })
       .addError(Errors.ValidationError, { status: 400 })
       .addError(Errors.DatabaseError, { status: 500 })
@@ -486,6 +502,23 @@ export class AuthGroup extends HttpApiGroup.make("auth")
 {}
 
 // ============================================================================
+// Middlewares
+// ============================================================================
+
+/**
+ * Middleware that blocks non-GET requests for demo users
+ *
+ * Demo users can view all data (GET requests) but cannot create, update, or delete
+ * anything (POST, PUT, PATCH, DELETE requests).
+ *
+ * This provides a cleaner authorization approach than checking `requireWriteAccess`
+ * in every single endpoint handler.
+ */
+export class DemoUserMiddleware extends HttpApiMiddleware.Tag<DemoUserMiddleware>()("DemoUserMiddleware", {
+  failure: Forbidden
+}) {}
+
+// ============================================================================
 // Main API
 // ============================================================================
 
@@ -498,4 +531,5 @@ export class DtaplineApi extends HttpApi.make("dtapline-api")
   .add(ApiKeysGroup)
   .add(VersionPatternsGroup)
   .add(UserGroup)
+  .middleware(DemoUserMiddleware) // Apply demo user middleware to all endpoints
 {}

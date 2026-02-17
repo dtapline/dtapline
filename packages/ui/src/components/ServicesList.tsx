@@ -3,6 +3,7 @@ import { ExternalLink } from "lucide-react"
 import { useState } from "react"
 import { useArchiveService, useServices } from "../lib/hooks/use-services"
 import { ServiceDialog } from "./dialogs/ServiceDialog"
+import { Alert, AlertDescription } from "./ui/alert"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,12 +24,14 @@ export function ServicesList({ projectId }: ServicesListProps) {
   const [isCreateOpen, setIsCreateOpen] = useState(false)
   const [editingService, setEditingService] = useState<Service | null>(null)
   const [archivingService, setArchivingService] = useState<Service | null>(null)
+  const [archiveError, setArchiveError] = useState<string | null>(null)
 
   const { data: services, isLoading } = useServices(projectId)
   const archiveMutation = useArchiveService()
 
   const handleArchive = () => {
     if (!archivingService) return
+    setArchiveError(null)
 
     archiveMutation.mutate(
       {
@@ -38,6 +41,9 @@ export function ServicesList({ projectId }: ServicesListProps) {
       {
         onSuccess: () => {
           setArchivingService(null)
+        },
+        onError: (err: Error) => {
+          setArchiveError(err.message || "Failed to archive service")
         }
       }
     )
@@ -108,7 +114,13 @@ export function ServicesList({ projectId }: ServicesListProps) {
         onOpenChange={(open: boolean) => !open && setEditingService(null)}
       />
 
-      <AlertDialog open={!!archivingService} onOpenChange={() => setArchivingService(null)}>
+      <AlertDialog
+        open={!!archivingService}
+        onOpenChange={() => {
+          setArchivingService(null)
+          setArchiveError(null)
+        }}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Archive Service</AlertDialogTitle>
@@ -116,9 +128,22 @@ export function ServicesList({ projectId }: ServicesListProps) {
               Are you sure you want to archive "{archivingService?.name}"? Archived services can be restored later.
             </AlertDialogDescription>
           </AlertDialogHeader>
+          {archiveError && (
+            <Alert variant="destructive">
+              <AlertDescription>{archiveError}</AlertDescription>
+            </Alert>
+          )}
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleArchive}>Archive</AlertDialogAction>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault()
+                handleArchive()
+              }}
+              disabled={archiveMutation.isPending}
+            >
+              {archiveMutation.isPending ? "Archiving..." : "Archive"}
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

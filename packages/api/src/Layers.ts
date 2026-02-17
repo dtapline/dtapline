@@ -9,10 +9,12 @@ import { EnvironmentsRepositoryLive } from "./Repositories/EnvironmentsRepositor
 import { ProjectsRepositoryLive } from "./Repositories/ProjectsRepository.js"
 import { ServicesRepositoryLive } from "./Repositories/ServicesRepository.js"
 import { VersionPatternsRepositoryLive } from "./Repositories/VersionPatternsRepository.js"
+import { AuthorizationServiceLive } from "./Services/AuthorizationService.js"
 import { AuthServiceLive } from "./Services/AuthService.js"
 import { ComparisonServiceLive } from "./Services/ComparisonService.js"
 import { DeploymentServiceLive } from "./Services/DeploymentService.js"
 import { MatrixServiceLive } from "./Services/MatrixService.js"
+import { DemoUserMiddlewareLive } from "./Utils/DemoUserMiddleware.js"
 
 /**
  * Application Layer Composition
@@ -59,18 +61,6 @@ export const ServicesLive = Layer.mergeAll(
 ).pipe(Layer.provide(RepositoriesLive))
 
 /**
- * Auth layer composition
- * Provides: AuthService
- * Requires: Nothing (all dependencies provided internally)
- */
-export const AuthLive = AuthServiceLive.pipe(
-  Layer.provide(BetterAuthLive),
-  Layer.provide(MongoClientLive),
-  Layer.provide(MongoDBLive),
-  Layer.provide(ServerConfigLive)
-)
-
-/**
  * Complete application layer ready for HTTP server
  * Provides: Dtapline HTTP API with all dependencies satisfied
  * Requires: Nothing (all dependencies are provided internally)
@@ -78,12 +68,14 @@ export const AuthLive = AuthServiceLive.pipe(
  * The DtaplineApiLive requires all services, repositories, and auth to be available,
  * so we provide them in the correct dependency order.
  *
- * Note: We provide BetterAuthLive directly (in addition to AuthLive) because
+ * Note: We provide BetterAuthLive directly (in addition to AuthServiceLive) because
  * the AuthGroup needs direct access to BetterAuthInstance to handle auth requests.
  */
 export const AppLive = DtaplineApiLive.pipe(
-  Layer.provide(BetterAuthLive), // Provide Better Auth for AuthGroup
-  Layer.provide(AuthLive), // Provide AuthService for authenticated endpoints
+  Layer.provide(DemoUserMiddlewareLive),
+  Layer.provide(AuthorizationServiceLive), // Provide AuthorizationService for authorization
+  Layer.provide(AuthServiceLive), // Provide AuthService for authenticated endpoints
+  Layer.provide(BetterAuthLive), // Provide Better Auth for AuthGroup and AuthService
   Layer.provide(ServicesLive),
   Layer.provide(RepositoriesLive),
   Layer.provide(MongoClientLive),

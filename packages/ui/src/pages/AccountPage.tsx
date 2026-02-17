@@ -1,4 +1,5 @@
 import { GithubIcon } from "@/components/icons/GithubIcon"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -260,20 +261,22 @@ export default function AccountPage() {
         return "Pro User"
       case "freeUser":
         return "Free User"
+      case "demoUser":
+        return "Demo User"
       default:
         return role
     }
   }
 
   return (
-    <div className="p-8 max-w-4xl mx-auto space-y-6">
-      <div>
+    <div className="p-8 space-y-6">
+      <div className="max-w-4xl mx-auto">
         <h1 className="text-3xl font-bold">Account Settings</h1>
         <p className="text-muted-foreground">Manage your account settings and preferences</p>
       </div>
 
       {/* Profile Section */}
-      <Card>
+      <Card className="max-w-4xl mx-auto">
         <CardHeader>
           <CardTitle>Profile</CardTitle>
           <CardDescription>Update your profile information</CardDescription>
@@ -325,7 +328,11 @@ export default function AccountPage() {
               </p>
             </div>
 
-            {profileError && <p className="text-sm text-destructive">{profileError}</p>}
+            {profileError && (
+              <Alert variant="destructive">
+                <AlertDescription>{profileError}</AlertDescription>
+              </Alert>
+            )}
             {profileSuccess && <p className="text-sm text-green-600">{profileSuccess}</p>}
 
             <Button type="submit" disabled={isUpdatingProfile}>
@@ -336,16 +343,20 @@ export default function AccountPage() {
       </Card>
 
       {/* Linked Accounts Section */}
-      <Card>
+      <Card className="max-w-4xl mx-auto">
         <CardHeader>
           <CardTitle>Linked Accounts</CardTitle>
           <CardDescription>Manage your connected social accounts</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          {accountsError && (
+            <Alert variant="destructive">
+              <AlertDescription>{accountsError}</AlertDescription>
+            </Alert>
+          )}
+
           {isLoadingAccounts ?
             <p className="text-sm text-muted-foreground">Loading linked accounts...</p> :
-            accountsError ?
-            <p className="text-sm text-destructive">{accountsError}</p> :
             (
               <>
                 <div className="space-y-3">
@@ -393,7 +404,7 @@ export default function AccountPage() {
       </Card>
 
       {/* Change Password Section */}
-      <Card>
+      <Card className="max-w-4xl mx-auto">
         <CardHeader>
           <CardTitle>Change Password</CardTitle>
           <CardDescription>Update your password to keep your account secure</CardDescription>
@@ -441,7 +452,11 @@ export default function AccountPage() {
               />
             </div>
 
-            {passwordError && <p className="text-sm text-destructive">{passwordError}</p>}
+            {passwordError && (
+              <Alert variant="destructive">
+                <AlertDescription>{passwordError}</AlertDescription>
+              </Alert>
+            )}
             {passwordSuccess && <p className="text-sm text-green-600">{passwordSuccess}</p>}
 
             <Button type="submit" disabled={isChangingPassword}>
@@ -452,7 +467,7 @@ export default function AccountPage() {
       </Card>
 
       {/* Danger Zone Section */}
-      <Card className="border-destructive">
+      <Card className="border-destructive max-w-4xl mx-auto">
         <CardHeader>
           <CardTitle className="text-destructive">Danger Zone</CardTitle>
           <CardDescription>Irreversible actions that affect your account</CardDescription>
@@ -482,7 +497,11 @@ export default function AccountPage() {
                     disabled={isDeletingAccount}
                   />
                 </div>
-                {deleteError && <p className="text-sm text-destructive">{deleteError}</p>}
+                {deleteError && (
+                  <Alert variant="destructive">
+                    <AlertDescription>{deleteError}</AlertDescription>
+                  </Alert>
+                )}
               </div>
               <AlertDialogFooter>
                 <AlertDialogCancel disabled={isDeletingAccount}>Cancel</AlertDialogCancel>

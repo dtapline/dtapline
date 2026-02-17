@@ -1,3 +1,4 @@
+import { Alert, AlertDescription } from "@/components/ui/alert"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -39,7 +40,7 @@ export function ProjectDangerZone({ projectId, projectName }: ProjectDangerZoneP
       navigate({ to: "/projects" })
     } catch (err) {
       console.error("Delete project error:", err)
-      setDeleteError("Failed to delete project. Please try again.")
+      setDeleteError((err as Error).message || "Failed to delete project. Please try again.")
       setIsDeleting(false)
     }
   }
@@ -78,7 +79,11 @@ export function ProjectDangerZone({ projectId, projectName }: ProjectDangerZoneP
                   disabled={isDeleting}
                 />
               </div>
-              {deleteError && <p className="text-sm text-destructive">{deleteError}</p>}
+              {deleteError && (
+                <Alert variant="destructive">
+                  <AlertDescription>{deleteError}</AlertDescription>
+                </Alert>
+              )}
             </div>
             <AlertDialogFooter>
               <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>

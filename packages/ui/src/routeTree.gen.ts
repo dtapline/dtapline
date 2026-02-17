@@ -16,6 +16,7 @@ import { Route as SettingsImport } from './routes/settings'
 import { Route as ProjectsImport } from './routes/projects'
 import { Route as LoginImport } from './routes/login'
 import { Route as EnvironmentsImport } from './routes/environments'
+import { Route as DemoImport } from './routes/demo'
 import { Route as BillingImport } from './routes/billing'
 import { Route as AccountImport } from './routes/account'
 import { Route as IndexImport } from './routes/index'
@@ -51,6 +52,12 @@ const LoginRoute = LoginImport.update({
 const EnvironmentsRoute = EnvironmentsImport.update({
   id: '/environments',
   path: '/environments',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const DemoRoute = DemoImport.update({
+  id: '/demo',
+  path: '/demo',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -108,6 +115,13 @@ declare module '@tanstack/react-router' {
       path: '/billing'
       fullPath: '/billing'
       preLoaderRoute: typeof BillingImport
+      parentRoute: typeof rootRoute
+    }
+    '/demo': {
+      id: '/demo'
+      path: '/demo'
+      fullPath: '/demo'
+      preLoaderRoute: typeof DemoImport
       parentRoute: typeof rootRoute
     }
     '/environments': {
@@ -180,6 +194,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/account': typeof AccountRoute
   '/billing': typeof BillingRoute
+  '/demo': typeof DemoRoute
   '/environments': typeof EnvironmentsRoute
   '/login': typeof LoginRoute
   '/projects': typeof ProjectsRoute
@@ -193,6 +208,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/account': typeof AccountRoute
   '/billing': typeof BillingRoute
+  '/demo': typeof DemoRoute
   '/environments': typeof EnvironmentsRoute
   '/login': typeof LoginRoute
   '/projects': typeof ProjectsRoute
@@ -207,6 +223,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/account': typeof AccountRoute
   '/billing': typeof BillingRoute
+  '/demo': typeof DemoRoute
   '/environments': typeof EnvironmentsRoute
   '/login': typeof LoginRoute
   '/projects': typeof ProjectsRoute
@@ -222,6 +239,7 @@ export interface FileRouteTypes {
     | '/'
     | '/account'
     | '/billing'
+    | '/demo'
     | '/environments'
     | '/login'
     | '/projects'
@@ -234,6 +252,7 @@ export interface FileRouteTypes {
     | '/'
     | '/account'
     | '/billing'
+    | '/demo'
     | '/environments'
     | '/login'
     | '/projects'
@@ -246,6 +265,7 @@ export interface FileRouteTypes {
     | '/'
     | '/account'
     | '/billing'
+    | '/demo'
     | '/environments'
     | '/login'
     | '/projects'
@@ -260,6 +280,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AccountRoute: typeof AccountRoute
   BillingRoute: typeof BillingRoute
+  DemoRoute: typeof DemoRoute
   EnvironmentsRoute: typeof EnvironmentsRoute
   LoginRoute: typeof LoginRoute
   ProjectsRoute: typeof ProjectsRoute
@@ -272,6 +293,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AccountRoute: AccountRoute,
   BillingRoute: BillingRoute,
+  DemoRoute: DemoRoute,
   EnvironmentsRoute: EnvironmentsRoute,
   LoginRoute: LoginRoute,
   ProjectsRoute: ProjectsRoute,
@@ -293,6 +315,7 @@ export const routeTree = rootRoute
         "/",
         "/account",
         "/billing",
+        "/demo",
         "/environments",
         "/login",
         "/projects",
@@ -309,6 +332,9 @@ export const routeTree = rootRoute
     },
     "/billing": {
       "filePath": "billing.tsx"
+    },
+    "/demo": {
+      "filePath": "demo.tsx"
     },
     "/environments": {
       "filePath": "environments.tsx"

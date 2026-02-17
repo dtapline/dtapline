@@ -19,6 +19,7 @@ import { GripVertical } from "lucide-react"
 import { useState } from "react"
 import { useArchiveEnvironment, useEnvironments, useReorderEnvironment } from "../lib/hooks/use-environments"
 import { EnvironmentDialog } from "./dialogs/EnvironmentDialog"
+import { Alert, AlertDescription } from "./ui/alert"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -35,6 +36,7 @@ export function EnvironmentsList() {
   const [isCreateOpen, setIsCreateOpen] = useState(false)
   const [editingEnvironment, setEditingEnvironment] = useState<Environment | null>(null)
   const [archivingEnvironment, setArchivingEnvironment] = useState<Environment | null>(null)
+  const [archiveError, setArchiveError] = useState<string | null>(null)
 
   const { data: environments, isLoading } = useEnvironments()
   const archiveMutation = useArchiveEnvironment()
@@ -70,10 +72,14 @@ export function EnvironmentsList() {
 
   const handleArchive = () => {
     if (!archivingEnvironment) return
+    setArchiveError(null)
 
     archiveMutation.mutate(archivingEnvironment.id, {
       onSuccess: () => {
         setArchivingEnvironment(null)
+      },
+      onError: (err: Error) => {
+        setArchiveError(err.message || "Failed to archive environment")
       }
     })
   }
@@ -110,6 +116,8 @@ export function EnvironmentsList() {
                     environment={env}
                     onEdit={() => setEditingEnvironment(env)}
                     onArchive={() => setArchivingEnvironment(env)}
+                    canEdit={true}
+                    canArchive={true}
                   />
                 ))}
               </div>
@@ -128,7 +136,13 @@ export function EnvironmentsList() {
         onOpenChange={(open) => !open && setEditingEnvironment(null)}
       />
 
-      <AlertDialog open={!!archivingEnvironment} onOpenChange={() => setArchivingEnvironment(null)}>
+      <AlertDialog
+        open={!!archivingEnvironment}
+        onOpenChange={() => {
+          setArchivingEnvironment(null)
+          setArchiveError(null)
+        }}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Archive Environment</AlertDialogTitle>
@@ -137,9 +151,22 @@ export function EnvironmentsList() {
               later.
             </AlertDialogDescription>
           </AlertDialogHeader>
+          {archiveError && (
+            <Alert variant="destructive">
+              <AlertDescription>{archiveError}</AlertDescription>
+            </Alert>
+          )}
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleArchive}>Archive</AlertDialogAction>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault()
+                handleArchive()
+              }}
+              disabled={archiveMutation.isPending}
+            >
+              {archiveMutation.isPending ? "Archiving..." : "Archive"}
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
@@ -151,9 +178,11 @@ interface EnvironmentItemProps {
   environment: Environment
   onEdit: () => void
   onArchive: () => void
+  canEdit: boolean
+  canArchive: boolean
 }
 
-function EnvironmentItem({ environment, onArchive, onEdit }: EnvironmentItemProps) {
+function EnvironmentItem({ canArchive, canEdit, environment, onArchive, onEdit }: EnvironmentItemProps) {
   const { attributes, isDragging, listeners, setNodeRef, transform, transition } = useSortable({
     id: environment.id
   })
@@ -189,10 +218,10 @@ function EnvironmentItem({ environment, onArchive, onEdit }: EnvironmentItemProp
       </div>
 
       <div className="flex gap-2">
-        <Button variant="outline" size="sm" onClick={onEdit}>
+        <Button variant="outline" size="sm" onClick={onEdit} disabled={!canEdit}>
           Edit
         </Button>
-        <Button variant="outline" size="sm" onClick={onArchive}>
+        <Button variant="outline" size="sm" onClick={onArchive} disabled={!canArchive}>
           Archive
         </Button>
       </div>

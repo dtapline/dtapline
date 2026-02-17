@@ -1,3 +1,4 @@
+import type { BetterAuthOptions } from "better-auth"
 import { betterAuth } from "better-auth"
 import { mongodbAdapter } from "better-auth/adapters/mongodb"
 import { Context, Effect, Layer } from "effect"
@@ -32,7 +33,7 @@ export const BetterAuthLive = Layer.effect(
       }
     }
 
-    const auth = betterAuth({
+    const auth = betterAuth<BetterAuthOptions>({
       database: mongodbAdapter(db, { client }),
       baseURL: config.authUrl,
       secret: config.authSecret,

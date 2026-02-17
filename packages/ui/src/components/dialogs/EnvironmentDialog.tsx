@@ -1,6 +1,7 @@
 import type { Environment } from "@dtapline/domain/Environment"
 import { useEffect, useState } from "react"
 import { useCreateEnvironment, useUpdateEnvironment } from "../../lib/hooks/use-environments"
+import { Alert, AlertDescription } from "../ui/alert"
 import { Button } from "../ui/button"
 import { ColorPicker } from "../ui/color-picker"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "../ui/dialog"
@@ -23,6 +24,7 @@ export function EnvironmentDialog({
   const [color, setColor] = useState("#22D3EE")
   const [order, setOrder] = useState("0")
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const createMutation = useCreateEnvironment()
   const updateMutation = useUpdateEnvironment()
@@ -63,6 +65,7 @@ export function EnvironmentDialog({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    setError(null)
 
     if (isEditing) {
       updateMutation.mutate(
@@ -77,6 +80,9 @@ export function EnvironmentDialog({
         {
           onSuccess: () => {
             onOpenChange(false)
+          },
+          onError: (err: Error) => {
+            setError(err.message || "Failed to update environment")
           }
         }
       )
@@ -91,6 +97,9 @@ export function EnvironmentDialog({
         {
           onSuccess: () => {
             onOpenChange(false)
+          },
+          onError: (err: Error) => {
+            setError(err.message || "Failed to create environment")
           }
         }
       )
@@ -109,6 +118,11 @@ export function EnvironmentDialog({
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
+          {error && (
+            <Alert variant="destructive" className="mb-4">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
           <div className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="name">Name</Label>

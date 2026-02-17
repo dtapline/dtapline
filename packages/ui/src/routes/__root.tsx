@@ -12,7 +12,7 @@ function RootComponent() {
   const { data: session, isPending } = useSession()
 
   // Public routes that don't require authentication
-  const publicRoutes = ["/login", "/signup"]
+  const publicRoutes = ["/login", "/signup", "/demo"]
   const isPublicRoute = publicRoutes.includes(location.pathname)
 
   useEffect(() => {
