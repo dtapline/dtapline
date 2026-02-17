@@ -1,5 +1,11 @@
 # @dtapline/ui
 
+## 0.2.1
+
+### Patch Changes
+
+- [`6871798`](https://github.com/dtapline/dtapline/commit/6871798dd99ab5435ac158162fe7eadc310dc78e) Thanks @floydspace! - trigger release due to changed api base url in env vars
+
 ## 0.2.0
 
 ### Minor Changes
