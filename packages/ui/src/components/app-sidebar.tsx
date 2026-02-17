@@ -36,12 +36,12 @@ const data = {
   navSecondary: [
     {
       title: "Settings",
-      url: "#",
+      url: "/settings",
       icon: SettingsIcon
     },
     {
       title: "Get Help",
-      url: "#",
+      url: "https://github.com/dtapline/dtapline/issues",
       icon: HelpCircleIcon
     }
   ]
