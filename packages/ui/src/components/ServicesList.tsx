@@ -1,4 +1,5 @@
 import type { Service } from "@dtapline/domain/Service"
+import { ExternalLink } from "lucide-react"
 import { useState } from "react"
 import { useArchiveService, useServices } from "../lib/hooks/use-services"
 import { ServiceDialog } from "./dialogs/ServiceDialog"
@@ -71,7 +72,7 @@ export function ServicesList({ projectId }: ServicesListProps) {
                 key={service.id}
                 className="flex items-center justify-between rounded-lg border p-4"
               >
-                <div>
+                <div className="space-y-1">
                   <h3 className="font-medium">{service.name}</h3>
                   <p className="text-sm text-muted-foreground">{service.slug}</p>
                   {service.repositoryUrl && (
@@ -79,9 +80,9 @@ export function ServicesList({ projectId }: ServicesListProps) {
                       href={service.repositoryUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-sm text-blue-600 hover:underline dark:text-blue-400"
+                      className="flex items-center gap-1 text-sm text-primary hover:underline"
                     >
-                      {service.repositoryUrl}
+                      View Repository <ExternalLink className="h-3 w-3" />
                     </a>
                   )}
                 </div>

@@ -43,6 +43,7 @@ export class Deployment extends Schema.Class<Deployment>("Deployment")({
 
   // Optional rich data
   buildUrl: Schema.optional(Schema.String.pipe(Schema.pattern(/^https?:\/\/.+/))),
+  diffUrl: Schema.optional(Schema.String.pipe(Schema.pattern(/^https?:\/\/.+/))),
   releaseNotes: Schema.optional(Schema.String),
   metadata: Schema.optional(Schema.Record({ key: Schema.String, value: Schema.Unknown })),
 
@@ -67,6 +68,7 @@ export class CreateDeploymentInput extends Schema.Struct({
   deployedBy: Schema.optional(Schema.String),
   status: Schema.optionalWith(DeploymentStatus, { default: () => "success" as const }),
   buildUrl: Schema.optional(Schema.String.pipe(Schema.pattern(/^https?:\/\/.+/))),
+  diffUrl: Schema.optional(Schema.String.pipe(Schema.pattern(/^https?:\/\/.+/))),
   releaseNotes: Schema.optional(Schema.String),
   metadata: Schema.optional(Schema.Record({ key: Schema.String, value: Schema.Unknown })),
 

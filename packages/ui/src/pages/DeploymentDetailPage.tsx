@@ -222,7 +222,7 @@ function DeploymentSummary({ deployment }: { deployment: Deployment }) {
       )}
 
       {/* Additional Information */}
-      {(deployment.buildUrl || deployment.releaseNotes || deployment.metadata) && (
+      {(deployment.buildUrl || deployment.diffUrl || deployment.releaseNotes || deployment.metadata) && (
         <Section title="Additional Information">
           {deployment.buildUrl && (
             <InfoRow
@@ -235,6 +235,21 @@ function DeploymentSummary({ deployment }: { deployment: Deployment }) {
                   className="flex items-center gap-1 text-primary hover:underline"
                 >
                   View Build <ExternalLink className="h-3 w-3" />
+                </a>
+              }
+            />
+          )}
+          {deployment.diffUrl && (
+            <InfoRow
+              label="Diff URL"
+              value={
+                <a
+                  href={deployment.diffUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1 text-primary hover:underline"
+                >
+                  View Changes <ExternalLink className="h-3 w-3" />
                 </a>
               }
             />

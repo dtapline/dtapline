@@ -57,6 +57,7 @@ interface DeploymentDocument {
   status: DeploymentStatus
   statusHistory: Array<StatusHistoryDocument> // Track all status changes
   buildUrl?: string | null
+  diffUrl?: string | null
   releaseNotes?: string | null
   metadata?: Record<string, unknown> | null
   cicdPlatform?: string | null
@@ -145,6 +146,7 @@ const docToDeployment = (doc: DeploymentDocument): any => {
       cicdBuildUrl: entry.cicdBuildUrl ?? undefined
     })),
     buildUrl: doc.buildUrl ?? undefined,
+    diffUrl: doc.diffUrl ?? undefined,
     releaseNotes: doc.releaseNotes ?? undefined,
     metadata: doc.metadata ?? undefined,
     cicdPlatform: doc.cicdPlatform ?? undefined,
@@ -192,6 +194,7 @@ export const DeploymentsRepositoryLive = Layer.effect(
                     pullRequestUrl: input.pullRequestUrl ?? null,
                     deployedBy: input.deployedBy ?? null,
                     buildUrl: input.buildUrl ?? null,
+                    diffUrl: input.diffUrl ?? null,
                     releaseNotes: input.releaseNotes ?? null,
                     metadata: input.metadata ?? null,
                     cicdPlatform: input.cicdPlatform ?? null,

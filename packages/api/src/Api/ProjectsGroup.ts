@@ -9,6 +9,7 @@ import { ProjectsRepository } from "../Repositories/ProjectsRepository.js"
 import { ServicesRepository } from "../Repositories/ServicesRepository.js"
 import { AuthService } from "../Services/AuthService.js"
 import { ComparisonService } from "../Services/ComparisonService.js"
+import { DeploymentService } from "../Services/DeploymentService.js"
 import { MatrixService } from "../Services/MatrixService.js"
 
 /**
@@ -25,6 +26,7 @@ export const ProjectsGroupLive = HttpApiBuilder.group(
       const environmentsRepo = yield* EnvironmentsRepository
       const servicesRepo = yield* ServicesRepository
       const deploymentsRepo = yield* DeploymentsRepository
+      const deploymentService = yield* DeploymentService
       const matrixService = yield* MatrixService
       const comparisonService = yield* ComparisonService
 
@@ -146,7 +148,16 @@ export const ProjectsGroupLive = HttpApiBuilder.group(
               )
             }
 
-            return deployment
+            // Calculate diff URL on-the-fly if not present (catch errors since it's best-effort)
+            const diffUrl = yield* deploymentService.calculateDiffUrl(deployment).pipe(
+              Effect.catchAll(() => Effect.succeed(undefined))
+            )
+
+            // Return deployment with calculated diffUrl
+            return {
+              ...deployment,
+              diffUrl: diffUrl ?? deployment.diffUrl
+            }
           }))
         // GET /api/v1/projects/:projectId/compare
         .handle("compareEnvironments", ({ path: { projectId }, urlParams: { env1, env2 } }) =>

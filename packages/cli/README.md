@@ -159,6 +159,10 @@ Report a deployment to Dtapline API server.
 - `--build-url <url>` - Build/CI pipeline URL
 - `--release-notes <notes>` - Release notes or changelog
 
+**Automatic Features:**
+
+- **Diff URLs** - Dtapline automatically generates diff URLs showing code changes between deployments in sequential environments (e.g., staging → production). Configure `repositoryUrl` on your service (for multi-repo projects) or `gitRepoUrl` on your project (for monorepos). Supports GitHub, GitLab, Bitbucket, and Azure DevOps.
+
 **Global Options:**
 
 - `--help` - Show help
