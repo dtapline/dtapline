@@ -1,5 +1,11 @@
 # @dtapline/domain
 
+## 0.3.1
+
+### Patch Changes
+
+- [`99fe83d`](https://github.com/dtapline/dtapline/commit/99fe83dfc545a1adea9d7fab04fd3b74e32e7abd) Thanks @floydspace! - FIx free user limitations
+
 ## 0.3.0
 
 ### Minor Changes
