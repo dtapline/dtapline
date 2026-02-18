@@ -15,7 +15,7 @@ export type UserRole = Schema.Schema.Type<typeof UserRole>
 export const RoleLimits = {
   admin: { maxProjects: Infinity, maxServices: Infinity },
   proUser: { maxProjects: Infinity, maxServices: Infinity },
-  freeUser: { maxProjects: 1, maxServices: 3 },
+  freeUser: { maxProjects: 5, maxServices: 10 },
   demoUser: { maxProjects: 0, maxServices: 0 } // Read-only, cannot create
 } as const
 
