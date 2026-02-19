@@ -1,8 +1,8 @@
-import { Args, Command, Options } from "@effect/cli"
+import { Args, CliConfig, Command, Options } from "@effect/cli"
 import { HttpBody, HttpClient, HttpClientRequest } from "@effect/platform"
 import { NodeContext, NodeHttpClient, NodeRuntime } from "@effect/platform-node"
-import { Console, Effect, Layer, Option, Schema } from "effect"
-import { detectCICD } from "./cicd-detect.js"
+import { Config, Console, Effect, Layer, Option, Schema } from "effect"
+import { detectCICD, getGitCommitSha } from "./cicd-detect.js"
 
 /**
  * Dtapline CLI
@@ -42,7 +42,8 @@ const serviceArg = Args.text({ name: "service" }).pipe(
 )
 
 const commitShaArg = Args.text({ name: "commitSha" }).pipe(
-  Args.withDescription("Git commit SHA being deployed")
+  Args.withDescription("Git commit SHA (auto-detected in CI/CD or from git)"),
+  Args.optional
 )
 
 // ============================================================================
@@ -51,11 +52,12 @@ const commitShaArg = Args.text({ name: "commitSha" }).pipe(
 
 const apiKeyOption = Options.text("api-key").pipe(
   Options.withDescription("Dtapline API key (or set DTAPLINE_API_KEY env var)"),
-  Options.optional
+  Options.withFallbackConfig(Config.string("DTAPLINE_API_KEY"))
 )
 
 const serverUrlOption = Options.text("server-url").pipe(
-  Options.withDescription("Dtapline API server URL"),
+  Options.withDescription("Dtapline API server URL (or set DTAPLINE_SERVER_URL env var)"),
+  Options.withFallbackConfig(Config.string("DTAPLINE_SERVER_URL")),
   Options.withDefault("https://api.dtapline.com")
 )
 
@@ -118,24 +120,46 @@ const deployCommand = Command.make(
     Effect.gen(function*() {
       yield* Console.log("🚀 Reporting deployment to dtapline...")
 
-      // Get API key from option or environment variable
-      const apiKey = Option.isSome(args.apiKey) ? args.apiKey.value : process.env.DTAPLINE_API_KEY
-      if (!apiKey) {
-        yield* Effect.fail(new Error("API key is required. Use --api-key or set DTAPLINE_API_KEY env var"))
-      }
-
       // Auto-detect CI/CD platform
       const cicdInfo = detectCICD()
+
+      // Resolve commitSha with fallback chain: CLI arg > CI/CD > git rev-parse > error
+      let commitSha: string
+      if (Option.isSome(args.commitSha)) {
+        commitSha = args.commitSha.value
+      } else if (cicdInfo.commitSha) {
+        commitSha = cicdInfo.commitSha
+      } else {
+        const gitSha = yield* getGitCommitSha()
+        if (gitSha) {
+          commitSha = gitSha
+        } else {
+          yield* Effect.fail(
+            new Error(
+              "Could not determine commit SHA. Please provide it as an argument or run from a git repository."
+            )
+          )
+          return // TypeScript needs this, though Effect.fail never returns
+        }
+      }
+
+      // Auto-fill gitTag from CI/CD if not provided
+      const gitTag = Option.isSome(args.gitTag) ? args.gitTag.value : cicdInfo.gitTag
+
+      // Auto-fill deployedBy: prefer actor, fall back to platform name
+      const deployedBy = Option.isSome(args.deployedBy)
+        ? args.deployedBy.value
+        : cicdInfo.actor || (cicdInfo.detected ? cicdInfo.platform : undefined)
 
       // Build the deployment payload
       const payload = {
         environment: args.environment,
         service: args.service,
-        commitSha: args.commitSha,
+        commitSha,
         ...(Option.isSome(args.deployedVersion) && { version: args.deployedVersion.value }),
-        ...(Option.isSome(args.gitTag) && { gitTag: args.gitTag.value }),
+        ...(gitTag && { gitTag }),
         ...(Option.isSome(args.prUrl) && { pullRequestUrl: args.prUrl.value }),
-        ...(Option.isSome(args.deployedBy) && { deployedBy: args.deployedBy.value }),
+        ...(deployedBy && { deployedBy }),
         status: args.status,
         ...(Option.isSome(args.buildUrl) && { buildUrl: args.buildUrl.value }),
         ...(cicdInfo.detected && !Option.isSome(args.buildUrl) && cicdInfo.buildUrl && { buildUrl: cicdInfo.buildUrl }),
@@ -149,9 +173,9 @@ const deployCommand = Command.make(
 
       yield* Console.log(`  Environment: ${args.environment}`)
       yield* Console.log(`  Service: ${args.service}`)
-      yield* Console.log(`  Commit: ${args.commitSha}`)
+      yield* Console.log(`  Commit: ${commitSha}`)
       if (Option.isSome(args.deployedVersion)) yield* Console.log(`  Version: ${args.deployedVersion.value}`)
-      if (Option.isSome(args.gitTag)) yield* Console.log(`  Tag: ${args.gitTag.value}`)
+      if (gitTag) yield* Console.log(`  Tag: ${gitTag}`)
       if (cicdInfo.detected) yield* Console.log(`  CI/CD Platform: ${cicdInfo.platform}`)
       yield* Console.log(`  Status: ${args.status}`)
 
@@ -160,7 +184,7 @@ const deployCommand = Command.make(
 
       const body = HttpBody.text(JSON.stringify(payload), "application/json")
       const request = HttpClientRequest.post(`${args.serverUrl}/api/v1/deployments`).pipe(
-        HttpClientRequest.setHeader("Authorization", `Bearer ${apiKey!}`),
+        HttpClientRequest.setHeader("Authorization", `Bearer ${args.apiKey}`),
         HttpClientRequest.setBody(body)
       )
 
@@ -215,7 +239,8 @@ const cli = Command.run(rootCommand, {
 
 const MainLayer = Layer.mergeAll(
   NodeContext.layer,
-  NodeHttpClient.layerUndici
+  NodeHttpClient.layerUndici,
+  CliConfig.layer({ showBuiltIns: false })
 )
 
 Effect.suspend(() => cli(process.argv)).pipe(

@@ -3,11 +3,20 @@
  * Detects which CI/CD platform the CLI is running on based on environment variables
  */
 
+import { Command } from "@effect/platform"
+import { NodeContext } from "@effect/platform-node"
+import { Effect } from "effect"
+
 export interface CICDInfo {
   platform: string
   detected: boolean
   buildUrl?: string
   buildId?: string
+  commitSha?: string
+  branch?: string
+  gitTag?: string
+  repositoryUrl?: string
+  actor?: string
 }
 
 /**
@@ -20,11 +29,24 @@ export function detectCICD(): CICDInfo {
       ? `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`
       : undefined
 
+    const repositoryUrl = process.env.GITHUB_SERVER_URL && process.env.GITHUB_REPOSITORY
+      ? `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}`
+      : undefined
+
+    const isTag = process.env.GITHUB_REF_TYPE === "tag"
+    const gitTag = isTag ? process.env.GITHUB_REF_NAME : undefined
+    const branch = !isTag ? process.env.GITHUB_REF_NAME : undefined
+
     return {
       platform: "GitHub Actions",
       detected: true,
       ...(buildUrl && { buildUrl }),
-      ...(process.env.GITHUB_RUN_ID && { buildId: process.env.GITHUB_RUN_ID })
+      ...(process.env.GITHUB_RUN_ID && { buildId: process.env.GITHUB_RUN_ID }),
+      ...(process.env.GITHUB_SHA && { commitSha: process.env.GITHUB_SHA }),
+      ...(branch && { branch }),
+      ...(gitTag && { gitTag }),
+      ...(repositoryUrl && { repositoryUrl }),
+      ...(process.env.GITHUB_ACTOR && { actor: process.env.GITHUB_ACTOR })
     }
   }
 
@@ -35,11 +57,22 @@ export function detectCICD(): CICDInfo {
         ? `${process.env.SYSTEM_TEAMFOUNDATIONCOLLECTIONURI}${process.env.SYSTEM_TEAMPROJECT}/_build/results?buildId=${process.env.BUILD_BUILDID}`
         : undefined
 
+    // Extract tag from BUILD_SOURCEBRANCH if it starts with refs/tags/
+    const sourceBranch = process.env.BUILD_SOURCEBRANCH || ""
+    const gitTag = sourceBranch.startsWith("refs/tags/")
+      ? sourceBranch.replace("refs/tags/", "")
+      : undefined
+
     return {
       platform: "Azure Pipelines",
       detected: true,
       ...(buildUrl && { buildUrl }),
-      ...(process.env.BUILD_BUILDID && { buildId: process.env.BUILD_BUILDID })
+      ...(process.env.BUILD_BUILDID && { buildId: process.env.BUILD_BUILDID }),
+      ...(process.env.BUILD_SOURCEVERSION && { commitSha: process.env.BUILD_SOURCEVERSION }),
+      ...(process.env.BUILD_SOURCEBRANCHNAME && !gitTag && { branch: process.env.BUILD_SOURCEBRANCHNAME }),
+      ...(gitTag && { gitTag }),
+      ...(process.env.BUILD_REPOSITORY_URI && { repositoryUrl: process.env.BUILD_REPOSITORY_URI }),
+      ...(process.env.BUILD_REQUESTEDFOR && { actor: process.env.BUILD_REQUESTEDFOR })
     }
   }
 
@@ -49,11 +82,20 @@ export function detectCICD(): CICDInfo {
       ? `${process.env.CI_PROJECT_URL}/-/pipelines/${process.env.CI_PIPELINE_ID}`
       : undefined
 
+    const branch = (process.env.CI_COMMIT_BRANCH || process.env.CI_COMMIT_REF_NAME) && !process.env.CI_COMMIT_TAG
+      ? process.env.CI_COMMIT_BRANCH || process.env.CI_COMMIT_REF_NAME
+      : undefined
+
     return {
       platform: "GitLab CI",
       detected: true,
       ...(buildUrl && { buildUrl }),
-      ...(process.env.CI_PIPELINE_ID && { buildId: process.env.CI_PIPELINE_ID })
+      ...(process.env.CI_PIPELINE_ID && { buildId: process.env.CI_PIPELINE_ID }),
+      ...(process.env.CI_COMMIT_SHA && { commitSha: process.env.CI_COMMIT_SHA }),
+      ...(branch && { branch }),
+      ...(process.env.CI_COMMIT_TAG && { gitTag: process.env.CI_COMMIT_TAG }),
+      ...(process.env.CI_PROJECT_URL && { repositoryUrl: process.env.CI_PROJECT_URL }),
+      ...(process.env.GITLAB_USER_LOGIN && { actor: process.env.GITLAB_USER_LOGIN })
     }
   }
 
@@ -63,27 +105,47 @@ export function detectCICD(): CICDInfo {
       platform: "CircleCI",
       detected: true,
       ...(process.env.CIRCLE_BUILD_URL && { buildUrl: process.env.CIRCLE_BUILD_URL }),
-      ...(process.env.CIRCLE_BUILD_NUM && { buildId: process.env.CIRCLE_BUILD_NUM })
+      ...(process.env.CIRCLE_BUILD_NUM && { buildId: process.env.CIRCLE_BUILD_NUM }),
+      ...(process.env.CIRCLE_SHA1 && { commitSha: process.env.CIRCLE_SHA1 }),
+      ...(process.env.CIRCLE_BRANCH && { branch: process.env.CIRCLE_BRANCH }),
+      ...(process.env.CIRCLE_TAG && { gitTag: process.env.CIRCLE_TAG }),
+      ...(process.env.CIRCLE_REPOSITORY_URL && { repositoryUrl: process.env.CIRCLE_REPOSITORY_URL }),
+      ...(process.env.CIRCLE_USERNAME && { actor: process.env.CIRCLE_USERNAME })
     }
   }
 
   // Jenkins
   if (process.env.JENKINS_URL) {
+    const branch = process.env.BRANCH_NAME || process.env.GIT_BRANCH || undefined
+
     return {
       platform: "Jenkins",
       detected: true,
       ...(process.env.BUILD_URL && { buildUrl: process.env.BUILD_URL }),
-      ...(process.env.BUILD_NUMBER && { buildId: process.env.BUILD_NUMBER })
+      ...(process.env.BUILD_NUMBER && { buildId: process.env.BUILD_NUMBER }),
+      ...(process.env.GIT_COMMIT && { commitSha: process.env.GIT_COMMIT }),
+      ...(branch && { branch }),
+      ...(process.env.TAG_NAME && { gitTag: process.env.TAG_NAME }),
+      ...(process.env.GIT_URL && { repositoryUrl: process.env.GIT_URL }),
+      ...(process.env.BUILD_USER && { actor: process.env.BUILD_USER })
     }
   }
 
   // Travis CI
   if (process.env.TRAVIS === "true") {
+    const repositoryUrl = process.env.TRAVIS_REPO_SLUG
+      ? `https://github.com/${process.env.TRAVIS_REPO_SLUG}`
+      : undefined
+
     return {
       platform: "Travis CI",
       detected: true,
       ...(process.env.TRAVIS_BUILD_WEB_URL && { buildUrl: process.env.TRAVIS_BUILD_WEB_URL }),
-      ...(process.env.TRAVIS_BUILD_ID && { buildId: process.env.TRAVIS_BUILD_ID })
+      ...(process.env.TRAVIS_BUILD_ID && { buildId: process.env.TRAVIS_BUILD_ID }),
+      ...(process.env.TRAVIS_COMMIT && { commitSha: process.env.TRAVIS_COMMIT }),
+      ...(process.env.TRAVIS_BRANCH && { branch: process.env.TRAVIS_BRANCH }),
+      ...(process.env.TRAVIS_TAG && { gitTag: process.env.TRAVIS_TAG }),
+      ...(repositoryUrl && { repositoryUrl })
     }
   }
 
@@ -97,7 +159,11 @@ export function detectCICD(): CICDInfo {
       platform: "Bitbucket Pipelines",
       detected: true,
       ...(buildUrl && { buildUrl }),
-      ...(process.env.BITBUCKET_BUILD_NUMBER && { buildId: process.env.BITBUCKET_BUILD_NUMBER })
+      ...(process.env.BITBUCKET_BUILD_NUMBER && { buildId: process.env.BITBUCKET_BUILD_NUMBER }),
+      ...(process.env.BITBUCKET_COMMIT && { commitSha: process.env.BITBUCKET_COMMIT }),
+      ...(process.env.BITBUCKET_BRANCH && { branch: process.env.BITBUCKET_BRANCH }),
+      ...(process.env.BITBUCKET_TAG && { gitTag: process.env.BITBUCKET_TAG }),
+      ...(process.env.BITBUCKET_GIT_HTTP_ORIGIN && { repositoryUrl: process.env.BITBUCKET_GIT_HTTP_ORIGIN })
     }
   }
 
@@ -107,7 +173,8 @@ export function detectCICD(): CICDInfo {
       platform: "TeamCity",
       detected: true,
       ...(process.env.BUILD_URL && { buildUrl: process.env.BUILD_URL }),
-      ...(process.env.BUILD_NUMBER && { buildId: process.env.BUILD_NUMBER })
+      ...(process.env.BUILD_NUMBER && { buildId: process.env.BUILD_NUMBER }),
+      ...(process.env.BUILD_VCS_NUMBER && { commitSha: process.env.BUILD_VCS_NUMBER })
     }
   }
 
@@ -119,11 +186,22 @@ export function detectCICD(): CICDInfo {
       }/build/${process.env.CODEBUILD_BUILD_ID}`
       : undefined
 
+    // Extract branch from webhook head ref (e.g., "refs/heads/main" -> "main")
+    const headRef = process.env.CODEBUILD_WEBHOOK_HEAD_REF || ""
+    const branch = headRef.startsWith("refs/heads/")
+      ? headRef.replace("refs/heads/", "")
+      : undefined
+
     return {
       platform: "AWS CodeBuild",
       detected: true,
       buildId: process.env.CODEBUILD_BUILD_ID,
-      ...(buildUrl && { buildUrl })
+      ...(buildUrl && { buildUrl }),
+      ...(process.env.CODEBUILD_RESOLVED_SOURCE_VERSION &&
+        { commitSha: process.env.CODEBUILD_RESOLVED_SOURCE_VERSION }),
+      ...(branch && { branch }),
+      ...(process.env.CODEBUILD_SOURCE_REPO_URL && { repositoryUrl: process.env.CODEBUILD_SOURCE_REPO_URL }),
+      ...(process.env.CODEBUILD_INITIATOR && { actor: process.env.CODEBUILD_INITIATOR })
     }
   }
 
@@ -134,7 +212,10 @@ export function detectCICD(): CICDInfo {
       detected: true,
       buildId: process.env.BUILD_ID,
       buildUrl:
-        `https://console.cloud.google.com/cloud-build/builds/${process.env.BUILD_ID}?project=${process.env.PROJECT_ID}`
+        `https://console.cloud.google.com/cloud-build/builds/${process.env.BUILD_ID}?project=${process.env.PROJECT_ID}`,
+      ...(process.env.COMMIT_SHA && { commitSha: process.env.COMMIT_SHA }),
+      ...(process.env.BRANCH_NAME && { branch: process.env.BRANCH_NAME }),
+      ...(process.env.TAG_NAME && { gitTag: process.env.TAG_NAME })
     }
   }
 
@@ -144,7 +225,12 @@ export function detectCICD(): CICDInfo {
       platform: "Drone CI",
       detected: true,
       ...(process.env.DRONE_BUILD_LINK && { buildUrl: process.env.DRONE_BUILD_LINK }),
-      ...(process.env.DRONE_BUILD_NUMBER && { buildId: process.env.DRONE_BUILD_NUMBER })
+      ...(process.env.DRONE_BUILD_NUMBER && { buildId: process.env.DRONE_BUILD_NUMBER }),
+      ...(process.env.DRONE_COMMIT_SHA && { commitSha: process.env.DRONE_COMMIT_SHA }),
+      ...(process.env.DRONE_COMMIT_BRANCH && { branch: process.env.DRONE_COMMIT_BRANCH }),
+      ...(process.env.DRONE_TAG && { gitTag: process.env.DRONE_TAG }),
+      ...(process.env.DRONE_REPO_LINK && { repositoryUrl: process.env.DRONE_REPO_LINK }),
+      ...(process.env.DRONE_COMMIT_AUTHOR && { actor: process.env.DRONE_COMMIT_AUTHOR })
     }
   }
 
@@ -154,7 +240,13 @@ export function detectCICD(): CICDInfo {
       platform: "Bamboo",
       detected: true,
       buildId: process.env.bamboo_buildKey,
-      ...(process.env.bamboo_buildResultsUrl && { buildUrl: process.env.bamboo_buildResultsUrl })
+      ...(process.env.bamboo_buildResultsUrl && { buildUrl: process.env.bamboo_buildResultsUrl }),
+      ...(process.env.bamboo_planRepository_revision && { commitSha: process.env.bamboo_planRepository_revision }),
+      ...(process.env.bamboo_planRepository_branchName && { branch: process.env.bamboo_planRepository_branchName }),
+      ...(process.env.bamboo_planRepository_repositoryUrl &&
+        { repositoryUrl: process.env.bamboo_planRepository_repositoryUrl }),
+      ...(process.env.bamboo_ManualBuildTriggerReason_userName &&
+        { actor: process.env.bamboo_ManualBuildTriggerReason_userName })
     }
   }
 
@@ -172,14 +264,15 @@ export function detectCICD(): CICDInfo {
 export function getCICDIcon(platform: string): string | undefined {
   const iconMap: Record<string, string> = {
     "GitHub Actions": "https://cdn.simpleicons.org/github/181717",
-    "Azure Pipelines": "https://cdn.simpleicons.org/azurepipelines/2560E0",
+    "Azure Pipelines": "https://cdn.vsassets.io/ext/ms.vss-build-web/common-library/Nav-Launch.3tiJhd.png",
     "GitLab CI": "https://cdn.simpleicons.org/gitlab/FC6D26",
     "CircleCI": "https://cdn.simpleicons.org/circleci/343434",
     "Jenkins": "https://cdn.simpleicons.org/jenkins/D24939",
-    "Travis CI": "https://cdn.simpleicons.org/travis/3EAAAF",
+    "Travis CI": "https://cdn.simpleicons.org/travisci/3EAAAF",
     "Bitbucket Pipelines": "https://cdn.simpleicons.org/bitbucket/0052CC",
     "TeamCity": "https://cdn.simpleicons.org/teamcity/000000",
-    "AWS CodeBuild": "https://cdn.simpleicons.org/amazonaws/232F3E",
+    "AWS CodeBuild":
+      "https://a.b.cdn.console.awsstatic.com/a/v1/XY4Q5TY33HMUJG7NXI3D5OVE5BC7TS5EMSQIZUFRTA2XNCHHOP5Q/icon/13ee531096ccb4384d55f6b7cc66572b-9f8463d77a472721923c47b01f973d59.svg",
     "Google Cloud Build": "https://cdn.simpleicons.org/googlecloud/4285F4",
     "Drone CI": "https://cdn.simpleicons.org/drone/212121",
     "Bamboo": "https://cdn.simpleicons.org/bamboo/0052CC"
@@ -187,3 +280,15 @@ export function getCICDIcon(platform: string): string | undefined {
 
   return iconMap[platform]
 }
+
+/**
+ * Get the current git commit SHA by running `git rev-parse HEAD`
+ * Returns an Effect that resolves to the SHA or undefined if git is not available
+ */
+export const getGitCommitSha = (): Effect.Effect<string | undefined> =>
+  Command.make("git", "rev-parse", "HEAD").pipe(
+    Command.string,
+    Effect.map((output) => output.trim() || undefined),
+    Effect.catchAll(() => Effect.succeed(undefined)),
+    Effect.provide(NodeContext.layer)
+  )
