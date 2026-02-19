@@ -33,7 +33,7 @@ pnpm dedupe        # Deduplicate dependencies (run after adding/updating deps)
 
 ## Critical Rules
 
-1. **No automatic commits or pushes:** NEVER commit or push code without explicit user consent. Always ask the user before running `git commit` or `git push` commands.
+1. **No automatic commits or pushes:** NEVER commit or push code without explicit user consent. Always ask the user before running `git commit` commands. NEVER run `git push` under any circumstances - the user will push manually.
 
 2. **ESM imports in Effect packages:** Use `.js` extensions in relative imports
 
