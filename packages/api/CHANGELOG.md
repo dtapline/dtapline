@@ -1,5 +1,11 @@
 # @dtapline/api
 
+## 0.3.2
+
+### Patch Changes
+
+- [`7db036b`](https://github.com/dtapline/dtapline/commit/7db036bd589d7f712f80eb8b83b06e9b12a6c11f) Thanks @floydspace! - fix cookie propagation by updating the patched lambda package, and enable github social button
+
 ## 0.3.1
 
 ### Patch Changes
