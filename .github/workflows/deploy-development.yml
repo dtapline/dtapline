@@ -33,16 +33,11 @@ jobs:
       - name: Report deployment in progress
         env:
           DTAPLINE_API_KEY: ${{ secrets.DTAPLINE_API_KEY }}
+          DTAPLINE_SERVER_URL: ${{ vars.DTAPLINE_SERVER_URL }}
         run: |
-          pnpm tsx packages/cli/src/index.ts deploy \
-            development \
-            cli \
-            ${{ github.sha }} \
-            --server-url ${{ vars.DTAPLINE_SERVER_URL }} \
+          pnpm tsx packages/cli/src/index.ts deploy development cli \
             --status in_progress \
-            --deployed-by "GitHub Actions" \
-            --deployed-version "$(pnpm tsx scripts/get-next-version.ts @dtapline/cli)" \
-            --build-url ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            --deployed-version "$(pnpm tsx scripts/get-next-version.ts @dtapline/cli)"
 
       - name: Create CLI snapshot
         id: snapshot
@@ -58,31 +53,21 @@ jobs:
         if: success()
         env:
           DTAPLINE_API_KEY: ${{ secrets.DTAPLINE_API_KEY }}
+          DTAPLINE_SERVER_URL: ${{ vars.DTAPLINE_SERVER_URL }}
         run: |
-          pnpm tsx packages/cli/src/index.ts deploy \
-            development \
-            cli \
-            ${{ github.sha }} \
-            --server-url ${{ vars.DTAPLINE_SERVER_URL }} \
+          pnpm tsx packages/cli/src/index.ts deploy development cli \
             --status success \
-            --deployed-by "GitHub Actions" \
-            --deployed-version "$(pnpm tsx scripts/get-next-version.ts @dtapline/cli)" \
-            --build-url ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            --deployed-version "$(pnpm tsx scripts/get-next-version.ts @dtapline/cli)"
 
       - name: Report deployment failure
         if: failure()
         env:
           DTAPLINE_API_KEY: ${{ secrets.DTAPLINE_API_KEY }}
+          DTAPLINE_SERVER_URL: ${{ vars.DTAPLINE_SERVER_URL }}
         run: |
-          pnpm tsx packages/cli/src/index.ts deploy \
-            development \
-            cli \
-            ${{ github.sha }} \
-            --server-url ${{ vars.DTAPLINE_SERVER_URL }} \
+          pnpm tsx packages/cli/src/index.ts deploy development cli \
             --status failed \
-            --deployed-by "GitHub Actions" \
-            --deployed-version "$(pnpm tsx scripts/get-next-version.ts @dtapline/cli)" \
-            --build-url ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            --deployed-version "$(pnpm tsx scripts/get-next-version.ts @dtapline/cli)"
 
   deploy-api:
     name: Deploy API Server to Development
@@ -121,16 +106,11 @@ jobs:
         working-directory: .
         env:
           DTAPLINE_API_KEY: ${{ secrets.DTAPLINE_API_KEY }}
+          DTAPLINE_SERVER_URL: ${{ vars.DTAPLINE_SERVER_URL }}
         run: |
-          pnpm tsx packages/cli/src/index.ts deploy \
-            development \
-            api \
-            ${{ github.sha }} \
-            --server-url ${{ vars.DTAPLINE_SERVER_URL }} \
+          pnpm tsx packages/cli/src/index.ts deploy development api \
             --status in_progress \
-            --deployed-by "GitHub Actions" \
-            --deployed-version "$(pnpm tsx scripts/get-next-version.ts @dtapline/api)" \
-            --build-url ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            --deployed-version "$(pnpm tsx scripts/get-next-version.ts @dtapline/api)"
 
       - name: Terraform Init
         working-directory: packages/api/infra
@@ -163,32 +143,22 @@ jobs:
         working-directory: .
         env:
           DTAPLINE_API_KEY: ${{ secrets.DTAPLINE_API_KEY }}
+          DTAPLINE_SERVER_URL: ${{ vars.DTAPLINE_SERVER_URL || steps.terraform.outputs.api_url }}
         run: |
-          pnpm tsx packages/cli/src/index.ts deploy \
-            development \
-            api \
-            ${{ github.sha }} \
-            --server-url ${{ vars.DTAPLINE_SERVER_URL || steps.terraform.outputs.api_url }} \
+          pnpm tsx packages/cli/src/index.ts deploy development api \
             --status success \
-            --deployed-by "GitHub Actions" \
-            --deployed-version "$(pnpm tsx scripts/get-next-version.ts @dtapline/api)" \
-            --build-url ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            --deployed-version "$(pnpm tsx scripts/get-next-version.ts @dtapline/api)"
 
       - name: Report failed deployment
         if: failure()
         working-directory: .
         env:
           DTAPLINE_API_KEY: ${{ secrets.DTAPLINE_API_KEY }}
+          DTAPLINE_SERVER_URL: ${{ vars.DTAPLINE_SERVER_URL || vars.API_BASE_URL }}
         run: |
-          pnpm tsx packages/cli/src/index.ts deploy \
-            development \
-            api \
-            ${{ github.sha }} \
-            --server-url ${{ vars.DTAPLINE_SERVER_URL || vars.API_BASE_URL }} \
+          pnpm tsx packages/cli/src/index.ts deploy development api \
             --status failed \
-            --deployed-by "GitHub Actions" \
-            --deployed-version "$(pnpm tsx scripts/get-next-version.ts @dtapline/api)" \
-            --build-url ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            --deployed-version "$(pnpm tsx scripts/get-next-version.ts @dtapline/api)"
 
   deploy-ui:
     name: Deploy UI to Development
@@ -218,16 +188,11 @@ jobs:
         working-directory: .
         env:
           DTAPLINE_API_KEY: ${{ secrets.DTAPLINE_API_KEY }}
+          DTAPLINE_SERVER_URL: ${{ vars.DTAPLINE_SERVER_URL }}
         run: |
-          pnpm tsx packages/cli/src/index.ts deploy \
-            development \
-            ui \
-            ${{ github.sha }} \
-            --server-url ${{ vars.DTAPLINE_SERVER_URL }} \
+          pnpm tsx packages/cli/src/index.ts deploy development ui \
             --status in_progress \
-            --deployed-by "GitHub Actions" \
-            --deployed-version "$(pnpm tsx scripts/get-next-version.ts @dtapline/ui)" \
-            --build-url ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            --deployed-version "$(pnpm tsx scripts/get-next-version.ts @dtapline/ui)"
 
       - name: Deploy to Netlify (branch deploy)
         id: deploy
@@ -247,29 +212,19 @@ jobs:
         working-directory: .
         env:
           DTAPLINE_API_KEY: ${{ secrets.DTAPLINE_API_KEY }}
+          DTAPLINE_SERVER_URL: ${{ vars.DTAPLINE_SERVER_URL || vars.API_BASE_URL }}
         run: |
-          pnpm tsx packages/cli/src/index.ts deploy \
-            development \
-            ui \
-            ${{ github.sha }} \
-            --server-url ${{ vars.DTAPLINE_SERVER_URL || vars.API_BASE_URL }} \
+          pnpm tsx packages/cli/src/index.ts deploy development ui \
             --status success \
-            --deployed-by "GitHub Actions" \
-            --deployed-version "$(pnpm tsx scripts/get-next-version.ts @dtapline/ui)" \
-            --build-url ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            --deployed-version "$(pnpm tsx scripts/get-next-version.ts @dtapline/ui)"
 
       - name: Report failed deployment
         if: failure()
         working-directory: .
         env:
           DTAPLINE_API_KEY: ${{ secrets.DTAPLINE_API_KEY }}
+          DTAPLINE_SERVER_URL: ${{ vars.DTAPLINE_SERVER_URL || vars.API_BASE_URL }}
         run: |
-          pnpm tsx packages/cli/src/index.ts deploy \
-            development \
-            ui \
-            ${{ github.sha }} \
-            --server-url ${{ vars.DTAPLINE_SERVER_URL || vars.API_BASE_URL }} \
+          pnpm tsx packages/cli/src/index.ts deploy development ui \
             --status failed \
-            --deployed-by "GitHub Actions" \
-            --deployed-version "$(pnpm tsx scripts/get-next-version.ts @dtapline/ui)" \
-            --build-url ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            --deployed-version "$(pnpm tsx scripts/get-next-version.ts @dtapline/ui)"

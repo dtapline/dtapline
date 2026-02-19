@@ -49,17 +49,11 @@ jobs:
         working-directory: .
         env:
           DTAPLINE_API_KEY: ${{ secrets.DTAPLINE_API_KEY }}
+          DTAPLINE_SERVER_URL: ${{ vars.DTAPLINE_SERVER_URL }}
         run: |
-          pnpm tsx packages/cli/src/index.ts deploy \
-            production \
-            api \
-            ${{ github.sha }} \
-            --server-url ${{ vars.DTAPLINE_SERVER_URL }} \
-            --git-tag ${{ github.ref_name }} \
+          pnpm tsx packages/cli/src/index.ts deploy production api \
             --status in_progress \
-            --deployed-by "GitHub Actions" \
-            --deployed-version "${GITHUB_REF_NAME##*@}" \
-            --build-url ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            --deployed-version "${GITHUB_REF_NAME##*@}"
 
       - name: Terraform Init
         working-directory: packages/api/infra
@@ -92,31 +86,19 @@ jobs:
         working-directory: .
         env:
           DTAPLINE_API_KEY: ${{ secrets.DTAPLINE_API_KEY }}
+          DTAPLINE_SERVER_URL: ${{ vars.DTAPLINE_SERVER_URL || steps.terraform.outputs.api_url }}
         run: |
-          pnpm tsx packages/cli/src/index.ts deploy \
-            production \
-            api \
-            ${{ github.sha }} \
-            --server-url ${{ vars.DTAPLINE_SERVER_URL || steps.terraform.outputs.api_url }} \
-            --git-tag ${{ github.ref_name }} \
+          pnpm tsx packages/cli/src/index.ts deploy production api \
             --status success \
-            --deployed-by "GitHub Actions" \
-            --deployed-version "${GITHUB_REF_NAME##*@}" \
-            --build-url ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            --deployed-version "${GITHUB_REF_NAME##*@}"
 
       - name: Report failed deployment
         if: failure()
         working-directory: .
         env:
           DTAPLINE_API_KEY: ${{ secrets.DTAPLINE_API_KEY }}
+          DTAPLINE_SERVER_URL: ${{ vars.DTAPLINE_SERVER_URL || vars.API_BASE_URL }}
         run: |
-          pnpm tsx packages/cli/src/index.ts deploy \
-            production \
-            api \
-            ${{ github.sha }} \
-            --server-url ${{ vars.DTAPLINE_SERVER_URL || vars.API_BASE_URL }} \
-            --git-tag ${{ github.ref_name }} \
+          pnpm tsx packages/cli/src/index.ts deploy production api \
             --status failed \
-            --deployed-by "GitHub Actions" \
-            --deployed-version "${GITHUB_REF_NAME##*@}" \
-            --build-url ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            --deployed-version "${GITHUB_REF_NAME##*@}"
