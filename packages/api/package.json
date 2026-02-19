@@ -24,7 +24,7 @@
   },
   "dependencies": {
     "@dtapline/domain": "workspace:^",
-    "@effect-aws/lambda": "^1.5.1",
+    "@effect-aws/lambda": "^1.5.2",
     "@effect-aws/powertools-logger": "^1.5.1",
     "@effect/cluster": "^0.56.1",
     "@effect/experimental": "^0.58.0",
