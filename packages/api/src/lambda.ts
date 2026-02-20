@@ -1,6 +1,6 @@
 import { LambdaHandler } from "@effect-aws/lambda"
-import { HttpMiddleware, HttpServer } from "@effect/platform"
 import { Layer } from "effect"
+import { HttpMiddleware, HttpServer } from "effect/unstable/http"
 import { AppLive } from "./Layers.js"
 
 /**
@@ -44,7 +44,7 @@ import { AppLive } from "./Layers.js"
 const corsOrigins = process.env.CORS_ORIGINS?.split(",").map((s) => s.trim()) || ["*"]
 
 export const handler = LambdaHandler.fromHttpApi(
-  Layer.mergeAll(AppLive, HttpServer.layerContext),
+  AppLive.pipe(Layer.provide(HttpServer.layerServices)),
   {
     middleware: HttpMiddleware.cors({
       allowedOrigins: corsOrigins,

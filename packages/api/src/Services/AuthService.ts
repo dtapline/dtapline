@@ -1,8 +1,8 @@
 import { Forbidden, Unauthorized } from "@dtapline/domain/Errors"
 import type { User, UserRole } from "@dtapline/domain/User"
 import { UserId } from "@dtapline/domain/User"
-import type { HttpServerRequest } from "@effect/platform"
-import { Context, Effect, Layer, Schema } from "effect"
+import { Effect, Layer, Schema, ServiceMap } from "effect"
+import type { HttpServerRequest } from "effect/unstable/http"
 import { BetterAuthInstance } from "../Auth.js"
 
 /**
@@ -37,7 +37,7 @@ export interface AuthService {
 /**
  * Service tag for authentication
  */
-export const AuthService = Context.GenericTag<AuthService>("AuthService")
+export const AuthService = ServiceMap.Service<AuthService>("AuthService")
 
 /**
  * Live implementation of AuthService using Better Auth

@@ -27,13 +27,11 @@
   },
   "dependencies": {
     "@dtapline/domain": "workspace:*",
-    "@effect/cli": "^0.73.1",
-    "@effect/platform": "^0.94.2",
-    "@effect/platform-node": "^0.104.1",
+    "@effect/platform-node": "catalog:",
     "@opentui/core": "^0.1.82",
     "@opentui/react": "^0.1.82",
     "date-fns": "^4.1.0",
-    "effect": "^3.19.15",
+    "effect": "catalog:",
     "react": "^19.0.0"
   },
   "devDependencies": {

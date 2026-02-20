@@ -56,7 +56,7 @@ describe("Authentication Flow", () => {
       })
 
       return Layer.provide(BetterAuthLive, Layer.merge(mongoLayer, configLayer))
-    })
+    }).pipe(Layer.unwrap)
 
   // Helper to extract cookies from Set-Cookie headers
   const parseCookies = (setCookieHeaders: Array<string>): Map<string, string> => {
@@ -80,8 +80,7 @@ describe("Authentication Flow", () => {
 
   it.effect("should create user on signup and return user data", () =>
     Effect.gen(function*() {
-      const testLayer = yield* createTestLayers()
-      const auth = yield* Effect.provide(BetterAuthInstance, testLayer)
+      const auth = yield* BetterAuthInstance
 
       // Create signup request
       const signupRequest = new Request("http://localhost:3000/api/auth/sign-up/email", {
@@ -126,12 +125,11 @@ describe("Authentication Flow", () => {
         header.includes("better-auth")
       )
       expect(hasBetterAuthCookie).toBe(true)
-    }))
+    }).pipe(Effect.provide(createTestLayers())))
 
   it.effect("should validate session after signup with cookieCache disabled", () =>
     Effect.gen(function*() {
-      const testLayer = yield* createTestLayers()
-      const auth = yield* Effect.provide(BetterAuthInstance, testLayer)
+      const auth = yield* BetterAuthInstance
 
       const email = `sessiontest-${Date.now()}@example.com`
 
@@ -188,12 +186,11 @@ describe("Authentication Flow", () => {
       expect(sessionData?.user.role).toBe("freeUser")
       expect(sessionData?.session.token).toBeDefined()
       expect(sessionData?.session.userId).toBeDefined()
-    }))
+    }).pipe(Effect.provide(createTestLayers())))
 
   it.effect("should authenticate with email/password on sign-in", () =>
     Effect.gen(function*() {
-      const testLayer = yield* createTestLayers()
-      const auth = yield* Effect.provide(BetterAuthInstance, testLayer)
+      const auth = yield* BetterAuthInstance
 
       const email = `signin-${Date.now()}@example.com`
 
@@ -245,12 +242,11 @@ describe("Authentication Flow", () => {
       // Verify session cookie is set on sign-in
       const setCookieHeaders = signinResponse.headers.getSetCookie?.() || []
       expect(setCookieHeaders.length).toBeGreaterThan(0)
-    }))
+    }).pipe(Effect.provide(createTestLayers())))
 
   it.effect("should fail sign-in with wrong password", () =>
     Effect.gen(function*() {
-      const testLayer = yield* createTestLayers()
-      const auth = yield* Effect.provide(BetterAuthInstance, testLayer)
+      const auth = yield* BetterAuthInstance
 
       const email = `wrongpass-${Date.now()}@example.com`
 
@@ -289,12 +285,11 @@ describe("Authentication Flow", () => {
       // Should fail authentication
       expect(signinResponse.status).not.toBe(200)
       expect(signinResponse.status).toBeGreaterThanOrEqual(400)
-    }))
+    }).pipe(Effect.provide(createTestLayers())))
 
   it.effect("should return null for get-session without cookie", () =>
     Effect.gen(function*() {
-      const testLayer = yield* createTestLayers()
-      const auth = yield* Effect.provide(BetterAuthInstance, testLayer)
+      const auth = yield* BetterAuthInstance
 
       // Try to get session without authentication
       const sessionRequest = new Request("http://localhost:3000/api/auth/get-session", {
@@ -311,15 +306,16 @@ describe("Authentication Flow", () => {
 
       // Should return null when not authenticated
       expect(sessionData).toBe(null)
-    }))
+    }).pipe(Effect.provide(createTestLayers())))
 
-  it.effect("should store session in MongoDB (database lookup)", () =>
-    Effect.gen(function*() {
-      const mongoUri = inject("mongoUri") as string
-      const client = new MongoClient(mongoUri)
+  it.effect("should store session in MongoDB (database lookup)", () => {
+    const mongoUri = inject("mongoUri") as string
+    const client = new MongoClient(mongoUri)
+    const dbName = `test-dtapline-db-${Date.now()}`
+    const db = client.db(dbName)
+
+    const testLayer = Effect.gen(function*() {
       yield* Effect.promise(() => client.connect())
-      const dbName = `test-dtapline-db-${Date.now()}`
-      const db = client.db(dbName)
 
       const mongoLayer = Layer.mergeAll(
         Layer.succeed(MongoDatabase, db),
@@ -336,8 +332,11 @@ describe("Authentication Flow", () => {
         githubClientSecret: null
       })
 
-      const testLayer = Layer.provide(BetterAuthLive, Layer.merge(mongoLayer, configLayer))
-      const auth = yield* Effect.provide(BetterAuthInstance, testLayer)
+      return Layer.provide(BetterAuthLive, Layer.merge(mongoLayer, configLayer))
+    }).pipe(Layer.unwrap)
+
+    return Effect.gen(function*() {
+      const auth = yield* BetterAuthInstance
 
       const email = `dbtest-${Date.now()}@example.com`
 
@@ -385,12 +384,12 @@ describe("Authentication Flow", () => {
       expect(session?.token).toBe(signupData.token)
       expect(session?.expiresAt).toBeDefined()
       expect(session?.createdAt).toBeDefined()
-    }))
+    }).pipe(Effect.provide(testLayer))
+  })
 
   it.effect("should set default role to proUser for self-hosted deployments", () =>
     Effect.gen(function*() {
-      const testLayer = yield* createTestLayers(true) // Enable self-hosted
-      const auth = yield* Effect.provide(BetterAuthInstance, testLayer)
+      const auth = yield* BetterAuthInstance
 
       const signupRequest = new Request("http://localhost:3000/api/auth/sign-up/email", {
         method: "POST",
@@ -416,5 +415,5 @@ describe("Authentication Flow", () => {
 
       // Should be proUser for self-hosted
       expect(data.user.role).toBe("proUser")
-    }))
+    }).pipe(Effect.provide(createTestLayers(true)))) // Enable self-hosted
 })

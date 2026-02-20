@@ -1,4 +1,4 @@
-import { Config, Context, Effect, Layer } from "effect"
+import { Config, Effect, Layer, ServiceMap } from "effect"
 
 /**
  * Server configuration interface
@@ -16,10 +16,10 @@ export interface ServerConfig {
 /**
  * Service tag for server configuration
  */
-export class ServerConfigService extends Context.Tag("ServerConfig")<
+export class ServerConfigService extends ServiceMap.Service<
   ServerConfigService,
   ServerConfig
->() {}
+>()("ServerConfig") {}
 
 /**
  * Live implementation that reads configuration from environment variables
@@ -29,24 +29,24 @@ export const ServerConfigLive = Layer.effect(
   Effect.gen(function*() {
     const mongodbUri = yield* Config.string("MONGODB_URI")
     const corsOriginsStr = yield* Config.string("CORS_ORIGINS").pipe(
-      Config.withDefault("http://localhost:5173")
+      Config.withDefault(() => "http://localhost:5173")
     )
     const corsOrigins = corsOriginsStr.split(",").map((s) => s.trim())
 
     const authSecret = yield* Config.string("AUTH_SECRET")
     const authUrl = yield* Config.string("AUTH_URL").pipe(
-      Config.withDefault("http://localhost:3000")
+      Config.withDefault(() => "http://localhost:3000")
     )
 
     const githubClientId = yield* Config.string("GITHUB_CLIENT_ID").pipe(
-      Config.withDefault(null)
+      Config.withDefault(() => null)
     )
     const githubClientSecret = yield* Config.string("GITHUB_CLIENT_SECRET").pipe(
-      Config.withDefault(null)
+      Config.withDefault(() => null)
     )
 
     const selfHosted = yield* Config.boolean("SELF_HOSTED").pipe(
-      Config.withDefault(false)
+      Config.withDefault(() => false)
     )
 
     return {

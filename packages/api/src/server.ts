@@ -1,7 +1,7 @@
-import { HttpApiBuilder, HttpMiddleware } from "@effect/platform"
 import { NodeHttpServer, NodeRuntime } from "@effect/platform-node"
 import { config } from "dotenv"
 import { Effect, Layer } from "effect"
+import { HttpRouter } from "effect/unstable/http"
 import { createServer } from "node:http"
 import { AppLive } from "./Layers.js"
 
@@ -44,19 +44,20 @@ const allowedOrigins = process.env.CORS_ORIGINS?.split(",").map((s) => s.trim())
 ]
 console.log(`🌐 CORS enabled for: ${allowedOrigins.join(", ")}`)
 
-const HttpLive = HttpApiBuilder.serve(HttpMiddleware.logger).pipe(
-  Layer.provide(HttpApiBuilder.middlewareCors({ allowedOrigins, credentials: true })),
-  Layer.provide(AppLive),
-  Layer.provide(NodeHttpServer.layer(createServer, { port: 3000 })),
-  Layer.tapErrorCause((cause) =>
-    Effect.sync(() => {
-      console.error("\n❌ Server failed to start:")
-      console.error(cause)
-    })
-  ),
-  Layer.tap(() => Effect.sync(() => console.log("\n✅ Server is ready and listening on http://localhost:3000\n")))
+const HttpLive = AppLive.pipe(
+  Layer.provide(HttpRouter.cors({ allowedOrigins, credentials: true })),
+  HttpRouter.serve,
+  Layer.provide(NodeHttpServer.layer(createServer, { port: 3000 }))
 )
 
 NodeRuntime.runMain(
-  Layer.launch(HttpLive)
+  Layer.launch(HttpLive).pipe(
+    Effect.tapCause((cause) =>
+      Effect.sync(() => {
+        console.error("\n❌ Server failed to start:")
+        console.error(cause)
+      })
+    ),
+    Effect.tap(() => Effect.sync(() => console.log("\n✅ Server is ready and listening on http://localhost:3000\n")))
+  )
 )

@@ -1,5 +1,5 @@
 import { DatabaseError } from "@dtapline/domain/Errors"
-import { Context, Effect, Layer } from "effect"
+import { Effect, Layer, ServiceMap } from "effect"
 import type { Db } from "mongodb"
 import { MongoClient } from "mongodb"
 import { ServerConfigService } from "./Config.js"
@@ -7,18 +7,18 @@ import { ServerConfigService } from "./Config.js"
 /**
  * Service tag for MongoDB database connection
  */
-export class MongoDatabase extends Context.Tag("MongoDatabase")<
+export class MongoDatabase extends ServiceMap.Service<
   MongoDatabase,
   Db
->() {}
+>()("MongoDatabase") {}
 
 /**
  * Service tag for MongoDB client (needed for Better Auth)
  */
-export class MongoClientTag extends Context.Tag("MongoClient")<
+export class MongoClientTag extends ServiceMap.Service<
   MongoClientTag,
   MongoClient
->() {}
+>()("MongoClient") {}
 
 /**
  * Cached MongoDB client for Lambda warm starts
@@ -34,7 +34,7 @@ let cachedDb: Db | null = null
  * - Uses Effect resource management for graceful shutdown
  * - Provides both Db and MongoClient services
  */
-export const MongoDBLive = Layer.scoped(
+export const MongoDBLive = Layer.effect(
   MongoDatabase,
   Effect.gen(function*() {
     const config = yield* ServerConfigService

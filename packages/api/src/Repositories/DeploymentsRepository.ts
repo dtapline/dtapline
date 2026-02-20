@@ -9,7 +9,7 @@ import type { EnvironmentId } from "@dtapline/domain/Environment"
 import { DatabaseError, DeploymentNotFound } from "@dtapline/domain/Errors"
 import type { ProjectId } from "@dtapline/domain/Project"
 import type { ServiceId } from "@dtapline/domain/Service"
-import { Context, Effect, Layer, Schema } from "effect"
+import { Effect, Layer, Schema, ServiceMap } from "effect"
 import type { ObjectId } from "mongodb"
 import { createHash } from "node:crypto"
 import { MongoDatabase } from "../MongoDB.js"
@@ -80,41 +80,38 @@ export interface CurrentDeployment {
 /**
  * Deployments Repository interface
  */
-export class DeploymentsRepository extends Context.Tag("DeploymentsRepository")<
-  DeploymentsRepository,
-  {
-    readonly create: (
-      projectId: string,
-      environmentId: string,
-      serviceId: string,
-      version: string,
-      input: typeof CreateDeploymentInput.Type
-    ) => Effect.Effect<Deployment, DatabaseError>
+export class DeploymentsRepository extends ServiceMap.Service<DeploymentsRepository, {
+  readonly create: (
+    projectId: string,
+    environmentId: string,
+    serviceId: string,
+    version: string,
+    input: typeof CreateDeploymentInput.Type
+  ) => Effect.Effect<Deployment, DatabaseError>
 
-    readonly findById: (
-      deploymentId: string
-    ) => Effect.Effect<Deployment, DeploymentNotFound | DatabaseError>
+  readonly findById: (
+    deploymentId: string
+  ) => Effect.Effect<Deployment, DeploymentNotFound | DatabaseError>
 
-    readonly findByFilters: (
-      projectId: string,
-      filters: typeof DeploymentFilters.Type
-    ) => Effect.Effect<ReadonlyArray<Deployment>, DatabaseError>
+  readonly findByFilters: (
+    projectId: string,
+    filters: typeof DeploymentFilters.Type
+  ) => Effect.Effect<ReadonlyArray<Deployment>, DatabaseError>
 
-    readonly getCurrentState: (
-      projectId: string
-    ) => Effect.Effect<ReadonlyArray<CurrentDeployment>, DatabaseError>
+  readonly getCurrentState: (
+    projectId: string
+  ) => Effect.Effect<ReadonlyArray<CurrentDeployment>, DatabaseError>
 
-    readonly getLatestForEnvironmentService: (
-      environmentId: string,
-      serviceId: string
-    ) => Effect.Effect<Deployment | null, DatabaseError>
+  readonly getLatestForEnvironmentService: (
+    environmentId: string,
+    serviceId: string
+  ) => Effect.Effect<Deployment | null, DatabaseError>
 
-    readonly countByFilters: (
-      projectId: string,
-      filters: typeof DeploymentFilters.Type
-    ) => Effect.Effect<number, DatabaseError>
-  }
->() {}
+  readonly countByFilters: (
+    projectId: string,
+    filters: typeof DeploymentFilters.Type
+  ) => Effect.Effect<number, DatabaseError>
+}>()("DeploymentsRepository") {}
 
 /**
  * Helper to convert MongoDB document to Deployment

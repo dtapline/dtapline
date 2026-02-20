@@ -1,7 +1,7 @@
 import { Schema } from "effect"
 
 // Base error for all dtapline errors
-export class DtaplineError extends Schema.TaggedError<DtaplineError>()(
+export class DtaplineError extends Schema.TaggedErrorClass<DtaplineError>()(
   "DtaplineError",
   {
     message: Schema.String
@@ -9,7 +9,7 @@ export class DtaplineError extends Schema.TaggedError<DtaplineError>()(
 ) {}
 
 // Project errors
-export class ProjectNotFound extends Schema.TaggedError<ProjectNotFound>()(
+export class ProjectNotFound extends Schema.TaggedErrorClass<ProjectNotFound>()(
   "ProjectNotFound",
   {
     projectId: Schema.String,
@@ -17,7 +17,7 @@ export class ProjectNotFound extends Schema.TaggedError<ProjectNotFound>()(
   }
 ) {}
 
-export class ProjectAlreadyExists extends Schema.TaggedError<ProjectAlreadyExists>()(
+export class ProjectAlreadyExists extends Schema.TaggedErrorClass<ProjectAlreadyExists>()(
   "ProjectAlreadyExists",
   {
     name: Schema.String,
@@ -26,7 +26,7 @@ export class ProjectAlreadyExists extends Schema.TaggedError<ProjectAlreadyExist
 ) {}
 
 // Environment errors
-export class EnvironmentNotFound extends Schema.TaggedError<EnvironmentNotFound>()(
+export class EnvironmentNotFound extends Schema.TaggedErrorClass<EnvironmentNotFound>()(
   "EnvironmentNotFound",
   {
     environmentId: Schema.String,
@@ -34,7 +34,7 @@ export class EnvironmentNotFound extends Schema.TaggedError<EnvironmentNotFound>
   }
 ) {}
 
-export class EnvironmentAlreadyExists extends Schema.TaggedError<EnvironmentAlreadyExists>()(
+export class EnvironmentAlreadyExists extends Schema.TaggedErrorClass<EnvironmentAlreadyExists>()(
   "EnvironmentAlreadyExists",
   {
     projectId: Schema.String,
@@ -43,7 +43,7 @@ export class EnvironmentAlreadyExists extends Schema.TaggedError<EnvironmentAlre
   }
 ) {}
 
-export class EnvironmentHasDeployments extends Schema.TaggedError<EnvironmentHasDeployments>()(
+export class EnvironmentHasDeployments extends Schema.TaggedErrorClass<EnvironmentHasDeployments>()(
   "EnvironmentHasDeployments",
   {
     environmentId: Schema.String,
@@ -53,7 +53,7 @@ export class EnvironmentHasDeployments extends Schema.TaggedError<EnvironmentHas
 ) {}
 
 // Service errors
-export class ServiceNotFound extends Schema.TaggedError<ServiceNotFound>()(
+export class ServiceNotFound extends Schema.TaggedErrorClass<ServiceNotFound>()(
   "ServiceNotFound",
   {
     serviceId: Schema.String,
@@ -61,7 +61,7 @@ export class ServiceNotFound extends Schema.TaggedError<ServiceNotFound>()(
   }
 ) {}
 
-export class ServiceAlreadyExists extends Schema.TaggedError<ServiceAlreadyExists>()(
+export class ServiceAlreadyExists extends Schema.TaggedErrorClass<ServiceAlreadyExists>()(
   "ServiceAlreadyExists",
   {
     projectId: Schema.String,
@@ -70,7 +70,7 @@ export class ServiceAlreadyExists extends Schema.TaggedError<ServiceAlreadyExist
   }
 ) {}
 
-export class ServiceHasDeployments extends Schema.TaggedError<ServiceHasDeployments>()(
+export class ServiceHasDeployments extends Schema.TaggedErrorClass<ServiceHasDeployments>()(
   "ServiceHasDeployments",
   {
     serviceId: Schema.String,
@@ -80,7 +80,7 @@ export class ServiceHasDeployments extends Schema.TaggedError<ServiceHasDeployme
 ) {}
 
 // Deployment errors
-export class DeploymentNotFound extends Schema.TaggedError<DeploymentNotFound>()(
+export class DeploymentNotFound extends Schema.TaggedErrorClass<DeploymentNotFound>()(
   "DeploymentNotFound",
   {
     deploymentId: Schema.String,
@@ -89,7 +89,7 @@ export class DeploymentNotFound extends Schema.TaggedError<DeploymentNotFound>()
 ) {}
 
 // API Key errors
-export class ApiKeyNotFound extends Schema.TaggedError<ApiKeyNotFound>()(
+export class ApiKeyNotFound extends Schema.TaggedErrorClass<ApiKeyNotFound>()(
   "ApiKeyNotFound",
   {
     apiKeyId: Schema.String,
@@ -97,21 +97,21 @@ export class ApiKeyNotFound extends Schema.TaggedError<ApiKeyNotFound>()(
   }
 ) {}
 
-export class UnauthorizedApiKey extends Schema.TaggedError<UnauthorizedApiKey>()(
+export class UnauthorizedApiKey extends Schema.TaggedErrorClass<UnauthorizedApiKey>()(
   "UnauthorizedApiKey",
   {
     message: Schema.String
   }
 ) {}
 
-export class InvalidApiKey extends Schema.TaggedError<InvalidApiKey>()(
+export class InvalidApiKey extends Schema.TaggedErrorClass<InvalidApiKey>()(
   "InvalidApiKey",
   {
     message: Schema.String
   }
 ) {}
 
-export class ApiKeyExpired extends Schema.TaggedError<ApiKeyExpired>()(
+export class ApiKeyExpired extends Schema.TaggedErrorClass<ApiKeyExpired>()(
   "ApiKeyExpired",
   {
     apiKeyId: Schema.String,
@@ -121,7 +121,7 @@ export class ApiKeyExpired extends Schema.TaggedError<ApiKeyExpired>()(
 ) {}
 
 // Database errors
-export class DatabaseError extends Schema.TaggedError<DatabaseError>()(
+export class DatabaseError extends Schema.TaggedErrorClass<DatabaseError>()(
   "DatabaseError",
   {
     operation: Schema.String,
@@ -131,7 +131,7 @@ export class DatabaseError extends Schema.TaggedError<DatabaseError>()(
 ) {}
 
 // Validation errors
-export class ValidationError extends Schema.TaggedError<ValidationError>()(
+export class ValidationError extends Schema.TaggedErrorClass<ValidationError>()(
   "ValidationError",
   {
     field: Schema.String,
@@ -140,14 +140,14 @@ export class ValidationError extends Schema.TaggedError<ValidationError>()(
 ) {}
 
 // Authorization errors
-export class Unauthorized extends Schema.TaggedError<Unauthorized>()(
+export class Unauthorized extends Schema.TaggedErrorClass<Unauthorized>()(
   "Unauthorized",
   {
     message: Schema.String
   }
 ) {}
 
-export class Forbidden extends Schema.TaggedError<Forbidden>()(
+export class Forbidden extends Schema.TaggedErrorClass<Forbidden>()(
   "Forbidden",
   {
     resource: Schema.String,
@@ -156,7 +156,7 @@ export class Forbidden extends Schema.TaggedError<Forbidden>()(
 ) {}
 
 // Plan limit errors
-export class PlanLimitExceeded extends Schema.TaggedError<PlanLimitExceeded>()(
+export class PlanLimitExceeded extends Schema.TaggedErrorClass<PlanLimitExceeded>()(
   "PlanLimitExceeded",
   {
     role: Schema.String,

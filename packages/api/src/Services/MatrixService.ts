@@ -2,7 +2,7 @@ import type { Deployment } from "@dtapline/domain/Deployment"
 import type { Environment } from "@dtapline/domain/Environment"
 import type { DatabaseError, ProjectNotFound } from "@dtapline/domain/Errors"
 import type { Service } from "@dtapline/domain/Service"
-import { Context, Effect, Layer } from "effect"
+import { Effect, Layer, ServiceMap } from "effect"
 import { DeploymentsRepository } from "../Repositories/DeploymentsRepository.js"
 import type { CurrentDeployment } from "../Repositories/DeploymentsRepository.js"
 import { EnvironmentsRepository } from "../Repositories/EnvironmentsRepository.js"
@@ -38,26 +38,23 @@ export interface DeploymentMatrix {
  * Matrix Service
  * Handles querying and formatting deployment matrix state
  */
-export class MatrixService extends Context.Tag("MatrixService")<
-  MatrixService,
-  {
-    /**
-     * Get the deployment matrix for a project
-     * Returns a 2D grid of current deployment state
-     */
-    readonly getMatrix: (
-      projectId: string
-    ) => Effect.Effect<DeploymentMatrix, ProjectNotFound | DatabaseError>
+export class MatrixService extends ServiceMap.Service<MatrixService, {
+  /**
+   * Get the deployment matrix for a project
+   * Returns a 2D grid of current deployment state
+   */
+  readonly getMatrix: (
+    projectId: string
+  ) => Effect.Effect<DeploymentMatrix, ProjectNotFound | DatabaseError>
 
-    /**
-     * Get the current deployment state as a flat list
-     * Useful for API responses that don't need matrix structure
-     */
-    readonly getCurrentState: (
-      projectId: string
-    ) => Effect.Effect<ReadonlyArray<CurrentDeployment>, ProjectNotFound | DatabaseError>
-  }
->() {}
+  /**
+   * Get the current deployment state as a flat list
+   * Useful for API responses that don't need matrix structure
+   */
+  readonly getCurrentState: (
+    projectId: string
+  ) => Effect.Effect<ReadonlyArray<CurrentDeployment>, ProjectNotFound | DatabaseError>
+}>()("MatrixService") {}
 
 /**
  * Live implementation of MatrixService

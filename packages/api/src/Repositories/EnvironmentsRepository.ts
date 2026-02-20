@@ -7,7 +7,7 @@ import {
   EnvironmentNotFound
 } from "@dtapline/domain/Errors"
 import type { UserId } from "@dtapline/domain/User"
-import { Context, Effect, Layer, Schema } from "effect"
+import { Effect, Layer, Schema, ServiceMap } from "effect"
 import type { ObjectId } from "mongodb"
 import { MongoDatabase } from "../MongoDB.js"
 import { toObjectId } from "../ObjectIdSchema.js"
@@ -31,62 +31,59 @@ interface EnvironmentDocument {
  * Environments Repository interface
  * Environments are now managed globally per user/tenant
  */
-export class EnvironmentsRepository extends Context.Tag("EnvironmentsRepository")<
-  EnvironmentsRepository,
-  {
-    readonly create: (
-      userId: string,
-      input: typeof CreateEnvironmentInput.Type
-    ) => Effect.Effect<Environment, EnvironmentAlreadyExists | DatabaseError>
+export class EnvironmentsRepository extends ServiceMap.Service<EnvironmentsRepository, {
+  readonly create: (
+    userId: string,
+    input: typeof CreateEnvironmentInput.Type
+  ) => Effect.Effect<Environment, EnvironmentAlreadyExists | DatabaseError>
 
-    readonly findById: (
-      environmentId: string
-    ) => Effect.Effect<Environment, EnvironmentNotFound | DatabaseError>
+  readonly findById: (
+    environmentId: string
+  ) => Effect.Effect<Environment, EnvironmentNotFound | DatabaseError>
 
-    readonly findByUserId: (
-      userId: string,
-      includeArchived?: boolean
-    ) => Effect.Effect<ReadonlyArray<Environment>, DatabaseError>
+  readonly findByUserId: (
+    userId: string,
+    includeArchived?: boolean
+  ) => Effect.Effect<ReadonlyArray<Environment>, DatabaseError>
 
-    readonly findByName: (
-      userId: string,
-      slug: string
-    ) => Effect.Effect<Environment | null, DatabaseError>
+  readonly findByName: (
+    userId: string,
+    slug: string
+  ) => Effect.Effect<Environment | null, DatabaseError>
 
-    readonly getOrCreate: (
-      userId: string,
-      slug: string,
-      name?: string
-    ) => Effect.Effect<Environment, DatabaseError>
+  readonly getOrCreate: (
+    userId: string,
+    slug: string,
+    name?: string
+  ) => Effect.Effect<Environment, DatabaseError>
 
-    readonly update: (
-      environmentId: string,
-      input: typeof UpdateEnvironmentInput.Type
-    ) => Effect.Effect<Environment, EnvironmentNotFound | DatabaseError>
+  readonly update: (
+    environmentId: string,
+    input: typeof UpdateEnvironmentInput.Type
+  ) => Effect.Effect<Environment, EnvironmentNotFound | DatabaseError>
 
-    readonly archive: (
-      environmentId: string
-    ) => Effect.Effect<void, EnvironmentNotFound | DatabaseError>
+  readonly archive: (
+    environmentId: string
+  ) => Effect.Effect<void, EnvironmentNotFound | DatabaseError>
 
-    readonly hardDelete: (
-      environmentId: string
-    ) => Effect.Effect<void, EnvironmentNotFound | EnvironmentHasDeployments | DatabaseError>
+  readonly hardDelete: (
+    environmentId: string
+  ) => Effect.Effect<void, EnvironmentNotFound | EnvironmentHasDeployments | DatabaseError>
 
-    readonly exists: (
-      userId: string,
-      slug: string
-    ) => Effect.Effect<boolean, DatabaseError>
+  readonly exists: (
+    userId: string,
+    slug: string
+  ) => Effect.Effect<boolean, DatabaseError>
 
-    readonly getNextOrder: (
-      userId: string
-    ) => Effect.Effect<number, DatabaseError>
+  readonly getNextOrder: (
+    userId: string
+  ) => Effect.Effect<number, DatabaseError>
 
-    readonly reorder: (
-      environmentId: string,
-      newOrder: number
-    ) => Effect.Effect<void, EnvironmentNotFound | DatabaseError>
-  }
->() {}
+  readonly reorder: (
+    environmentId: string,
+    newOrder: number
+  ) => Effect.Effect<void, EnvironmentNotFound | DatabaseError>
+}>()("EnvironmentsRepository") {}
 
 /**
  * Helper to convert MongoDB document to Environment

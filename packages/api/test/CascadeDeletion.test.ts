@@ -1,5 +1,6 @@
+import { ProjectNotFound } from "@dtapline/domain/Errors"
 import { it } from "@effect/vitest"
-import { Effect, Layer } from "effect"
+import { Cause, Effect, Layer } from "effect"
 import { MongoClient } from "mongodb"
 import { describe, expect, inject } from "vitest"
 import { MongoClientTag, MongoDatabase } from "../src/MongoDB.js"
@@ -29,13 +30,12 @@ describe("Project Cascade Deletion", () => {
       )
 
       return Layer.provideMerge(ProjectsRepositoryLive, mongoLayer)
-    })
+    }).pipe(Layer.unwrap)
 
   it.effect("deleting a project cascades to all related records", () =>
     Effect.gen(function*() {
-      const testLayer = yield* createTestLayers()
-      const projectsRepo = yield* Effect.provide(ProjectsRepository, testLayer)
-      const db = yield* Effect.provide(MongoDatabase, testLayer)
+      const projectsRepo = yield* ProjectsRepository
+      const db = yield* MongoDatabase
 
       const userId = `user-${Date.now()}`
 
@@ -135,8 +135,8 @@ describe("Project Cascade Deletion", () => {
       yield* projectsRepo.delete(project.id)
 
       // Verify the project no longer exists
-      const projectResult = yield* Effect.either(projectsRepo.findById(project.id))
-      expect(projectResult._tag).toBe("Left")
+      const projectResult = yield* Effect.exit(projectsRepo.findById(project.id))
+      expect(projectResult._tag).toBe("Failure")
 
       // Verify all related records are deleted
       const servicesAfter = yield* Effect.promise(() =>
@@ -153,21 +153,22 @@ describe("Project Cascade Deletion", () => {
         db.collection("api_keys").countDocuments({ projectId: project.id })
       )
       expect(apiKeysAfter).toBe(0)
-    }))
+    }).pipe(Effect.provide(createTestLayers())))
 
   it.effect("deleting a non-existent project fails with ProjectNotFound", () =>
     Effect.gen(function*() {
-      const testLayer = yield* createTestLayers()
-      const projectsRepo = yield* Effect.provide(ProjectsRepository, testLayer)
+      const projectsRepo = yield* ProjectsRepository
 
       const fakeProjectId = "000000000000000000000000" // Valid ObjectId format but doesn't exist
 
       // Attempt to delete non-existent project
-      const result = yield* Effect.either(projectsRepo.delete(fakeProjectId))
+      const result = yield* Effect.exit(projectsRepo.delete(fakeProjectId))
 
-      expect(result._tag).toBe("Left")
-      if (result._tag === "Left") {
-        expect(result.left._tag).toBe("ProjectNotFound")
+      expect(result._tag).toBe("Failure")
+      if (result._tag === "Failure") {
+        expect(Cause.squash(result.cause)).toStrictEqual(
+          new ProjectNotFound({ projectId: fakeProjectId, message: `Project with ID ${fakeProjectId} not found` })
+        )
       }
-    }))
+    }).pipe(Effect.provide(createTestLayers())))
 })

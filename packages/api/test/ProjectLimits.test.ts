@@ -49,7 +49,7 @@ describe("Project Limits", () => {
           mongoLayer
         )
       )
-    })
+    }).pipe(Layer.unwrap)
 
   // Helper to create a user and get their ID
   const createUser = (email: string, role: "freeUser" | "proUser" | "admin" = "freeUser") =>
@@ -90,11 +90,10 @@ describe("Project Limits", () => {
 
   it.effect("free users can create 1 project", () =>
     Effect.gen(function*() {
-      const testLayer = yield* createTestLayers()
-      const projectsRepo = yield* Effect.provide(ProjectsRepository, testLayer)
+      const projectsRepo = yield* ProjectsRepository
 
       // Create a free user
-      const userId = yield* Effect.provide(createUser(`free-${Date.now()}@example.com`, "freeUser"), testLayer)
+      const userId = yield* createUser(`free-${Date.now()}@example.com`, "freeUser")
 
       // Create 1 project - should succeed
       const project1 = yield* projectsRepo.create(userId, { name: "Project 1", description: undefined })
@@ -104,15 +103,14 @@ describe("Project Limits", () => {
       // Verify the project exists
       const projects = yield* projectsRepo.findByUserId(userId)
       expect(projects).toHaveLength(1)
-    }))
+    }).pipe(Effect.provide(createTestLayers())))
 
   it.effect("free users cannot create 2nd project", () =>
     Effect.gen(function*() {
-      const testLayer = yield* createTestLayers()
-      const projectsRepo = yield* Effect.provide(ProjectsRepository, testLayer)
+      const projectsRepo = yield* ProjectsRepository
 
       // Create a free user
-      const userId = yield* Effect.provide(createUser(`free-limit-${Date.now()}@example.com`, "freeUser"), testLayer)
+      const userId = yield* createUser(`free-limit-${Date.now()}@example.com`, "freeUser")
 
       // Create 1 project
       yield* projectsRepo.create(userId, { name: "Project 1", description: undefined })
@@ -127,15 +125,14 @@ describe("Project Limits", () => {
 
       // The API endpoint will prevent the 2nd project from being created
       // by checking RoleLimits before calling projectsRepo.create()
-    }))
+    }).pipe(Effect.provide(createTestLayers())))
 
   it.effect("pro users can create more than 1 project", () =>
     Effect.gen(function*() {
-      const testLayer = yield* createTestLayers()
-      const projectsRepo = yield* Effect.provide(ProjectsRepository, testLayer)
+      const projectsRepo = yield* ProjectsRepository
 
       // Create a pro user
-      const userId = yield* Effect.provide(createUser(`pro-${Date.now()}@example.com`, "proUser"), testLayer)
+      const userId = yield* createUser(`pro-${Date.now()}@example.com`, "proUser")
 
       // Create 5 projects - all should succeed
       for (let i = 1; i <= 5; i++) {
@@ -145,15 +142,14 @@ describe("Project Limits", () => {
       // Verify all 5 projects exist
       const projects = yield* projectsRepo.findByUserId(userId)
       expect(projects).toHaveLength(5)
-    }))
+    }).pipe(Effect.provide(createTestLayers())))
 
   it.effect("admin users can create unlimited projects", () =>
     Effect.gen(function*() {
-      const testLayer = yield* createTestLayers()
-      const projectsRepo = yield* Effect.provide(ProjectsRepository, testLayer)
+      const projectsRepo = yield* ProjectsRepository
 
       // Create an admin user
-      const userId = yield* Effect.provide(createUser(`admin-${Date.now()}@example.com`, "admin"), testLayer)
+      const userId = yield* createUser(`admin-${Date.now()}@example.com`, "admin")
 
       // Create 5 projects - all should succeed
       for (let i = 1; i <= 5; i++) {
@@ -163,18 +159,14 @@ describe("Project Limits", () => {
       // Verify all 5 projects exist
       const projects = yield* projectsRepo.findByUserId(userId)
       expect(projects).toHaveLength(5)
-    }))
+    }).pipe(Effect.provide(createTestLayers())))
 
   it.effect("self-hosted deployments default to pro user role", () =>
     Effect.gen(function*() {
-      const testLayer = yield* createTestLayers(true) // selfHosted = true
-      const projectsRepo = yield* Effect.provide(ProjectsRepository, testLayer)
+      const projectsRepo = yield* ProjectsRepository
 
       // Create a user in self-hosted mode (should default to proUser)
-      const userId = yield* Effect.provide(
-        createUser(`selfhosted-${Date.now()}@example.com`, "proUser"),
-        testLayer
-      )
+      const userId = yield* createUser(`selfhosted-${Date.now()}@example.com`, "proUser")
 
       // Create 5 projects - all should succeed
       for (let i = 1; i <= 5; i++) {
@@ -184,5 +176,5 @@ describe("Project Limits", () => {
       // Verify all 5 projects exist
       const projects = yield* projectsRepo.findByUserId(userId)
       expect(projects).toHaveLength(5)
-    }))
+    }).pipe(Effect.provide(createTestLayers(true)))) // selfHosted = true
 })

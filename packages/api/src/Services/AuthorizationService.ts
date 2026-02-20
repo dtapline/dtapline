@@ -1,7 +1,7 @@
 import type { Unauthorized } from "@dtapline/domain/Errors"
 import { Forbidden } from "@dtapline/domain/Errors"
-import type { HttpServerRequest } from "@effect/platform"
-import { Context, Effect, Layer } from "effect"
+import { Effect, Layer, ServiceMap } from "effect"
+import type { HttpServerRequest } from "effect/unstable/http"
 import { AuthService } from "./AuthService.js"
 
 /**
@@ -20,7 +20,7 @@ export interface AuthorizationService {
   ) => Effect.Effect<void, Forbidden | Unauthorized>
 }
 
-export const AuthorizationService = Context.GenericTag<AuthorizationService>("AuthorizationService")
+export const AuthorizationService = ServiceMap.Service<AuthorizationService>("AuthorizationService")
 
 export const AuthorizationServiceLive = Layer.effect(
   AuthorizationService,

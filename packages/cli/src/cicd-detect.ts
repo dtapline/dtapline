@@ -3,9 +3,9 @@
  * Detects which CI/CD platform the CLI is running on based on environment variables
  */
 
-import { Command } from "@effect/platform"
-import { NodeContext } from "@effect/platform-node"
+import { NodeServices } from "@effect/platform-node"
 import { Effect } from "effect"
+import { ChildProcess } from "effect/unstable/process"
 
 export interface CICDInfo {
   platform: string
@@ -286,9 +286,9 @@ export function getCICDIcon(platform: string): string | undefined {
  * Returns an Effect that resolves to the SHA or undefined if git is not available
  */
 export const getGitCommitSha = (): Effect.Effect<string | undefined> =>
-  Command.make("git", "rev-parse", "HEAD").pipe(
-    Command.string,
+  ChildProcess.make("git", ["rev-parse", "HEAD"]).pipe(
+    ChildProcess.string,
     Effect.map((output) => output.trim() || undefined),
-    Effect.catchAll(() => Effect.succeed(undefined)),
-    Effect.provide(NodeContext.layer)
+    Effect.catch(() => Effect.succeed(undefined)),
+    Effect.provide(NodeServices.layer)
   )

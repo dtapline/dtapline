@@ -1,7 +1,6 @@
-import * as HttpLayerRouter from "@effect/platform/HttpLayerRouter"
-import type * as HttpServerRequest from "@effect/platform/HttpServerRequest"
-import * as HttpServerResponse from "@effect/platform/HttpServerResponse"
 import { Effect } from "effect"
+import type { HttpServerRequest } from "effect/unstable/http"
+import { HttpRouter, HttpServerResponse } from "effect/unstable/http"
 import { BetterAuthInstance } from "./Auth.js"
 
 /**
@@ -55,9 +54,9 @@ export const betterAuthHandler = (req: HttpServerRequest.HttpServerRequest) =>
     // cookie and other cookies on the same response.
     return HttpServerResponse.fromWeb(webResponse)
   }).pipe(
-    Effect.catchAll((error) =>
+    Effect.catch((error) =>
       Effect.logError(error).pipe(
-        Effect.zipRight(HttpServerResponse.text("Auth handler error", { status: 500 }))
+        Effect.map(() => HttpServerResponse.text("Auth handler error", { status: 500 }))
       )
     )
   )
@@ -77,6 +76,6 @@ export const betterAuthHandler = (req: HttpServerRequest.HttpServerRequest) =>
  * const HttpLive = HttpLayerRouter.serve(AllRoutes)
  * ```
  */
-export const BetterAuthRouter = HttpLayerRouter.addAll([
-  HttpLayerRouter.route("*", "/api/auth/*", betterAuthHandler)
+export const BetterAuthRouter = HttpRouter.addAll([
+  HttpRouter.route("*", "/api/auth/*", betterAuthHandler)
 ])

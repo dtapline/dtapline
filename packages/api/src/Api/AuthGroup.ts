@@ -1,5 +1,5 @@
 import { DtaplineApi } from "@dtapline/domain/Api"
-import { HttpApiBuilder } from "@effect/platform"
+import { HttpApiBuilder } from "effect/unstable/httpapi"
 import { betterAuthHandler } from "../BetterAuthRouter.js"
 
 /**

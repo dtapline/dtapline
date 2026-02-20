@@ -1,17 +1,17 @@
 import type { BetterAuthOptions } from "better-auth"
 import { betterAuth } from "better-auth"
 import { mongodbAdapter } from "better-auth/adapters/mongodb"
-import { Context, Effect, Layer } from "effect"
+import { Effect, Layer, ServiceMap as Context } from "effect"
 import { ServerConfigService } from "./Config.js"
 import { MongoClientTag, MongoDatabase } from "./MongoDB.js"
 
 /**
  * Better Auth instance tag
  */
-export class BetterAuthInstance extends Context.Tag("BetterAuthInstance")<
+export class BetterAuthInstance extends Context.Service<
   BetterAuthInstance,
   ReturnType<typeof betterAuth>
->() {}
+>()("BetterAuthInstance") {}
 
 /**
  * Create Better Auth instance with MongoDB adapter and GitHub OAuth

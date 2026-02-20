@@ -1,6 +1,6 @@
 import { DtaplineApi } from "@dtapline/domain/Api"
-import { HttpApiBuilder } from "@effect/platform"
 import { Layer } from "effect"
+import { HttpApiBuilder } from "effect/unstable/httpapi"
 import { ApiKeysGroupLive } from "./ApiKeysGroup.js"
 import { AuthGroupLive } from "./AuthGroup.js"
 import { DeploymentsWebhookGroupLive } from "./DeploymentsWebhookGroup.js"
@@ -14,7 +14,7 @@ import { VersionPatternsGroupLive } from "./VersionPatternsGroup.js"
  * Complete Dtapline API implementation
  * Combines all API groups into a single HTTP API layer
  */
-export const DtaplineApiLive = HttpApiBuilder.api(DtaplineApi).pipe(
+export const DtaplineApiLive = HttpApiBuilder.layer(DtaplineApi).pipe(
   Layer.provide(DeploymentsWebhookGroupLive),
   Layer.provide(AuthGroupLive),
   Layer.provide(ProjectsGroupLive),

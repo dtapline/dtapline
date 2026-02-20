@@ -1,7 +1,7 @@
 import type { Environment } from "@dtapline/domain/Environment"
 import type { DatabaseError, EnvironmentNotFound, ProjectNotFound } from "@dtapline/domain/Errors"
 import type { Service } from "@dtapline/domain/Service"
-import { Context, Effect, Layer } from "effect"
+import { Effect, Layer, ServiceMap } from "effect"
 import { DeploymentsRepository } from "../Repositories/DeploymentsRepository.js"
 import { EnvironmentsRepository } from "../Repositories/EnvironmentsRepository.js"
 import { ProjectsRepository } from "../Repositories/ProjectsRepository.js"
@@ -37,20 +37,17 @@ export interface EnvironmentComparison {
  * Comparison Service
  * Handles comparing deployment state between environments
  */
-export class ComparisonService extends Context.Tag("ComparisonService")<
-  ComparisonService,
-  {
-    /**
-     * Compare two environments and show version differences
-     * Generates GitHub compare URLs when repository URLs are available
-     */
-    readonly compareEnvironments: (
-      projectId: string,
-      environment1Id: string,
-      environment2Id: string
-    ) => Effect.Effect<EnvironmentComparison, ProjectNotFound | EnvironmentNotFound | DatabaseError>
-  }
->() {}
+export class ComparisonService extends ServiceMap.Service<ComparisonService, {
+  /**
+   * Compare two environments and show version differences
+   * Generates GitHub compare URLs when repository URLs are available
+   */
+  readonly compareEnvironments: (
+    projectId: string,
+    environment1Id: string,
+    environment2Id: string
+  ) => Effect.Effect<EnvironmentComparison, ProjectNotFound | EnvironmentNotFound | DatabaseError>
+}>()("ComparisonService") {}
 
 /**
  * Generate GitHub compare URL

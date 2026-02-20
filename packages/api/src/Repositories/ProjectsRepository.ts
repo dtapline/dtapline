@@ -3,7 +3,7 @@ import { DatabaseError, ProjectAlreadyExists, ProjectNotFound } from "@dtapline/
 import type { CreateProjectInput, Project, UpdateProjectInput } from "@dtapline/domain/Project"
 import { ProjectId } from "@dtapline/domain/Project"
 import type { UserId } from "@dtapline/domain/User"
-import { Context, Effect, Layer, Schema } from "effect"
+import { Effect, Layer, Schema, ServiceMap } from "effect"
 import type { ObjectId } from "mongodb"
 import { MongoClientTag, MongoDatabase } from "../MongoDB.js"
 import { toObjectId } from "../ObjectIdSchema.js"
@@ -26,37 +26,34 @@ interface ProjectDocument {
 /**
  * Projects Repository interface
  */
-export class ProjectsRepository extends Context.Tag("ProjectsRepository")<
-  ProjectsRepository,
-  {
-    readonly create: (
-      userId: string,
-      input: typeof CreateProjectInput.Type
-    ) => Effect.Effect<Project, ProjectAlreadyExists | DatabaseError>
+export class ProjectsRepository extends ServiceMap.Service<ProjectsRepository, {
+  readonly create: (
+    userId: string,
+    input: typeof CreateProjectInput.Type
+  ) => Effect.Effect<Project, ProjectAlreadyExists | DatabaseError>
 
-    readonly findById: (
-      projectId: string
-    ) => Effect.Effect<Project, ProjectNotFound | DatabaseError>
+  readonly findById: (
+    projectId: string
+  ) => Effect.Effect<Project, ProjectNotFound | DatabaseError>
 
-    readonly findByUserId: (
-      userId: string
-    ) => Effect.Effect<ReadonlyArray<Project>, DatabaseError>
+  readonly findByUserId: (
+    userId: string
+  ) => Effect.Effect<ReadonlyArray<Project>, DatabaseError>
 
-    readonly update: (
-      projectId: string,
-      input: typeof UpdateProjectInput.Type
-    ) => Effect.Effect<Project, ProjectNotFound | DatabaseError>
+  readonly update: (
+    projectId: string,
+    input: typeof UpdateProjectInput.Type
+  ) => Effect.Effect<Project, ProjectNotFound | DatabaseError>
 
-    readonly delete: (
-      projectId: string
-    ) => Effect.Effect<void, ProjectNotFound | DatabaseError>
+  readonly delete: (
+    projectId: string
+  ) => Effect.Effect<void, ProjectNotFound | DatabaseError>
 
-    readonly exists: (
-      userId: string,
-      name: string
-    ) => Effect.Effect<boolean, DatabaseError>
-  }
->() {}
+  readonly exists: (
+    userId: string,
+    name: string
+  ) => Effect.Effect<boolean, DatabaseError>
+}>()("ProjectsRepository") {}
 
 /**
  * Helper to convert MongoDB document to Project
