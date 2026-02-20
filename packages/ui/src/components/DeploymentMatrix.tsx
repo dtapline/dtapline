@@ -1,10 +1,10 @@
 import type { Deployment } from "@dtapline/domain/Deployment"
 import type { Environment } from "@dtapline/domain/Environment"
 import type { Service } from "@dtapline/domain/Service"
-import { Link } from "@tanstack/react-router"
-import { formatDistance } from "date-fns"
-import { cn } from "../lib/utils"
-import { DeploymentStatusIcon } from "./DeploymentStatusIcon"
+import { DeploymentCell } from "./DeploymentCell"
+import { EnvironmentHeaderCell } from "./EnvironmentHeaderCell"
+import { MobileServiceCard } from "./MobileServiceCard"
+import { ServiceRowHeaderCell } from "./ServiceRowHeaderCell"
 
 interface DeploymentMatrixProps {
   projectId: string
@@ -44,156 +44,64 @@ export function DeploymentMatrix({
   }
 
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full border-collapse">
-        <thead>
-          <tr>
-            <th className="sticky left-0 z-10 min-w-[200px] border bg-background p-3 text-left font-medium">
-              Service / Environment
-            </th>
-            {environments.map((env) => (
-              <th
-                key={env.id}
-                className="min-w-[150px] border bg-muted/50 p-3 text-left font-medium"
-              >
-                <div className="flex flex-col gap-1">
-                  <span>{env.name}</span>
-                  {env.color && (
-                    <span className="flex items-center gap-1 text-xs font-normal text-muted-foreground">
-                      <span
-                        className="inline-block h-2 w-2 rounded-full"
-                        style={{ backgroundColor: env.color }}
-                      />
-                      {env.slug}
-                    </span>
-                  )}
-                </div>
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {services.map((service) => (
-            <tr key={service.id}>
-              <td className="sticky left-0 z-10 border bg-background p-3 font-medium">
-                <div className="flex items-center gap-2">
-                  {service.iconUrl && (
-                    <img
-                      src={service.iconUrl}
-                      alt={`${service.name} icon`}
-                      className="h-5 w-5"
-                      onError={(e) => {
-                        e.currentTarget.style.display = "none"
-                      }}
-                    />
-                  )}
-                  <div className="flex flex-col gap-1">
-                    <span>{service.name}</span>
-                    {service.repositoryUrl && (
-                      <a
-                        href={service.repositoryUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-xs font-normal text-muted-foreground hover:underline"
-                      >
-                        {service.slug}
-                      </a>
-                    )}
-                  </div>
-                </div>
-              </td>
-              {environments.map((env) => {
-                const deployment = deployments[env.id]?.[service.id]
-                return (
-                  <td key={env.id} className="border p-0">
-                    {deployment ?
-                      <DeploymentCell projectId={projectId} deployment={deployment} /> :
-                      (
-                        <div className="p-4">
-                          <span className="text-xs text-muted-foreground">Not deployed</span>
-                        </div>
-                      )}
-                  </td>
-                )
-              })}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  )
-}
+    <>
+      {/* Mobile/Small screens: Card layout */}
+      <div className="block sm:hidden space-y-4">
+        {services.map((service) => {
+          // Transform deployments for this service: envId -> deployment
+          const serviceDeployments: Record<string, Deployment | null> = {}
+          environments.forEach((env) => {
+            serviceDeployments[env.id] = deployments[env.id]?.[service.id] ?? null
+          })
 
-function DeploymentCell({ deployment, projectId }: { projectId: string; deployment: Deployment }) {
-  const deployedAt = new Date(deployment.deployedAt)
-  const { iconBg, iconColor } = getStatusIconStyle(deployment.status)
-  const relativeTime = formatDistance(deployedAt, new Date(), { addSuffix: true })
-  const exactDateTime = deployedAt.toLocaleString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-    hour12: true
-  })
-
-  return (
-    <Link
-      to="/project/$projectId/deployments/$deploymentId"
-      params={{ projectId, deploymentId: deployment.id }}
-      className="group flex w-full items-start gap-3 p-4 text-left transition-colors duration-150 hover:bg-muted/50"
-    >
-      {/* Large status icon box - Octopus Deploy style */}
-      <div
-        className={cn(
-          "flex h-12 w-12 shrink-0 items-center justify-center rounded transition-all duration-150",
-          iconBg,
-          "group-hover:ring-2 group-hover:ring-primary group-hover:ring-offset-2"
-        )}
-      >
-        <DeploymentStatusIcon status={deployment.status} className={cn("h-6 w-6", iconColor)} />
+          return (
+            <MobileServiceCard
+              key={service.id}
+              projectId={projectId}
+              service={service}
+              environments={environments}
+              deployments={serviceDeployments}
+            />
+          )
+        })}
       </div>
 
-      {/* Version and timestamp */}
-      <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-        <span className="font-mono text-base font-semibold">{deployment.version}</span>
-        <span
-          className="text-sm text-muted-foreground"
-          title={exactDateTime}
-        >
-          {relativeTime}
-        </span>
+      {/* Tablet/Desktop: Full table */}
+      <div className="hidden sm:block">
+        <div className="overflow-x-auto">
+          <table className="w-full border-collapse">
+            <thead>
+              <tr>
+                <th className="sticky left-0 z-10 min-w-[200px] border bg-background p-3 text-left font-medium">
+                  Service / Environment
+                </th>
+                {environments.map((env) => <EnvironmentHeaderCell key={env.id} environment={env} />)}
+              </tr>
+            </thead>
+            <tbody>
+              {services.map((service) => (
+                <tr key={service.id}>
+                  <ServiceRowHeaderCell service={service} />
+                  {environments.map((env) => {
+                    const deployment = deployments[env.id]?.[service.id]
+                    return (
+                      <td key={env.id} className="border p-0">
+                        {deployment ?
+                          <DeploymentCell projectId={projectId} deployment={deployment} /> :
+                          (
+                            <div className="p-4">
+                              <span className="text-xs text-muted-foreground">Not deployed</span>
+                            </div>
+                          )}
+                      </td>
+                    )
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
-    </Link>
+    </>
   )
-}
-
-function getStatusIconStyle(status: string): { iconBg: string; iconColor: string } {
-  switch (status) {
-    case "success":
-      return {
-        iconBg: "bg-green-500 dark:bg-green-600",
-        iconColor: "text-white"
-      }
-    case "failed":
-      return {
-        iconBg: "bg-red-500 dark:bg-red-600",
-        iconColor: "text-white"
-      }
-    case "in_progress":
-      return {
-        iconBg: "bg-amber-500 dark:bg-amber-600",
-        iconColor: "text-white"
-      }
-    case "rolled_back":
-      return {
-        iconBg: "bg-gray-500 dark:bg-gray-600",
-        iconColor: "text-white"
-      }
-    default:
-      return {
-        iconBg: "bg-muted",
-        iconColor: "text-muted-foreground"
-      }
-  }
 }

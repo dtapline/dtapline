@@ -29,56 +29,99 @@ export function DeploymentStatusHistory({ statusHistory }: DeploymentStatusHisto
   )
 
   return (
-    <div className="rounded-lg border">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="w-[200px]">When</TableHead>
-            <TableHead className="w-[150px]">Status</TableHead>
-            <TableHead>Build</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {sortedHistory.map((entry, index) => {
-            const timestamp = new Date(entry.timestamp)
-            const relativeTime = formatDistanceToNow(timestamp, { addSuffix: true })
-            const absoluteTime = timestamp.toLocaleString()
+    <>
+      {/* Mobile: Card layout */}
+      <div className="block sm:hidden space-y-3">
+        {sortedHistory.map((entry, index) => {
+          const timestamp = new Date(entry.timestamp)
+          const relativeTime = formatDistanceToNow(timestamp, { addSuffix: true })
+          const absoluteTime = timestamp.toLocaleString()
 
-            return (
-              <TableRow key={`${entry.timestamp}-${index}`}>
-                <TableCell>
-                  <div className="flex flex-col">
-                    <span className="text-sm font-medium">{relativeTime}</span>
-                    <span className="text-xs text-muted-foreground">{absoluteTime}</span>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <Badge className={getStatusBadgeColor(entry.status)}>
-                    {getStatusLabel(entry.status)}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  {entry.cicdBuildUrl ?
-                    (
-                      <a
-                        href={entry.cicdBuildUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
-                      >
-                        {entry.cicdBuildId || "View Build"}
-                        <ExternalLink className="h-3 w-3" />
-                      </a>
-                    ) :
-                    entry.cicdBuildId ?
-                    <span className="text-sm text-muted-foreground">{entry.cicdBuildId}</span> :
-                    <span className="text-sm text-muted-foreground">N/A</span>}
-                </TableCell>
+          return (
+            <div key={`${entry.timestamp}-${index}`} className="rounded-lg border p-3">
+              <div className="mb-2 flex items-start justify-between gap-2">
+                <div className="flex flex-col">
+                  <span className="text-sm font-medium">{relativeTime}</span>
+                  <span className="text-xs text-muted-foreground">{absoluteTime}</span>
+                </div>
+                <Badge className={getStatusBadgeColor(entry.status)}>
+                  {getStatusLabel(entry.status)}
+                </Badge>
+              </div>
+              {entry.cicdBuildUrl ?
+                (
+                  <a
+                    href={entry.cicdBuildUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
+                  >
+                    {entry.cicdBuildId || "View Build"}
+                    <ExternalLink className="h-3 w-3" />
+                  </a>
+                ) :
+                entry.cicdBuildId ?
+                <span className="text-sm text-muted-foreground">{entry.cicdBuildId}</span> :
+                <span className="text-sm text-muted-foreground">N/A</span>}
+            </div>
+          )
+        })}
+      </div>
+
+      {/* Tablet/Desktop: Table layout */}
+      <div className="hidden sm:block">
+        <div className="rounded-lg border">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-[200px]">When</TableHead>
+                <TableHead className="w-[150px]">Status</TableHead>
+                <TableHead>Build</TableHead>
               </TableRow>
-            )
-          })}
-        </TableBody>
-      </Table>
-    </div>
+            </TableHeader>
+            <TableBody>
+              {sortedHistory.map((entry, index) => {
+                const timestamp = new Date(entry.timestamp)
+                const relativeTime = formatDistanceToNow(timestamp, { addSuffix: true })
+                const absoluteTime = timestamp.toLocaleString()
+
+                return (
+                  <TableRow key={`${entry.timestamp}-${index}`}>
+                    <TableCell>
+                      <div className="flex flex-col">
+                        <span className="text-sm font-medium">{relativeTime}</span>
+                        <span className="text-xs text-muted-foreground">{absoluteTime}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge className={getStatusBadgeColor(entry.status)}>
+                        {getStatusLabel(entry.status)}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      {entry.cicdBuildUrl ?
+                        (
+                          <a
+                            href={entry.cicdBuildUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
+                          >
+                            {entry.cicdBuildId || "View Build"}
+                            <ExternalLink className="h-3 w-3" />
+                          </a>
+                        ) :
+                        entry.cicdBuildId ?
+                        <span className="text-sm text-muted-foreground">{entry.cicdBuildId}</span> :
+                        <span className="text-sm text-muted-foreground">N/A</span>}
+                    </TableCell>
+                  </TableRow>
+                )
+              })}
+            </TableBody>
+          </Table>
+        </div>
+      </div>
+    </>
   )
 }

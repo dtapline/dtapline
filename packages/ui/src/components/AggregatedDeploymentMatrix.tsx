@@ -3,12 +3,13 @@ import type { Environment } from "@dtapline/domain/Environment"
 import type { Project } from "@dtapline/domain/Project"
 import type { Service } from "@dtapline/domain/Service"
 import { Link } from "@tanstack/react-router"
-import { formatDistance } from "date-fns"
 import { Settings } from "lucide-react"
 import { useState } from "react"
 import { cn } from "../lib/utils"
-import { DeploymentStatusIcon } from "./DeploymentStatusIcon"
+import { DeploymentCell } from "./DeploymentCell"
 import { ProjectDialog } from "./dialogs/ProjectDialog"
+import { EnvironmentHeaderCell } from "./EnvironmentHeaderCell"
+import { MobileProjectSection } from "./MobileProjectSection"
 import { Button } from "./ui/button"
 
 interface ProjectMatrixData {
@@ -64,45 +65,48 @@ export function AggregatedDeploymentMatrix({
   }
 
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full border-collapse">
-        <thead>
-          <tr>
-            <th className="sticky left-0 z-10 min-w-[200px] border bg-background p-3 text-left font-medium">
-              Project / Service
-            </th>
-            {allEnvironments.map((env) => (
-              <th
-                key={env.id}
-                className="min-w-[150px] border bg-muted/50 p-3 text-left font-medium"
-              >
-                <div className="flex flex-col gap-1">
-                  <span>{env.name}</span>
-                  {env.color && (
-                    <span className="flex items-center gap-1 text-xs font-normal text-muted-foreground">
-                      <span
-                        className="inline-block h-2 w-2 rounded-full"
-                        style={{ backgroundColor: env.color }}
-                      />
-                      {env.slug}
-                    </span>
-                  )}
-                </div>
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {projectMatrices.map((projectMatrix) => (
-            <ProjectSection
-              key={projectMatrix.projectId}
-              projectMatrix={projectMatrix}
-              allEnvironments={allEnvironments}
-            />
-          ))}
-        </tbody>
-      </table>
-    </div>
+    <>
+      {/* Mobile/Small screens: Card layout */}
+      <div className="block sm:hidden space-y-6">
+        {projectMatrices.map((projectMatrix) => (
+          <MobileProjectSection
+            key={projectMatrix.projectId}
+            projectId={projectMatrix.projectId}
+            projectName={projectMatrix.projectName}
+            project={projectMatrix.project}
+            services={projectMatrix.services}
+            allEnvironments={allEnvironments}
+            enabledEnvironments={projectMatrix.environments}
+            deployments={projectMatrix.deployments}
+          />
+        ))}
+      </div>
+
+      {/* Tablet/Desktop: Full table */}
+      <div className="hidden sm:block">
+        <div className="overflow-x-auto">
+          <table className="w-full border-collapse">
+            <thead>
+              <tr>
+                <th className="sticky left-0 z-10 min-w-[200px] border bg-background p-3 text-left font-medium">
+                  Project / Service
+                </th>
+                {allEnvironments.map((env) => <EnvironmentHeaderCell key={env.id} environment={env} />)}
+              </tr>
+            </thead>
+            <tbody>
+              {projectMatrices.map((projectMatrix) => (
+                <ProjectSection
+                  key={projectMatrix.projectId}
+                  projectMatrix={projectMatrix}
+                  allEnvironments={allEnvironments}
+                />
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </>
   )
 }
 
@@ -135,15 +139,17 @@ function ProjectSection({ allEnvironments, projectMatrix }: ProjectSectionProps)
     <>
       {/* Project header row */}
       <tr className="bg-muted/30">
-        <td colSpan={allEnvironments.length + 1} className="border p-3">
-          <div className="flex items-center justify-between">
-            <Link
-              to="/project/$projectId"
-              params={{ projectId: projectMatrix.projectId }}
-              className="font-semibold hover:underline hover:text-primary"
-            >
-              {projectName}
-            </Link>
+        <td className="sticky left-0 z-10 border bg-muted/30 p-3">
+          <Link
+            to="/project/$projectId"
+            params={{ projectId: projectMatrix.projectId }}
+            className="font-semibold hover:underline hover:text-primary"
+          >
+            {projectName}
+          </Link>
+        </td>
+        <td colSpan={allEnvironments.length} className="border bg-muted/30 p-3">
+          <div className="flex items-center justify-end">
             {project && (
               <Button
                 variant="ghost"
@@ -176,17 +182,19 @@ function ProjectSection({ allEnvironments, projectMatrix }: ProjectSectionProps)
                   }}
                 />
               )}
-              <span>{service.name}</span>
-              {service.repositoryUrl && (
-                <a
-                  href={service.repositoryUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="ml-1 text-xs text-muted-foreground hover:text-foreground"
-                >
-                  {service.slug}
-                </a>
-              )}
+              <div className="flex flex-col gap-1">
+                <span>{service.name}</span>
+                {service.repositoryUrl && (
+                  <a
+                    href={service.repositoryUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs font-normal text-muted-foreground hover:underline"
+                  >
+                    {service.slug}
+                  </a>
+                )}
+              </div>
             </div>
           </td>
           {allEnvironments.map((env) => {
@@ -224,78 +232,4 @@ function ProjectSection({ allEnvironments, projectMatrix }: ProjectSectionProps)
       )}
     </>
   )
-}
-
-function DeploymentCell({ deployment, projectId }: { projectId: string; deployment: Deployment }) {
-  const deployedAt = new Date(deployment.deployedAt)
-  const { iconBg, iconColor } = getStatusIconStyle(deployment.status)
-  const relativeTime = formatDistance(deployedAt, new Date(), { addSuffix: true })
-  const exactDateTime = deployedAt.toLocaleString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-    hour12: true
-  })
-
-  return (
-    <Link
-      to="/project/$projectId/deployments/$deploymentId"
-      params={{ projectId, deploymentId: deployment.id }}
-      className="group flex w-full items-start gap-3 p-4 text-left transition-colors duration-150 hover:bg-muted/50"
-    >
-      {/* Large status icon box - Octopus Deploy style */}
-      <div
-        className={cn(
-          "flex h-12 w-12 shrink-0 items-center justify-center rounded transition-all duration-150",
-          iconBg,
-          "group-hover:ring-2 group-hover:ring-primary group-hover:ring-offset-2"
-        )}
-      >
-        <DeploymentStatusIcon status={deployment.status} className={cn("h-6 w-6", iconColor)} />
-      </div>
-
-      {/* Version and timestamp */}
-      <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-        <span className="font-mono text-base font-semibold">{deployment.version}</span>
-        <span
-          className="text-sm text-muted-foreground"
-          title={exactDateTime}
-        >
-          {relativeTime}
-        </span>
-      </div>
-    </Link>
-  )
-}
-
-function getStatusIconStyle(status: string): { iconBg: string; iconColor: string } {
-  switch (status) {
-    case "success":
-      return {
-        iconBg: "bg-green-500 dark:bg-green-600",
-        iconColor: "text-white"
-      }
-    case "failed":
-      return {
-        iconBg: "bg-red-500 dark:bg-red-600",
-        iconColor: "text-white"
-      }
-    case "in_progress":
-      return {
-        iconBg: "bg-amber-500 dark:bg-amber-600",
-        iconColor: "text-white"
-      }
-    case "rolled_back":
-      return {
-        iconBg: "bg-gray-500 dark:bg-gray-600",
-        iconColor: "text-white"
-      }
-    default:
-      return {
-        iconBg: "bg-muted",
-        iconColor: "text-muted-foreground"
-      }
-  }
 }
