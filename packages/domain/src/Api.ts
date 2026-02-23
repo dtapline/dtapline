@@ -1,4 +1,4 @@
-import { Schema } from "effect"
+import * as Schema from "effect/Schema"
 import { HttpApi, HttpApiEndpoint, HttpApiGroup, HttpApiMiddleware, HttpApiSchema } from "effect/unstable/httpapi"
 import { Forbidden } from "effect/unstable/httpapi/HttpApiError"
 import { ApiKeyResponse, CreateApiKeyInput } from "./ApiKey.js"

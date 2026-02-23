@@ -1,6 +1,6 @@
 import { DtaplineApi } from "@dtapline/domain/Api"
 import { testPattern } from "@dtapline/domain/Utils/VersionExtractor"
-import { Effect } from "effect"
+import * as Effect from "effect/Effect"
 import { HttpApiBuilder } from "effect/unstable/httpapi"
 import { VersionPatternsRepository } from "../Repositories/VersionPatternsRepository.js"
 

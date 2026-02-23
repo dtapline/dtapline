@@ -1,4 +1,4 @@
-import { Schema } from "effect"
+import * as Schema from "effect/Schema"
 
 // Branded type for User ID
 export const UserId = Schema.String.pipe(Schema.brand("UserId"))

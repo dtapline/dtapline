@@ -1,4 +1,5 @@
-import { Schema, SchemaGetter } from "effect"
+import * as Schema from "effect/Schema"
+import * as SchemaGetter from "effect/SchemaGetter"
 import { EnvironmentId } from "./Environment.js"
 import { UserId } from "./User.js"
 

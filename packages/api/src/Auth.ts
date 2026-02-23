@@ -1,7 +1,9 @@
 import type { BetterAuthOptions } from "better-auth"
 import { betterAuth } from "better-auth"
 import { mongodbAdapter } from "better-auth/adapters/mongodb"
-import { Effect, Layer, ServiceMap as Context } from "effect"
+import * as Effect from "effect/Effect"
+import * as Layer from "effect/Layer"
+import * as Context from "effect/ServiceMap"
 import { ServerConfigService } from "./Config.js"
 import { MongoClientTag, MongoDatabase } from "./MongoDB.js"
 

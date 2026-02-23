@@ -4,7 +4,7 @@
  */
 
 import { NodeServices } from "@effect/platform-node"
-import { Effect } from "effect"
+import * as Effect from "effect/Effect"
 import { ChildProcess } from "effect/unstable/process"
 
 export interface CICDInfo {

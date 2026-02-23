@@ -1,6 +1,6 @@
 import { DtaplineApi } from "@dtapline/domain/Api"
 import { InvalidApiKey, UnauthorizedApiKey } from "@dtapline/domain/Errors"
-import { Effect } from "effect"
+import * as Effect from "effect/Effect"
 import { HttpApiBuilder } from "effect/unstable/httpapi"
 import { ApiKeysRepository } from "../Repositories/ApiKeysRepository.js"
 import { BroadcastService } from "../Services/BroadcastService.js"

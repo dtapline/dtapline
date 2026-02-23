@@ -1,6 +1,7 @@
 import { NodeHttpServer, NodeRuntime } from "@effect/platform-node"
 import { config } from "dotenv"
-import { Effect, Layer } from "effect"
+import * as Effect from "effect/Effect"
+import * as Layer from "effect/Layer"
 import { HttpRouter } from "effect/unstable/http"
 import { createServer } from "node:http"
 import { AppLive } from "./Layers.js"

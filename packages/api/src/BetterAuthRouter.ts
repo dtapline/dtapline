@@ -1,4 +1,4 @@
-import { Effect } from "effect"
+import * as Effect from "effect/Effect"
 import type { HttpServerRequest } from "effect/unstable/http"
 import { HttpRouter, HttpServerResponse } from "effect/unstable/http"
 import { BetterAuthInstance } from "./Auth.js"

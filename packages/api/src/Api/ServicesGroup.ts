@@ -1,7 +1,7 @@
 import { DtaplineApi } from "@dtapline/domain/Api"
 import { PlanLimitExceeded } from "@dtapline/domain/Errors"
 import { RoleLimits } from "@dtapline/domain/User"
-import { Effect } from "effect"
+import * as Effect from "effect/Effect"
 import { HttpApiBuilder } from "effect/unstable/httpapi"
 import { ProjectsRepository } from "../Repositories/ProjectsRepository.js"
 import { ServicesRepository } from "../Repositories/ServicesRepository.js"

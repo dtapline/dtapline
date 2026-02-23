@@ -1,7 +1,7 @@
 import { DtaplineApi } from "@dtapline/domain/Api"
 import { DeploymentNotFound, PlanLimitExceeded } from "@dtapline/domain/Errors"
 import { RoleLimits } from "@dtapline/domain/User"
-import { Effect } from "effect"
+import * as Effect from "effect/Effect"
 import { HttpApiBuilder } from "effect/unstable/httpapi"
 import { DeploymentsRepository } from "../Repositories/DeploymentsRepository.js"
 import { EnvironmentsRepository } from "../Repositories/EnvironmentsRepository.js"

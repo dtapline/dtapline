@@ -1,4 +1,4 @@
-import { Schema } from "effect"
+import * as Schema from "effect/Schema"
 
 // Base error for all dtapline errors
 export class DtaplineError extends Schema.TaggedErrorClass<DtaplineError>()(

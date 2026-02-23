@@ -1,4 +1,7 @@
-import { Config, Effect, Layer, ServiceMap } from "effect"
+import * as Config from "effect/Config"
+import * as Effect from "effect/Effect"
+import * as Layer from "effect/Layer"
+import * as ServiceMap from "effect/ServiceMap"
 
 /**
  * Server configuration interface

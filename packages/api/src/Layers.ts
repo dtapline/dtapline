@@ -1,4 +1,5 @@
-import { Config, Layer } from "effect"
+import * as Config from "effect/Config"
+import * as Layer from "effect/Layer"
 import { DtaplineApiLive } from "./Api/DtaplineApiLive.js"
 import { BetterAuthLive } from "./Auth.js"
 import { ServerConfigLive } from "./Config.js"

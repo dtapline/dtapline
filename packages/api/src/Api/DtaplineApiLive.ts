@@ -1,5 +1,5 @@
 import { DtaplineApi } from "@dtapline/domain/Api"
-import { Layer } from "effect"
+import * as Layer from "effect/Layer"
 import { HttpApiBuilder } from "effect/unstable/httpapi"
 import { ApiKeysGroupLive } from "./ApiKeysGroup.js"
 import { AuthGroupLive } from "./AuthGroup.js"

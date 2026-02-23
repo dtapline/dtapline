@@ -1,7 +1,10 @@
 import { Forbidden, Unauthorized } from "@dtapline/domain/Errors"
 import type { User, UserRole } from "@dtapline/domain/User"
 import { UserId } from "@dtapline/domain/User"
-import { Effect, Layer, Schema, ServiceMap } from "effect"
+import * as Effect from "effect/Effect"
+import * as Layer from "effect/Layer"
+import * as Schema from "effect/Schema"
+import * as ServiceMap from "effect/ServiceMap"
 import type { HttpServerRequest } from "effect/unstable/http"
 import { BetterAuthInstance } from "../Auth.js"
 

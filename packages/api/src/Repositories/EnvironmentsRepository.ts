@@ -7,7 +7,10 @@ import {
   EnvironmentNotFound
 } from "@dtapline/domain/Errors"
 import type { UserId } from "@dtapline/domain/User"
-import { Effect, Layer, Schema, ServiceMap } from "effect"
+import * as Effect from "effect/Effect"
+import * as Layer from "effect/Layer"
+import * as Schema from "effect/Schema"
+import * as ServiceMap from "effect/ServiceMap"
 import type { ObjectId } from "mongodb"
 import { MongoDatabase } from "../MongoDB.js"
 import { toObjectId } from "../ObjectIdSchema.js"

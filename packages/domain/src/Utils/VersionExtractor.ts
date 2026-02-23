@@ -1,4 +1,4 @@
-import { Effect } from "effect"
+import * as Effect from "effect/Effect"
 
 /**
  * Extract version from git tag using regex pattern

@@ -1,5 +1,5 @@
 import { DtaplineApi } from "@dtapline/domain/Api"
-import { Effect } from "effect"
+import * as Effect from "effect/Effect"
 import { HttpApiBuilder } from "effect/unstable/httpapi"
 import { ApiKeysRepository } from "../Repositories/ApiKeysRepository.js"
 import { AuthService } from "../Services/AuthService.js"

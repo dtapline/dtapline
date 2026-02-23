@@ -1,5 +1,6 @@
 import { DemoUserMiddleware } from "@dtapline/domain/Api"
-import { Effect, Layer } from "effect"
+import * as Effect from "effect/Effect"
+import * as Layer from "effect/Layer"
 import { HttpServerRequest } from "effect/unstable/http"
 import { AuthorizationService } from "../Services/AuthorizationService.js"
 

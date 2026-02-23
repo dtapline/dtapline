@@ -1,5 +1,7 @@
 import { DatabaseError } from "@dtapline/domain/Errors"
-import { Effect, Layer, ServiceMap } from "effect"
+import * as Effect from "effect/Effect"
+import * as Layer from "effect/Layer"
+import * as ServiceMap from "effect/ServiceMap"
 import type { Db } from "mongodb"
 import { MongoClient } from "mongodb"
 import { ServerConfigService } from "./Config.js"
