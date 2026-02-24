@@ -23,15 +23,6 @@ import { websocketEventRouter } from "./router.js"
  */
 type DynamoDBStoreInstance = Effect.Effect.Success<ReturnType<typeof makeDynamoDBStore>>
 
-/**
- * WebSocket config read from environment
- */
-const WebsocketConfig = Config.all({
-  authSecret: Config.string("AUTH_SECRET"),
-  authUrl: Config.string("AUTH_URL").pipe(Config.withDefault("http://localhost:3000")),
-  mongodbUri: Config.string("MONGODB_URI")
-})
-
 export const handler = websocketEventRouter<DynamoDBStore, ConfigError>({
   CONNECT: (req, queryParams) =>
     Effect.gen(function*() {
@@ -41,13 +32,13 @@ export const handler = websocketEventRouter<DynamoDBStore, ConfigError>({
         return yield* Effect.die("No session token provided")
       }
 
-      const config = yield* WebsocketConfig
+      const authUrl = yield* Config.string("AUTH_URL").pipe(Config.withDefault("http://localhost:3000"))
 
       // Validate session token by calling Better Auth's getSession API
       // We make an HTTP request to the auth endpoint with the session token as a cookie
       const sessionResponse = yield* Effect.tryPromise({
         try: async () => {
-          const response = await fetch(`${config.authUrl}/api/auth/get-session`, {
+          const response = await fetch(`${authUrl}/api/auth/get-session`, {
             headers: {
               cookie: `better-auth.session_token=${token}`
             }
