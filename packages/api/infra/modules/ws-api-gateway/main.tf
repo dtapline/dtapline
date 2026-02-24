@@ -44,7 +44,7 @@ resource "aws_apigatewayv2_integration" "lambda" {
 
   integration_type       = "AWS_PROXY"
   integration_uri        = var.lambda_arn
-  payload_format_version = "2.0"
+  payload_format_version = "1.0"
 }
 
 # Catch-all route
