@@ -30,8 +30,18 @@ jobs:
       - name: Install dependencies
         uses: ./.github/actions/setup
 
+      - name: Report deployment in progress
+        working-directory: .
+        env:
+          DTAPLINE_API_KEY: ${{ secrets.DTAPLINE_API_KEY }}
+          DTAPLINE_SERVER_URL: ${{ vars.DTAPLINE_SERVER_URL }}
+        run: |
+          pnpm tsx packages/cli/src/index.ts deploy production api \
+            --status in_progress \
+            --deployed-version "${GITHUB_REF_NAME##*@}"
+
       - name: Bundle Lambda code
-        run: pnpm bundle:lambda
+        run: pnpm build
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
@@ -44,16 +54,6 @@ jobs:
         with:
           role-to-assume: ${{ vars.AWS_ASSUME_ROLE }}
           aws-region: ${{ vars.AWS_REGION }}
-
-      - name: Report deployment in progress
-        working-directory: .
-        env:
-          DTAPLINE_API_KEY: ${{ secrets.DTAPLINE_API_KEY }}
-          DTAPLINE_SERVER_URL: ${{ vars.DTAPLINE_SERVER_URL }}
-        run: |
-          pnpm tsx packages/cli/src/index.ts deploy production api \
-            --status in_progress \
-            --deployed-version "${GITHUB_REF_NAME##*@}"
 
       - name: Terraform Init
         working-directory: packages/api/infra

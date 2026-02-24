@@ -13,12 +13,7 @@
     "dev": "tsx src/server.ts",
     "check-mongo": "node scripts/check-mongo.mjs",
     "seed:demo": "tsx scripts/seed-demo-user.ts",
-    "build": "pnpm build-esm && pnpm build-annotate && pnpm build-cjs && build-utils pack-v2",
-    "build-esm": "tsc -b tsconfig.build.json",
-    "build-cjs": "babel build/esm --plugins @babel/transform-export-namespace-from --plugins @babel/transform-modules-commonjs --out-dir build/cjs --source-maps",
-    "build-annotate": "babel build/esm --plugins annotate-pure-calls --out-dir build/esm --source-maps",
-    "bundle:lambda": "esbuild src/lambda.ts --bundle --platform=node --target=node20 --outfile=dist/lambda/index.js --external:@aws-sdk/* --alias:mongodb=mongodb/src --main-fields=module,main --tree-shaking=true --minify --sourcemap",
-    "bundle:ws-lambda": "esbuild src/websocket-lambda.ts --bundle --platform=node --target=node20 --outfile=dist/ws-lambda/index.js --external:@aws-sdk/* --main-fields=module,main --tree-shaking=true --minify --sourcemap",
+    "build": "tsup",
     "check": "tsc -b tsconfig.json",
     "test": "vitest",
     "coverage": "vitest --coverage"
@@ -59,6 +54,6 @@
     "@types/aws-lambda": "^8.10.160",
     "@types/bcryptjs": "^3.0.0",
     "@types/ws": "^8.18.1",
-    "esbuild": "^0.25.2"
+    "tsup": "^8.3.5"
   }
 }
