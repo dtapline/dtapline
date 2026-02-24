@@ -63,3 +63,24 @@ variable "custom_domain_name" {
   type        = string
   default     = ""
 }
+
+# ============================================================================
+# MongoDB Atlas Configuration
+# ============================================================================
+
+variable "mongodb_atlas_project_id" {
+  description = "MongoDB Atlas Project ID (Atlas UI → Project Settings → Project ID)"
+  type        = string
+}
+
+variable "mongodb_atlas_public_key" {
+  description = "MongoDB Atlas API public key (create in Atlas UI → Access Manager → API Keys)"
+  type        = string
+  sensitive   = true
+}
+
+variable "mongodb_atlas_private_key" {
+  description = "MongoDB Atlas API private key"
+  type        = string
+  sensitive   = true
+}

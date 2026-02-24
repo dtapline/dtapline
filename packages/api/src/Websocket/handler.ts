@@ -7,14 +7,14 @@
  *
  * Authentication flow:
  * 1. Client connects with ?token=<session_token>
- * 2. Handler validates the session token against Better Auth
+ * 2. Handler queries MongoDB session collection directly for the token
  * 3. On success, stores connection in DynamoDB with userId
  * 4. On disconnect, removes connection from DynamoDB
  */
 import type { makeDynamoDBStore } from "@effect-aws/dynamodb"
 import { DynamoDBStore } from "@effect-aws/dynamodb"
-import { Config, Effect } from "effect"
-import type { ConfigError } from "effect/ConfigError"
+import { Effect } from "effect"
+import { MongoDatabase } from "../MongoDB.js"
 import { websocketEventRouter } from "./router.js"
 
 /**
@@ -23,7 +23,7 @@ import { websocketEventRouter } from "./router.js"
  */
 type DynamoDBStoreInstance = Effect.Effect.Success<ReturnType<typeof makeDynamoDBStore>>
 
-export const handler = websocketEventRouter<DynamoDBStore, ConfigError>({
+export const handler = websocketEventRouter<DynamoDBStore | MongoDatabase, never>({
   CONNECT: (req, queryParams) =>
     Effect.gen(function*() {
       const token = queryParams?.token
@@ -32,31 +32,32 @@ export const handler = websocketEventRouter<DynamoDBStore, ConfigError>({
         return yield* Effect.die("No session token provided")
       }
 
-      const authUrl = yield* Config.string("AUTH_URL").pipe(Config.withDefault("http://localhost:3000"))
+      // Query Better Auth's session collection directly using the token field.
+      // Better Auth stores sessions in MongoDB with the raw token value as `token`.
+      const db = yield* MongoDatabase
+      const sessionDoc = yield* Effect.tryPromise({
+        try: () => db.collection("session").findOne({ token }),
+        catch: (error) => new Error(`MongoDB session lookup failed: ${String(error)}`)
+      }).pipe(
+        Effect.tapError((error) => Effect.logError("MongoDB session lookup error", { error: String(error) })),
+        Effect.orDie
+      )
 
-      // Validate session token by calling Better Auth's getSession API
-      // We make an HTTP request to the auth endpoint with the session token as a cookie
-      const sessionResponse = yield* Effect.tryPromise({
-        try: async () => {
-          const response = await fetch(`${authUrl}/api/auth/get-session`, {
-            headers: {
-              cookie: `better-auth.session_token=${token}`
-            }
-          })
-          if (!response.ok) return null
-          return await response.json() as { session: { userId: string } | null; user: { id: string } | null }
-        },
-        catch: (error) => {
-          return new Error(`Session validation failed: ${error}`)
-        }
-      }).pipe(Effect.orDie)
-
-      if (!sessionResponse?.user?.id) {
-        yield* Effect.logError("Invalid session token")
+      if (!sessionDoc?.userId) {
+        yield* Effect.logError("Invalid session token — no matching session found", {
+          token: token.slice(0, 8) + "..."
+        })
         return yield* Effect.die("Invalid session token")
       }
 
-      const userId = sessionResponse.user.id
+      // Check session expiry
+      const expiresAt = sessionDoc.expiresAt instanceof Date ? sessionDoc.expiresAt : new Date(sessionDoc.expiresAt)
+      if (expiresAt < new Date()) {
+        yield* Effect.logError("Session token expired", { expiresAt: expiresAt.toISOString() })
+        return yield* Effect.die("Session expired")
+      }
+
+      const userId = String(sessionDoc.userId)
 
       const store = (yield* DynamoDBStore) as DynamoDBStoreInstance
       yield* store.put({

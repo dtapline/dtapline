@@ -8,15 +8,18 @@
  *
  * Environment variables required:
  * - WS_CONNECTIONS_TABLE: DynamoDB table name for storing connections
- * - AUTH_SECRET: Better Auth secret (for session validation)
- * - AUTH_URL: Better Auth base URL (for session validation)
  * - MONGODB_URI: MongoDB connection string (for session validation)
  */
 import { LambdaHandler } from "@effect-aws/lambda"
+import { Layer } from "effect"
+import { ServerConfigLive } from "./Config.js"
+import { MongoDBLive } from "./MongoDB.js"
 import { ConnectionsStoreLive } from "./Websocket/context.js"
 import { handler as wsHandler } from "./Websocket/handler.js"
 
+const MongoLive = MongoDBLive.pipe(Layer.provide(ServerConfigLive))
+
 export const handler = LambdaHandler.make({
   handler: wsHandler,
-  layer: ConnectionsStoreLive
+  layer: Layer.merge(ConnectionsStoreLive, MongoLive)
 })

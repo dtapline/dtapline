@@ -17,3 +17,8 @@ output "connections_table_arn" {
   description = "DynamoDB connections table ARN"
   value       = module.connections_table.dynamodb_table_arn
 }
+
+output "role_name" {
+  description = "WebSocket Lambda execution role name"
+  value       = aws_iam_role.lambda.name
+}

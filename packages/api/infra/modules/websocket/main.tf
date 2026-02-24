@@ -66,6 +66,21 @@ resource "aws_iam_role_policy_attachment" "lambda_logs" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
+# MongoDB Atlas IAM authentication policy
+resource "aws_iam_role_policy" "mongodb_atlas" {
+  name   = "mongodb-atlas-access"
+  role   = aws_iam_role.lambda.id
+  policy = data.aws_iam_policy_document.mongodb_atlas.json
+}
+
+data "aws_iam_policy_document" "mongodb_atlas" {
+  statement {
+    effect    = "Allow"
+    actions   = ["sts:GetCallerIdentity"]
+    resources = ["*"]
+  }
+}
+
 # DynamoDB access for connection management (put/delete)
 resource "aws_iam_role_policy" "lambda_dynamodb" {
   name   = "ws-connections-dynamodb"
