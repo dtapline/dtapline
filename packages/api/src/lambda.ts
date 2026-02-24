@@ -1,4 +1,4 @@
-import { LambdaHandler } from "@effect-aws/lambda"
+import * as LambdaHandler from "@effect-aws/lambda/LambdaHandler"
 import * as Layer from "effect/Layer"
 import { HttpMiddleware, HttpServer } from "effect/unstable/http"
 import { AppLive } from "./Layers.js"
