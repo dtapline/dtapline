@@ -4,7 +4,7 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "~> 5.0"
+      version = "~> 6.28"
     }
     archive = {
       source  = "hashicorp/archive"
@@ -42,12 +42,24 @@ provider "aws" {
 module "websocket" {
   source = "./modules/websocket"
 
-  service_name         = "dtapline-api-${var.stage}"
-  ws_lambda_source_dir = "${path.module}/../dist/ws-lambda"
+  service_name = "dtapline"
+  source_dir   = "${path.module}/../dist/ws-lambda"
+  stage        = var.stage
 
-  ws_lambda_env_vars = {
+  env_vars = {
     AUTH_URL = var.auth_url
   }
+}
+
+# ============================================================================
+# WebSocket API Gateway
+# ============================================================================
+
+module "ws_api_gateway" {
+  source = "./modules/ws-api-gateway"
+
+  api_name   = "dtapline-ws-api-${var.stage}"
+  lambda_arn = module.websocket.function_arn
 }
 
 # ============================================================================
@@ -75,7 +87,7 @@ module "lambda" {
     GITHUB_CLIENT_SECRET = var.github_client_secret
 
     # WebSocket broadcasting
-    WS_API_URL           = module.websocket.websocket_api_url
+    WS_API_URL           = module.ws_api_gateway.api_endpoint
     WS_CONNECTIONS_TABLE = module.websocket.connections_table_name
   }
 }
@@ -126,7 +138,7 @@ data "aws_iam_policy_document" "api_lambda_ws_manage" {
     actions = [
       "execute-api:ManageConnections"
     ]
-    resources = ["${module.websocket.websocket_api_execution_arn}/*"]
+    resources = ["${module.ws_api_gateway.execution_arn}/*"]
   }
 }
 

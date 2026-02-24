@@ -20,7 +20,7 @@ output "lambda_role_arn" {
 
 output "websocket_api_url" {
   description = "WebSocket API Gateway URL (wss://...)"
-  value       = module.websocket.websocket_api_url
+  value       = module.ws_api_gateway.api_endpoint
 }
 
 output "websocket_connections_table" {

@@ -13,18 +13,10 @@
  * - MONGODB_URI: MongoDB connection string (for session validation)
  */
 import { LambdaHandler } from "@effect-aws/lambda"
-import { Logger } from "@effect-aws/powertools-logger"
-import { Layer } from "effect"
 import { ConnectionsStoreLive } from "./Websocket/context.js"
 import { handler as wsHandler } from "./Websocket/handler.js"
 
-const PowerToolsLive = Logger.layer({ serviceName: "dtapline-ws" })
-
-const layer = ConnectionsStoreLive.pipe(
-  Layer.provideMerge(PowerToolsLive)
-)
-
 export const handler = LambdaHandler.make({
   handler: wsHandler,
-  layer
+  layer: ConnectionsStoreLive
 })

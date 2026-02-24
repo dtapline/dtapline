@@ -1,15 +1,20 @@
 variable "service_name" {
-  description = "Service name prefix for all resources (e.g., dtapline-api-dev)"
+  description = "Name of the service (used for naming resources)"
   type        = string
 }
 
-variable "ws_lambda_source_dir" {
-  description = "Path to the directory containing bundled WebSocket Lambda code"
+variable "source_dir" {
+  description = "Path to the directory containing bundled Lambda code"
   type        = string
 }
 
-variable "ws_lambda_env_vars" {
-  description = "Environment variables for the WebSocket handler Lambda"
+variable "stage" {
+  description = "Stage of the deployment (dev or prd)"
+  type        = string
+}
+
+variable "env_vars" {
+  description = "Environment variables for the Lambda function"
   type        = map(string)
   default     = {}
 }

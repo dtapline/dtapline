@@ -21,13 +21,3 @@ export const ConnectionsStoreLive = DynamoDBStore.layerConfig({
     DynamoDBServiceConfig.setDynamoDBServiceConfig({ logger: true })
   )
 )
-
-/**
- * DynamoDB connection store layer for the API Lambda (broadcasting)
- * Same config, but without verbose logging
- */
-export const ConnectionsStoreBroadcastLive = DynamoDBStore.layerConfig({
-  tableName: Config.string("WS_CONNECTIONS_TABLE")
-}).pipe(
-  Layer.provide(DynamoDBDocument.defaultLayer)
-)

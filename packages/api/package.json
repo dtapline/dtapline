@@ -32,7 +32,6 @@
     "@effect-aws/client-dynamodb": "^1.10.9",
     "@effect-aws/dynamodb": "^1.0.3",
     "@effect-aws/lambda": "^1.5.2",
-    "@effect-aws/powertools-logger": "^1.5.1",
     "@effect/platform": "^0.94.2",
     "@effect/platform-node": "^0.104.1",
     "aws4": "^1.13.2",

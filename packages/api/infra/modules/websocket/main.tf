@@ -1,3 +1,7 @@
+locals {
+  function_name = "${var.service_name}-ws-handler-${var.stage}"
+}
+
 # ============================================================================
 # WebSocket Infrastructure
 # DynamoDB connections table + WebSocket handler Lambda + API Gateway v2 WebSocket
@@ -7,36 +11,42 @@
 # DynamoDB Connections Table
 # ----------------------------------------------------------------------------
 
-resource "aws_dynamodb_table" "ws_connections" {
-  name         = "${var.service_name}-ws-connections"
-  billing_mode = "PAY_PER_REQUEST"
-  hash_key     = "connectionId"
+module "connections_table" {
+  source  = "terraform-aws-modules/dynamodb-table/aws"
+  version = "5.5.0"
 
-  attribute {
-    name = "connectionId"
-    type = "S"
+  name     = "${var.service_name}-ws-connections-${var.stage}"
+  hash_key = "connectionId"
+
+  billing_mode        = "PROVISIONED"
+  read_capacity       = 1
+  write_capacity      = 1
+  autoscaling_enabled = true
+
+  autoscaling_read = {
+    max_capacity = 10
   }
 
-  ttl {
-    attribute_name = "ttl"
-    enabled        = true
+  autoscaling_write = {
+    max_capacity = 10
   }
 
-  tags = {
-    Name = "${var.service_name}-ws-connections"
-  }
+  ttl_attribute_name = "ttl"
+  ttl_enabled        = true
+
+  attributes = [{ name = "connectionId", type = "S" }]
 }
 
 # ----------------------------------------------------------------------------
 # WebSocket Handler Lambda
 # ----------------------------------------------------------------------------
 
-resource "aws_iam_role" "ws_lambda" {
-  name               = "${var.service_name}-ws-lambda-role"
-  assume_role_policy = data.aws_iam_policy_document.ws_lambda_assume_role.json
+resource "aws_iam_role" "lambda" {
+  name               = "${var.service_name}-ws-lambda-role-${var.stage}"
+  assume_role_policy = data.aws_iam_policy_document.lambda_assume_role.json
 }
 
-data "aws_iam_policy_document" "ws_lambda_assume_role" {
+data "aws_iam_policy_document" "lambda_assume_role" {
   statement {
     sid    = "LambdaAssumeRole"
     effect = "Allow"
@@ -51,42 +61,46 @@ data "aws_iam_policy_document" "ws_lambda_assume_role" {
 }
 
 # CloudWatch Logs policy
-resource "aws_iam_role_policy_attachment" "ws_lambda_logs" {
-  role       = aws_iam_role.ws_lambda.name
+resource "aws_iam_role_policy_attachment" "lambda_logs" {
+  role       = aws_iam_role.lambda.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
 # DynamoDB access for connection management (put/delete)
-resource "aws_iam_role_policy" "ws_lambda_dynamodb" {
+resource "aws_iam_role_policy" "lambda_dynamodb" {
   name   = "ws-connections-dynamodb"
-  role   = aws_iam_role.ws_lambda.id
-  policy = data.aws_iam_policy_document.ws_lambda_dynamodb.json
+  role   = aws_iam_role.lambda.id
+  policy = data.aws_iam_policy_document.lambda_dynamodb.json
 }
 
-data "aws_iam_policy_document" "ws_lambda_dynamodb" {
+data "aws_iam_policy_document" "lambda_dynamodb" {
   statement {
     effect = "Allow"
     actions = [
       "dynamodb:PutItem",
       "dynamodb:DeleteItem"
     ]
-    resources = [aws_dynamodb_table.ws_connections.arn]
+    resources = [module.connections_table.dynamodb_table_arn]
   }
 }
 
 # Create deployment package from dist folder
-data "archive_file" "ws_lambda" {
+data "archive_file" "lambda" {
   type        = "zip"
-  source_dir  = var.ws_lambda_source_dir
-  output_path = "${path.root}/.terraform/.deployment/${var.service_name}-ws-handler.zip"
+  source_dir  = var.source_dir
+  output_path = "${path.root}/.terraform/.deployment/${local.function_name}.zip"
 }
 
-resource "aws_lambda_function" "ws_handler" {
-  function_name = "${var.service_name}-ws-handler"
-  role          = aws_iam_role.ws_lambda.arn
+locals {
+  wsConnectionsTable = element(split("/", module.connections_table.dynamodb_table_arn), 1)
+}
 
-  filename         = data.archive_file.ws_lambda.output_path
-  source_code_hash = data.archive_file.ws_lambda.output_base64sha256
+resource "aws_lambda_function" "websocket" {
+  function_name = local.function_name
+  role          = aws_iam_role.lambda.arn
+
+  filename         = data.archive_file.lambda.output_path
+  source_code_hash = data.archive_file.lambda.output_base64sha256
 
   handler = "index.handler"
   runtime = "nodejs20.x"
@@ -95,84 +109,13 @@ resource "aws_lambda_function" "ws_handler" {
   memory_size = 256
 
   environment {
-    variables = merge(var.ws_lambda_env_vars, {
-      WS_CONNECTIONS_TABLE = aws_dynamodb_table.ws_connections.name
+    variables = merge(var.env_vars, {
+      WS_CONNECTIONS_TABLE = local.wsConnectionsTable
     })
   }
 }
 
-resource "aws_cloudwatch_log_group" "ws_lambda" {
-  name              = "/aws/lambda/${var.service_name}-ws-handler"
+resource "aws_cloudwatch_log_group" "lambda" {
+  name              = "/aws/lambda/${local.function_name}"
   retention_in_days = 7
 }
-
-# ----------------------------------------------------------------------------
-# API Gateway v2 WebSocket API
-# ----------------------------------------------------------------------------
-
-resource "aws_apigatewayv2_api" "websocket" {
-  name                       = "${var.service_name}-ws"
-  protocol_type              = "WEBSOCKET"
-  route_selection_expression = "$request.body.action"
-}
-
-resource "aws_apigatewayv2_stage" "websocket" {
-  api_id      = aws_apigatewayv2_api.websocket.id
-  name        = "default"
-  auto_deploy = true
-
-  access_log_settings {
-    destination_arn = aws_cloudwatch_log_group.ws_api.arn
-    format = jsonencode({
-      requestId    = "$context.requestId"
-      ip           = "$context.identity.sourceIp"
-      routeKey     = "$context.routeKey"
-      status       = "$context.status"
-      connectionId = "$context.connectionId"
-      eventType    = "$context.eventType"
-    })
-  }
-}
-
-resource "aws_cloudwatch_log_group" "ws_api" {
-  name              = "/aws/apigateway/${var.service_name}-ws-access-logs"
-  retention_in_days = 7
-}
-
-# Lambda integration
-resource "aws_apigatewayv2_integration" "websocket" {
-  api_id = aws_apigatewayv2_api.websocket.id
-
-  integration_type = "AWS_PROXY"
-  integration_uri  = aws_lambda_function.ws_handler.invoke_arn
-}
-
-# Routes: $connect, $disconnect, $default
-resource "aws_apigatewayv2_route" "connect" {
-  api_id    = aws_apigatewayv2_api.websocket.id
-  route_key = "$connect"
-  target    = "integrations/${aws_apigatewayv2_integration.websocket.id}"
-}
-
-resource "aws_apigatewayv2_route" "disconnect" {
-  api_id    = aws_apigatewayv2_api.websocket.id
-  route_key = "$disconnect"
-  target    = "integrations/${aws_apigatewayv2_integration.websocket.id}"
-}
-
-resource "aws_apigatewayv2_route" "default" {
-  api_id    = aws_apigatewayv2_api.websocket.id
-  route_key = "$default"
-  target    = "integrations/${aws_apigatewayv2_integration.websocket.id}"
-}
-
-# Allow API Gateway to invoke the Lambda
-resource "aws_lambda_permission" "ws_api_gateway" {
-  statement_id  = "AllowWebSocketAPIGatewayInvoke"
-  action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.ws_handler.function_name
-  principal     = "apigateway.amazonaws.com"
-  source_arn    = "${aws_apigatewayv2_api.websocket.execution_arn}/*/*"
-}
-
-

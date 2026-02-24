@@ -1,19 +1,19 @@
-output "websocket_api_url" {
-  description = "WebSocket API Gateway URL (wss://...)"
-  value       = "${aws_apigatewayv2_api.websocket.api_endpoint}/default"
+output "function_name" {
+  description = "Lambda function name"
+  value       = aws_lambda_function.websocket.function_name
 }
 
-output "websocket_api_execution_arn" {
-  description = "WebSocket API Gateway execution ARN"
-  value       = aws_apigatewayv2_api.websocket.execution_arn
+output "function_arn" {
+  description = "Lambda function ARN"
+  value       = aws_lambda_function.websocket.arn
 }
 
 output "connections_table_name" {
   description = "DynamoDB connections table name"
-  value       = aws_dynamodb_table.ws_connections.name
+  value       = local.wsConnectionsTable
 }
 
 output "connections_table_arn" {
   description = "DynamoDB connections table ARN"
-  value       = aws_dynamodb_table.ws_connections.arn
+  value       = module.connections_table.dynamodb_table_arn
 }

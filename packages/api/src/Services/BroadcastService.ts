@@ -10,7 +10,7 @@ import { ApiGatewayManagementApiService } from "@effect-aws/client-api-gateway-m
 import type { makeDynamoDBStore } from "@effect-aws/dynamodb"
 import { DynamoDBStore } from "@effect-aws/dynamodb"
 import { Config, Context, Effect, Layer, Schema } from "effect"
-import { ConnectionsStoreBroadcastLive } from "../Websocket/context.js"
+import { ConnectionsStoreLive } from "../Websocket/context.js"
 import { ConnectionRecord, type WebsocketMessage } from "../Websocket/schemas.js"
 
 /**
@@ -107,7 +107,7 @@ export const AGMApiServiceLive = Effect.gen(function*() {
  */
 export const BroadcastLive = BroadcastServiceLive.pipe(
   Layer.provide(AGMApiServiceLive),
-  Layer.provide(ConnectionsStoreBroadcastLive)
+  Layer.provide(ConnectionsStoreLive)
 )
 
 /**
