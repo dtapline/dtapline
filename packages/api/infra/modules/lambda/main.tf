@@ -36,9 +36,12 @@ resource "aws_iam_role_policy" "mongodb_atlas" {
 }
 
 data "aws_iam_policy_document" "mongodb_atlas" {
+  # MongoDB Atlas requires these permissions for IAM authentication
   statement {
-    effect    = "Allow"
-    actions   = ["sts:GetCallerIdentity"]
+    effect = "Allow"
+    actions = [
+      "sts:GetCallerIdentity"
+    ]
     resources = ["*"]
   }
 }
