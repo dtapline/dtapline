@@ -3,11 +3,15 @@
  *
  * Manages WebSocket connection lifecycle tied to authentication state.
  * When the user is authenticated, connects to the WebSocket server.
- * When a deployment-created event is received, invalidates the relevant
- * React Query caches so the matrix and deployment lists update automatically.
+ * When a deployment-created event is received:
+ *   1. Immediately updates the matrix cache via setQueryData so the UI
+ *      reflects the new deployment without waiting for a network round-trip.
+ *   2. Invalidates related queries so they refetch fresh data in the background.
  */
+import type { Deployment } from "@dtapline/domain/Deployment"
 import { useQueryClient } from "@tanstack/react-query"
 import { useEffect, useRef } from "react"
+import type { DeploymentMatrix } from "../api/projects"
 import { useSession } from "../auth-client"
 import { type WebSocketMessage, wsClient } from "../websocket"
 import { projectKeys } from "./use-projects"
@@ -26,7 +30,7 @@ interface DeploymentCreatedPayload {
 
 /**
  * Hook that connects to WebSocket when authenticated and
- * automatically invalidates React Query caches on deployment events.
+ * automatically updates React Query caches on deployment events.
  *
  * Should be called once near the root of the component tree.
  */
@@ -60,31 +64,48 @@ export function useWebSocket(): void {
     }
   }, [session?.session?.token])
 
-  // Register message listener for cache invalidation
+  // Register message listener for cache updates
   useEffect(() => {
     const unsubscribe = wsClient.addListener((message: WebSocketMessage) => {
       if (message.action === "deployment-created") {
         const payload = message.message as DeploymentCreatedPayload
-        const { projectId } = payload
+        const { deployment, projectId } = payload
 
-        // Invalidate the deployment matrix for this project
-        queryClient.invalidateQueries({
-          queryKey: projectKeys.matrix(projectId)
-        })
+        // 1. Optimistically update the matrix cache immediately so the UI
+        //    reflects the new deployment without waiting for a network round-trip.
+        //    Cast to Deployment: DeploymentCell only uses id/version/status/deployedAt;
+        //    the background refetch will replace this with the full object.
+        const optimisticDeployment = {
+          id: deployment.id,
+          environmentId: deployment.environmentId,
+          serviceId: deployment.serviceId,
+          version: deployment.version,
+          status: deployment.status,
+          deployedAt: new Date(deployment.deployedAt)
+        } as unknown as Deployment
 
-        // Invalidate the deployments list for this project
-        queryClient.invalidateQueries({
-          queryKey: projectKeys.deployments(projectId)
-        })
-
-        // Also invalidate deployment history queries
-        queryClient.invalidateQueries({
-          queryKey: ["deployment-history", projectId]
-        })
-
-        console.log(
-          `[WS] Deployment created in project ${projectId}, caches invalidated`
+        queryClient.setQueryData<DeploymentMatrix>(
+          projectKeys.matrix(projectId),
+          (prev) => {
+            if (!prev) return prev
+            return {
+              ...prev,
+              deployments: {
+                ...prev.deployments,
+                [deployment.environmentId]: {
+                  ...prev.deployments[deployment.environmentId],
+                  [deployment.serviceId]: optimisticDeployment
+                }
+              }
+            }
+          }
         )
+
+        // 2. Invalidate to trigger a background refetch for full consistency
+        //    (the matrix endpoint returns richer data than the WS payload).
+        queryClient.invalidateQueries({ queryKey: projectKeys.matrix(projectId) })
+        queryClient.invalidateQueries({ queryKey: projectKeys.deployments(projectId) })
+        queryClient.invalidateQueries({ queryKey: ["deployment-history", projectId] })
       }
     })
 
