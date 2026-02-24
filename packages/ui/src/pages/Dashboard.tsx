@@ -3,7 +3,7 @@ import { ProjectDialog } from "@/components/dialogs/ProjectDialog"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { projectsApi } from "@/lib/api"
-import { useProjects } from "@/lib/hooks/use-projects"
+import { projectKeys, useProjects } from "@/lib/hooks/use-projects"
 import { useQueries } from "@tanstack/react-query"
 import { Plus } from "lucide-react"
 import { useState } from "react"
@@ -15,7 +15,7 @@ export default function Dashboard() {
   // Fetch matrices for all projects using useQueries
   const matrixQueries = useQueries({
     queries: projects?.map((project) => ({
-      queryKey: ["projects", project.id, "matrix"],
+      queryKey: projectKeys.matrix(project.id),
       queryFn: () => projectsApi.getMatrix(project.id)
     })) || []
   })
