@@ -1,5 +1,7 @@
 export * from "./api-keys"
 export * from "./client"
+export * from "./deployments"
 export * from "./environments"
 export * from "./projects"
 export * from "./services"
+export * from "./user"

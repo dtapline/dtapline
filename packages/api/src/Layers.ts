@@ -1,4 +1,4 @@
-import { Layer } from "effect"
+import { Config, Layer } from "effect"
 import { DtaplineApiLive } from "./Api/DtaplineApiLive.js"
 import { BetterAuthLive } from "./Auth.js"
 import { ServerConfigLive } from "./Config.js"
@@ -11,6 +11,7 @@ import { ServicesRepositoryLive } from "./Repositories/ServicesRepository.js"
 import { VersionPatternsRepositoryLive } from "./Repositories/VersionPatternsRepository.js"
 import { AuthorizationServiceLive } from "./Services/AuthorizationService.js"
 import { AuthServiceLive } from "./Services/AuthService.js"
+import { BroadcastLive, BroadcastServiceNoop } from "./Services/BroadcastService.js"
 import { ComparisonServiceLive } from "./Services/ComparisonService.js"
 import { DeploymentServiceLive } from "./Services/DeploymentService.js"
 import { MatrixServiceLive } from "./Services/MatrixService.js"
@@ -61,6 +62,19 @@ export const ServicesLive = Layer.mergeAll(
 ).pipe(Layer.provide(RepositoriesLive))
 
 /**
+ * Broadcast layer
+ * Uses the real AWS implementation when WS_API_URL and WS_CONNECTIONS_TABLE
+ * are configured, falls back to noop when not configured (local dev)
+ */
+const BroadcastLayerLive = Layer.unwrapEffect(
+  Config.string("WS_API_URL").pipe(
+    Config.zip(Config.string("WS_CONNECTIONS_TABLE")),
+    Config.map(() => BroadcastLive),
+    Config.withDefault(BroadcastServiceNoop)
+  )
+)
+
+/**
  * Complete application layer ready for HTTP server
  * Provides: Dtapline HTTP API with all dependencies satisfied
  * Requires: Nothing (all dependencies are provided internally)
@@ -72,6 +86,7 @@ export const ServicesLive = Layer.mergeAll(
  * the AuthGroup needs direct access to BetterAuthInstance to handle auth requests.
  */
 export const AppLive = DtaplineApiLive.pipe(
+  Layer.provide(BroadcastLayerLive), // Provide BroadcastService (real or noop)
   Layer.provide(DemoUserMiddlewareLive),
   Layer.provide(AuthorizationServiceLive), // Provide AuthorizationService for authorization
   Layer.provide(AuthServiceLive), // Provide AuthService for authenticated endpoints

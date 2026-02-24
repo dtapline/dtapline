@@ -2,6 +2,7 @@ import { AppSidebar } from "@/components/app-sidebar"
 import { SiteHeader } from "@/components/site-header"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 import { useSession } from "@/lib/auth-client"
+import { useWebSocket } from "@/lib/hooks/use-websocket"
 import { createRootRoute, Outlet, useLocation, useNavigate } from "@tanstack/react-router"
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools"
 import { useEffect } from "react"
@@ -10,6 +11,9 @@ function RootComponent() {
   const location = useLocation()
   const navigate = useNavigate()
   const { data: session, isPending } = useSession()
+
+  // Connect to WebSocket for real-time deployment updates
+  useWebSocket()
 
   // Public routes that don't require authentication
   const publicRoutes = ["/login", "/signup", "/demo"]

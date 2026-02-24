@@ -25,9 +25,6 @@ jobs:
       - name: Install dependencies
         uses: ./.github/actions/setup
 
-      - name: Build packages
-        run: pnpm build
-
       - name: Report deployment in progress
         env:
           DTAPLINE_API_KEY: ${{ secrets.DTAPLINE_API_KEY }}
@@ -36,6 +33,9 @@ jobs:
           pnpm tsx packages/cli/src/index.ts deploy production cli \
             --status in_progress \
             --deployed-version "${GITHUB_REF_NAME##*@}"
+
+      - name: Build packages
+        run: pnpm build
 
       - name: Publish to NPM
         working-directory: packages/cli

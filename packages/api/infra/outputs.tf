@@ -18,6 +18,16 @@ output "lambda_role_arn" {
   value       = module.lambda.role_arn
 }
 
+output "websocket_api_url" {
+  description = "WebSocket API Gateway URL (wss://...)"
+  value       = module.ws_api_gateway.api_endpoint
+}
+
+output "websocket_connections_table" {
+  description = "DynamoDB table name for WebSocket connections"
+  value       = module.websocket.connections_table_name
+}
+
 # ============================================================================
 # Custom Domain Outputs
 # ============================================================================
