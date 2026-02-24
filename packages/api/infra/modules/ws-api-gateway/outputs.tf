@@ -5,7 +5,7 @@ output "api_id" {
 
 output "api_endpoint" {
   description = "API Gateway endpoint URL"
-  value       = aws_apigatewayv2_api.api.api_endpoint
+  value       = "${aws_apigatewayv2_api.api.api_endpoint}/${aws_apigatewayv2_stage.default.name}"
 }
 
 output "execution_arn" {
