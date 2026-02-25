@@ -39,7 +39,14 @@ export const BetterAuthLive = Layer.effect(
       secret: config.authSecret,
       trustedOrigins: [...config.corsOrigins],
 
-      advanced: { crossSubDomainCookies: { enabled: true, domain: "development--dtapline.netlify.app" } },
+      advanced: {
+        // Set default cookie attributes to ensure secure cookies with SameSite=None for OAuth flows when using netlify.app subdomains.
+        // NOTE: This does not work in iOS Chrome browser due to a known issue with SameSite=None cookies, see https://github.com/better-auth/better-auth/issues/5892
+        defaultCookieAttributes: {
+          sameSite: "None",
+          secure: true
+        }
+      },
 
       account: {
         accountLinking: {
