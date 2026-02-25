@@ -1,0 +1,22 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="dtap-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#22D3EE"/>
+      <stop offset="33%" stop-color="#10B981"/>
+      <stop offset="66%" stop-color="#F59E0B"/>
+      <stop offset="100%" stop-color="#8B5CF6"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="80" fill="#09090B"/>
+  <text x="256" y="275" text-anchor="middle" font-size="82" font-weight="500" font-family="Inter, system-ui, -apple-system, BlinkMacSystemFont, sans-serif">
+    <tspan fill="#22D3EE">d</tspan>
+    <tspan fill="#67E8F9">.</tspan>
+    <tspan fill="#10B981">t</tspan>
+    <tspan fill="#6EE7B7">.</tspan>
+    <tspan fill="#F59E0B">a</tspan>
+    <tspan fill="#FCD34D">.</tspan>
+    <tspan fill="#8B5CF6">p</tspan>
+    <tspan fill="#C4B5FD">.</tspan>
+  </text>
+  <path d="M95 315 C115 305 150 302 400 302" stroke="url(#dtap-gradient)" stroke-width="6" fill="none" stroke-linecap="round"/>
+</svg>
