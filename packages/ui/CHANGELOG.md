@@ -1,5 +1,37 @@
 # @dtapline/ui
 
+## 0.5.0
+
+### Minor Changes
+
+- [`d94d6c3`](https://github.com/dtapline/dtapline/commit/d94d6c366717c595b384e2d3cd5ca04b8be9f8fe) Thanks @floydspace! - Add Progressive Web App (PWA) support for mobile installation
+
+  Configure `vite-plugin-pwa` with a service worker (auto-update), web app manifest, and Workbox runtime caching for API calls. Add iOS meta tags (`apple-mobile-web-app-capable`, theme color, status bar style) and generate PWA icons (192, 512, 180 apple-touch) from a new branded "d.t.a.p." SVG so the app can be added to the iPhone home screen.
+
+- [#25](https://github.com/dtapline/dtapline/pull/25) [`69eba4c`](https://github.com/dtapline/dtapline/commit/69eba4ca3b4d99adf9d870b9185c2b6089190e6f) Thanks @floydspace! - Add real-time deployment updates via WebSocket
+
+  Introduces a WebSocket layer so the dashboard updates instantly when a deployment is recorded via the webhook — no polling required.
+
+  **API (`@dtapline/api`)**
+
+  - New `websocket-lambda` entry point handles `$connect`, `$disconnect`, and `$default` routes from API Gateway WebSocket
+  - `$connect` authenticates via a session token passed as a query parameter, then stores the connection ID + user ID in DynamoDB
+  - New `BroadcastService` scans DynamoDB for connections belonging to a user and posts messages through API Gateway Management API; falls back to a no-op implementation when `WS_API_URL` / `WS_CONNECTIONS_TABLE` are absent (local dev)
+  - `DeploymentsWebhookGroup` now calls `BroadcastService.sendToUser` after recording a deployment, emitting a `deployment-created` event to all connected clients of that API key's owner
+  - Terraform modules added for the WebSocket API Gateway and the WebSocket Lambda (`modules/websocket`, `modules/ws-api-gateway`)
+
+  **UI (`@dtapline/ui`)**
+
+  - New `WebSocketClient` singleton (`lib/websocket.ts`) manages connection lifecycle with exponential-backoff reconnection and listener dispatch
+  - New `useWebSocket` hook connects automatically when a session is present and disconnects on sign-out
+  - On `deployment-created` events the hook applies an optimistic `setQueryData` update to the matrix cache so the cell updates immediately, then invalidates related queries for a background refetch
+  - `useWebSocket` is called once at the root route so the connection is shared across all pages
+  - `Dashboard` now uses the shared `projectKeys.matrix()` query key factory so WebSocket-driven invalidations reach the correct cached queries
+
+### Patch Changes
+
+- [`a30debd`](https://github.com/dtapline/dtapline/commit/a30debd4126794be7ea8bab3e4133d14524575c3) Thanks @floydspace! - fix mobile layout
+
 ## 0.4.2
 
 ### Patch Changes
