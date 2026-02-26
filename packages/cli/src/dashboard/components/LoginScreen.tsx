@@ -61,18 +61,16 @@ export function LoginScreen({ expiredMessage, onLogin, serverUrl }: LoginScreenP
       flexDirection="column"
       alignItems="center"
       justifyContent="center"
-      style={{ flexGrow: 1 }}
+      flexGrow={1}
     >
       <box
         flexDirection="column"
-        style={{
-          border: true,
-          borderStyle: "single",
-          borderColor: "#4a5568",
-          padding: 2,
-          width: 50,
-          gap: 1
-        }}
+        border
+        borderStyle="single"
+        borderColor="#4a5568"
+        padding={2}
+        width={50}
+        gap={1}
       >
         {/* Title */}
         <text fg="#e2e8f0">
@@ -95,13 +93,11 @@ export function LoginScreen({ expiredMessage, onLogin, serverUrl }: LoginScreenP
         {/* Email field */}
         <text fg="#a0aec0">Email</text>
         <box
-          style={{
-            border: true,
-            borderStyle: "single",
-            borderColor: focused === "email" ? "#63b3ed" : "#4a5568",
-            height: 3,
-            width: 46
-          }}
+          border
+          borderStyle="single"
+          borderColor={focused === "email" ? "#63b3ed" : "#4a5568"}
+          height={3}
+          width={46}
         >
           <input
             placeholder="you@example.com"
@@ -114,13 +110,11 @@ export function LoginScreen({ expiredMessage, onLogin, serverUrl }: LoginScreenP
         {/* Password field */}
         <text fg="#a0aec0">Password</text>
         <box
-          style={{
-            border: true,
-            borderStyle: "single",
-            borderColor: focused === "password" ? "#63b3ed" : "#4a5568",
-            height: 3,
-            width: 46
-          }}
+          border
+          borderStyle="single"
+          borderColor={focused === "password" ? "#63b3ed" : "#4a5568"}
+          height={3}
+          width={46}
         >
           <input
             placeholder="••••••••"

@@ -4,7 +4,6 @@ import { NodeContext, NodeHttpClient, NodeRuntime } from "@effect/platform-node"
 import { createCliRenderer } from "@opentui/core"
 import { createRoot } from "@opentui/react"
 import { Config, Console, Effect, Layer, Option, Schema } from "effect"
-import React from "react"
 import { detectCICD, getGitCommitSha } from "./cicd-detect.js"
 import { signIn } from "./dashboard/api-client.js"
 import { App } from "./dashboard/App.js"
@@ -229,15 +228,9 @@ const deployCommand = Command.make(
 // Login Command
 // ============================================================================
 
-const loginServerUrlOption = Options.text("server-url").pipe(
-  Options.withDescription("Dtapline API server URL (or set DTAPLINE_SERVER_URL env var)"),
-  Options.withFallbackConfig(Config.string("DTAPLINE_SERVER_URL")),
-  Options.withDefault("https://api.dtapline.com")
-)
-
 const loginCommand = Command.make(
   "login",
-  { serverUrl: loginServerUrlOption },
+  { serverUrl: serverUrlOption },
   (args) =>
     Effect.gen(function*() {
       const readline = yield* Effect.promise(() => import("node:readline"))
@@ -245,7 +238,7 @@ const loginCommand = Command.make(
       const question = (prompt: string): Promise<string> => new Promise((resolve) => rl.question(prompt, resolve))
 
       const questionHidden = (prompt: string): Promise<string> =>
-        new Promise((resolve) => {
+        new Promise((resolve, reject) => {
           process.stdout.write(prompt)
           let value = ""
           // Switch to raw mode so we can intercept each keypress without echo
@@ -253,13 +246,19 @@ const loginCommand = Command.make(
           process.stdin.resume()
           process.stdin.setEncoding("utf8")
           const onData = (ch: string) => {
-            if (ch === "\n" || ch === "\r" || ch === "\u0003") {
-              // Enter or Ctrl+C — stop reading
+            if (ch === "\u0003") {
+              // Ctrl+C — restore terminal and reject so Effect handles the interruption
               process.stdin.setRawMode(false)
               process.stdin.pause()
               process.stdin.removeListener("data", onData)
               process.stdout.write("\n")
-              if (ch === "\u0003") process.exit(1)
+              reject(new Error("Interrupted"))
+            } else if (ch === "\n" || ch === "\r") {
+              // Enter — stop reading
+              process.stdin.setRawMode(false)
+              process.stdin.pause()
+              process.stdin.removeListener("data", onData)
+              process.stdout.write("\n")
               resolve(value)
             } else if (ch === "\u007f" || ch === "\b") {
               // Backspace
@@ -274,7 +273,10 @@ const loginCommand = Command.make(
       yield* Console.log(`Signing in to ${args.serverUrl}`)
       const email = yield* Effect.promise(() => question("Email: "))
       rl.close()
-      const password = yield* Effect.promise(() => questionHidden("Password: "))
+      const password = yield* Effect.tryPromise({
+        try: () => questionHidden("Password: "),
+        catch: (err) => err as Error
+      })
 
       const token = yield* Effect.tryPromise({
         try: () => signIn(args.serverUrl, email, password),
@@ -292,12 +294,6 @@ const loginCommand = Command.make(
 // Dashboard Command
 // ============================================================================
 
-const dashboardServerUrlOption = Options.text("server-url").pipe(
-  Options.withDescription("Dtapline API server URL (or set DTAPLINE_SERVER_URL env var)"),
-  Options.withFallbackConfig(Config.string("DTAPLINE_SERVER_URL")),
-  Options.withDefault("https://api.dtapline.com")
-)
-
 const refreshOption = Options.integer("refresh").pipe(
   Options.withDescription("Auto-refresh interval in seconds"),
   Options.withDefault(30)
@@ -305,19 +301,18 @@ const refreshOption = Options.integer("refresh").pipe(
 
 const dashboardCommand = Command.make(
   "dashboard",
-  { serverUrl: dashboardServerUrlOption, refresh: refreshOption },
+  { serverUrl: serverUrlOption, refresh: refreshOption },
   (args) =>
     Effect.gen(function*() {
       const session = loadSession(args.serverUrl)
       const renderer = yield* Effect.promise(() => createCliRenderer())
       createRoot(renderer).render(
-        React.createElement(App, {
-          serverUrl: args.serverUrl,
-          initialToken: session?.token ?? null,
-          initialEmail: session?.email ?? null,
-          refreshInterval: args.refresh * 1000,
-          onQuit: () => renderer.destroy()
-        })
+        <App
+          serverUrl={args.serverUrl}
+          initialToken={session?.token ?? null}
+          refreshInterval={args.refresh * 1000}
+          onQuit={() => renderer.destroy()}
+        />
       )
       // Wait until the renderer fires its "destroy" event, then exit cleanly
       yield* Effect.promise(

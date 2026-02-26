@@ -8,6 +8,7 @@
 
 import { formatDistanceToNow } from "date-fns"
 import type { Deployment } from "../types.js"
+import { truncate } from "../utils.js"
 
 interface StatusCellProps {
   readonly deployment: Deployment | null | undefined
@@ -34,11 +35,6 @@ function getStatusInfo(status: Deployment["status"]): StatusInfo {
   }
 }
 
-function truncate(str: string, maxLen: number): string {
-  if (str.length <= maxLen) return str
-  return str.slice(0, maxLen - 1) + "…"
-}
-
 function relativeTime(dateStr: string): string {
   try {
     return formatDistanceToNow(new Date(dateStr), { addSuffix: true })
@@ -51,11 +47,9 @@ export function StatusCell({ colWidth, deployment }: StatusCellProps) {
   if (!deployment) {
     return (
       <box
-        style={{
-          width: colWidth,
-          paddingLeft: 1,
-          paddingRight: 1
-        }}
+        width={colWidth}
+        paddingLeft={1}
+        paddingRight={1}
       >
         <text fg="#4a5568">—</text>
       </box>
@@ -74,22 +68,18 @@ export function StatusCell({ colWidth, deployment }: StatusCellProps) {
 
   return (
     <box
-      style={{
-        width: colWidth,
-        paddingLeft: 1,
-        paddingRight: 1,
-        flexDirection: "column"
-      }}
+      width={colWidth}
+      paddingLeft={1}
+      paddingRight={1}
+      flexDirection="column"
     >
       {/* Top row: [badge] version */}
-      <box style={{ flexDirection: "row", alignItems: "center" }}>
+      <box flexDirection="row" alignItems="center">
         {/* Colored square badge */}
         <box
           backgroundColor={bg}
-          style={{
-            paddingLeft: 1,
-            paddingRight: 1
-          }}
+          paddingLeft={1}
+          paddingRight={1}
         >
           <text fg="#ffffff">{icon}</text>
         </box>
@@ -97,7 +87,7 @@ export function StatusCell({ colWidth, deployment }: StatusCellProps) {
         <text fg="#e2e8f0">{version}</text>
       </box>
       {/* Bottom row: time, indented to align under version */}
-      <box style={{ flexDirection: "row" }}>
+      <box flexDirection="row">
         <text>{"    "}</text>
         <text fg="#718096">{timeStr}</text>
       </box>

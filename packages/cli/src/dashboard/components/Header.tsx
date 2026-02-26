@@ -22,12 +22,14 @@ function secondsAgo(date: Date): string {
 }
 
 export function Header({ isLoading, lastUpdated, serverUrl }: HeaderProps) {
-  // Tick every second so "5s ago" updates in real time
+  // Tick every second so "5s ago" updates in real time.
+  // Only needed once we have data to display a timestamp — skip during initial load.
   const [, setTick] = useState(0)
   useEffect(() => {
+    if (!lastUpdated) return
     const timer = setInterval(() => setTick((t) => t + 1), 1000)
     return () => clearInterval(timer)
-  }, [])
+  }, [lastUpdated])
 
   const updatedStr = isLoading
     ? "refreshing…"
@@ -40,15 +42,13 @@ export function Header({ isLoading, lastUpdated, serverUrl }: HeaderProps) {
 
   return (
     <box
-      style={{
-        border: ["bottom"],
-        borderColor: "#2d3748",
-        paddingLeft: 1,
-        paddingRight: 1,
-        flexDirection: "row",
-        justifyContent: "space-between",
-        height: 3
-      }}
+      border={["bottom"]}
+      borderColor="#2d3748"
+      paddingLeft={1}
+      paddingRight={1}
+      flexDirection="row"
+      justifyContent="space-between"
+      height={3}
     >
       {/* Left: title */}
       <text>

@@ -8,6 +8,7 @@
 
 import { useTerminalDimensions } from "@opentui/react"
 import type { Environment, ProjectMatrixData } from "../types.js"
+import { truncate } from "../utils.js"
 import { StatusCell } from "./StatusCell.js"
 
 const SERVICE_COL_MIN_WIDTH = 14
@@ -15,11 +16,6 @@ const ENV_COL_MIN_WIDTH = 14
 
 interface MatrixProps {
   readonly projects: ReadonlyArray<ProjectMatrixData>
-}
-
-function truncate(str: string, maxLen: number): string {
-  if (str.length <= maxLen) return str
-  return str.slice(0, maxLen - 1) + "…"
 }
 
 /** A full-width horizontal divider rendered as a text row (no border box needed). */
@@ -36,7 +32,7 @@ export function Matrix({ projects }: MatrixProps) {
 
   if (projects.length === 0) {
     return (
-      <box style={{ padding: 2 }}>
+      <box padding={2}>
         <text fg="#718096">No projects found.</text>
       </box>
     )
@@ -51,7 +47,7 @@ export function Matrix({ projects }: MatrixProps) {
 
   if (allEnvs.length === 0) {
     return (
-      <box style={{ padding: 2 }}>
+      <box padding={2}>
         <text fg="#718096">No environments configured.</text>
       </box>
     )
@@ -82,14 +78,14 @@ export function Matrix({ projects }: MatrixProps) {
   )
 
   return (
-    <scrollbox focused style={{ flexGrow: 1 }}>
+    <scrollbox focused flexGrow={1}>
       {/* Column header row */}
-      <box flexDirection="row" style={{ width: totalWidth }}>
-        <box style={{ width: serviceColWidth, paddingLeft: 1 }}>
+      <box flexDirection="row" width={totalWidth}>
+        <box width={serviceColWidth} paddingLeft={1}>
           <text fg="#4a5568">Service</text>
         </box>
         {allEnvs.map((env) => (
-          <box key={env.id} style={{ width: envColWidth, paddingLeft: 1 }}>
+          <box key={env.id} width={envColWidth} paddingLeft={1}>
             <text>
               <span fg={env.color || "#718096"}>●</span> <span fg="#a0aec0">{truncate(env.name, envColWidth - 3)}</span>
             </text>
@@ -126,16 +122,14 @@ function ProjectSection({ allEnvs, envColWidth, projectData, serviceColWidth, to
   const enabledEnvIds = new Set(matrix.environments.map((e) => e.id))
 
   return (
-    <box flexDirection="column" style={{ width: totalWidth }}>
+    <box flexDirection="column" width={totalWidth}>
       {/* Project header */}
       <box
         backgroundColor="#1a202c"
-        style={{
-          width: totalWidth,
-          paddingLeft: 1,
-          paddingTop: 1,
-          paddingBottom: 1
-        }}
+        width={totalWidth}
+        paddingLeft={1}
+        paddingTop={1}
+        paddingBottom={1}
       >
         <text>
           <strong fg="#63b3ed">{project.name}</strong>
@@ -147,7 +141,7 @@ function ProjectSection({ allEnvs, envColWidth, projectData, serviceColWidth, to
       {/* Service rows */}
       {matrix.services.length === 0 ?
         (
-          <box style={{ paddingLeft: serviceColWidth + 1, paddingTop: 1, paddingBottom: 1 }}>
+          <box paddingLeft={serviceColWidth + 1} paddingTop={1} paddingBottom={1}>
             <text fg="#4a5568">No services configured</text>
           </box>
         ) :
@@ -155,21 +149,21 @@ function ProjectSection({ allEnvs, envColWidth, projectData, serviceColWidth, to
           matrix.services.map((service, idx) => {
             const rowBg = idx % 2 === 0 ? "#171923" : "#1a202c"
             return (
-              <box key={service.id} flexDirection="column" style={{ width: totalWidth }}>
+              <box key={service.id} flexDirection="column" width={totalWidth}>
                 {/* Row content */}
                 <box
                   flexDirection="row"
                   backgroundColor={rowBg}
-                  style={{ width: totalWidth, height: 2, alignItems: "center" }}
+                  width={totalWidth}
+                  height={2}
+                  alignItems="center"
                 >
                   {/* Service name */}
                   <box
                     backgroundColor={rowBg}
-                    style={{
-                      width: serviceColWidth,
-                      paddingLeft: 2,
-                      flexDirection: "column"
-                    }}
+                    width={serviceColWidth}
+                    paddingLeft={2}
+                    flexDirection="column"
                   >
                     <text fg="#e2e8f0">{truncate(service.name, serviceColWidth - 3)}</text>
                     <text fg="#4a5568">{truncate(service.slug, serviceColWidth - 3)}</text>
@@ -187,11 +181,11 @@ function ProjectSection({ allEnvs, envColWidth, projectData, serviceColWidth, to
                       <box
                         key={env.id}
                         backgroundColor={cellBg}
-                        style={{ width: envColWidth }}
+                        width={envColWidth}
                       >
                         {!isEnabled ?
                           (
-                            <box style={{ paddingLeft: 1 }}>
+                            <box paddingLeft={1}>
                               <text fg="#2d3748">—</text>
                             </box>
                           ) :

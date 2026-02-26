@@ -7,6 +7,7 @@
  */
 
 import { useKeyboard } from "@opentui/react"
+import { useEffect } from "react"
 import type { DataState } from "../types.js"
 import { Header } from "./Header.js"
 import { Matrix } from "./Matrix.js"
@@ -26,6 +27,10 @@ export function DashboardView({
   serverUrl,
   state
 }: DashboardViewProps) {
+  // Note: LoginScreen and DashboardView are never mounted at the same time (App
+  // renders one or the other). If that assumption ever changes, having two
+  // useKeyboard hooks active simultaneously can cause conflicts — see OpenTUI
+  // react/gotchas.md for the resolution pattern.
   useKeyboard((key) => {
     if (key.name === "r") {
       onRefresh()
@@ -35,9 +40,15 @@ export function DashboardView({
     }
   })
 
-  // Trigger auth re-prompt if auth expired
+  // Trigger auth re-prompt when auth expires. Done in useEffect to avoid
+  // calling setState on a parent component during render (React anti-pattern).
+  useEffect(() => {
+    if (state.kind === "error" && state.authExpired) {
+      onAuthExpired()
+    }
+  }, [state, onAuthExpired])
+
   if (state.kind === "error" && state.authExpired) {
-    onAuthExpired()
     return null
   }
 
@@ -45,7 +56,7 @@ export function DashboardView({
   const lastUpdated = state.kind === "data" ? state.lastUpdated : null
 
   return (
-    <box flexDirection="column" style={{ flexGrow: 1 }}>
+    <box flexDirection="column" flexGrow={1}>
       <Header
         serverUrl={serverUrl}
         lastUpdated={lastUpdated}
@@ -55,18 +66,16 @@ export function DashboardView({
       {state.kind === "idle" || state.kind === "loading" ?
         (
           <box
-            style={{
-              flexGrow: 1,
-              alignItems: "center",
-              justifyContent: "center"
-            }}
+            flexGrow={1}
+            alignItems="center"
+            justifyContent="center"
           >
             <text fg="#4a5568">Fetching deployment data…</text>
           </box>
         ) :
         state.kind === "error" ?
         (
-          <box flexDirection="column" style={{ flexGrow: 1, padding: 2 }}>
+          <box flexDirection="column" flexGrow={1} padding={2}>
             <text fg="#f56565">Error: {state.message}</text>
             <text fg="#4a5568">Press [r] to retry</text>
           </box>

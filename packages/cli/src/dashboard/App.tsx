@@ -15,7 +15,6 @@ import { useMatrixData } from "./hooks/use-matrix-data.js"
 interface AppProps {
   readonly serverUrl: string
   readonly initialToken: string | null
-  readonly initialEmail: string | null
   readonly refreshInterval: number
   readonly onQuit: () => void
 }
@@ -24,7 +23,7 @@ type AuthState =
   | { readonly kind: "login"; readonly expiredMessage?: string }
   | { readonly kind: "dashboard"; readonly token: string }
 
-export function App({ initialEmail: _initialEmail, initialToken, onQuit, refreshInterval, serverUrl }: AppProps) {
+export function App({ initialToken, onQuit, refreshInterval, serverUrl }: AppProps) {
   const [auth, setAuth] = useState<AuthState>(
     initialToken
       ? { kind: "dashboard", token: initialToken }

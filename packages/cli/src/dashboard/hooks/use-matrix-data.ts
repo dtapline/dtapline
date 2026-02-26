@@ -87,6 +87,10 @@ export function useMatrixData({
     if (refreshTimerRef.current) {
       clearTimeout(refreshTimerRef.current)
     }
+    // Timer starts only after the fetch completes, so the effective cycle is
+    // refreshInterval + fetchDuration. This is intentional: it avoids
+    // overlapping requests and keeps the interval as "time between responses"
+    // rather than "time between request starts".
     refreshTimerRef.current = setTimeout(() => {
       void fetchData().then(() => scheduleNext())
     }, refreshInterval)
