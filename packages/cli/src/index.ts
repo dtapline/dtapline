@@ -1,8 +1,14 @@
 import { Args, CliConfig, Command, Options } from "@effect/cli"
 import { HttpBody, HttpClient, HttpClientRequest } from "@effect/platform"
 import { NodeContext, NodeHttpClient, NodeRuntime } from "@effect/platform-node"
+import { createCliRenderer } from "@opentui/core"
+import { createRoot } from "@opentui/react"
 import { Config, Console, Effect, Layer, Option, Schema } from "effect"
+import React from "react"
 import { detectCICD, getGitCommitSha } from "./cicd-detect.js"
+import { signIn } from "./dashboard/api-client.js"
+import { App } from "./dashboard/App.js"
+import { loadSession, saveSession } from "./dashboard/auth.js"
 
 /**
  * Dtapline CLI
@@ -220,12 +226,118 @@ const deployCommand = Command.make(
 )
 
 // ============================================================================
+// Login Command
+// ============================================================================
+
+const loginServerUrlOption = Options.text("server-url").pipe(
+  Options.withDescription("Dtapline API server URL (or set DTAPLINE_SERVER_URL env var)"),
+  Options.withFallbackConfig(Config.string("DTAPLINE_SERVER_URL")),
+  Options.withDefault("https://api.dtapline.com")
+)
+
+const loginCommand = Command.make(
+  "login",
+  { serverUrl: loginServerUrlOption },
+  (args) =>
+    Effect.gen(function*() {
+      const readline = yield* Effect.promise(() => import("node:readline"))
+      const rl = readline.createInterface({ input: process.stdin, output: process.stdout })
+      const question = (prompt: string): Promise<string> => new Promise((resolve) => rl.question(prompt, resolve))
+
+      const questionHidden = (prompt: string): Promise<string> =>
+        new Promise((resolve) => {
+          process.stdout.write(prompt)
+          let value = ""
+          // Switch to raw mode so we can intercept each keypress without echo
+          process.stdin.setRawMode(true)
+          process.stdin.resume()
+          process.stdin.setEncoding("utf8")
+          const onData = (ch: string) => {
+            if (ch === "\n" || ch === "\r" || ch === "\u0003") {
+              // Enter or Ctrl+C — stop reading
+              process.stdin.setRawMode(false)
+              process.stdin.pause()
+              process.stdin.removeListener("data", onData)
+              process.stdout.write("\n")
+              if (ch === "\u0003") process.exit(1)
+              resolve(value)
+            } else if (ch === "\u007f" || ch === "\b") {
+              // Backspace
+              value = value.slice(0, -1)
+            } else {
+              value += ch
+            }
+          }
+          process.stdin.on("data", onData)
+        })
+
+      yield* Console.log(`Signing in to ${args.serverUrl}`)
+      const email = yield* Effect.promise(() => question("Email: "))
+      rl.close()
+      const password = yield* Effect.promise(() => questionHidden("Password: "))
+
+      const token = yield* Effect.tryPromise({
+        try: () => signIn(args.serverUrl, email, password),
+        catch: (err) => err as Error
+      })
+
+      saveSession(args.serverUrl, token, email)
+      yield* Console.log(`Logged in as ${email}`)
+    })
+).pipe(
+  Command.withDescription("Authenticate with the Dtapline API server and save session")
+)
+
+// ============================================================================
+// Dashboard Command
+// ============================================================================
+
+const dashboardServerUrlOption = Options.text("server-url").pipe(
+  Options.withDescription("Dtapline API server URL (or set DTAPLINE_SERVER_URL env var)"),
+  Options.withFallbackConfig(Config.string("DTAPLINE_SERVER_URL")),
+  Options.withDefault("https://api.dtapline.com")
+)
+
+const refreshOption = Options.integer("refresh").pipe(
+  Options.withDescription("Auto-refresh interval in seconds"),
+  Options.withDefault(30)
+)
+
+const dashboardCommand = Command.make(
+  "dashboard",
+  { serverUrl: dashboardServerUrlOption, refresh: refreshOption },
+  (args) =>
+    Effect.gen(function*() {
+      const session = loadSession(args.serverUrl)
+      const renderer = yield* Effect.promise(() => createCliRenderer())
+      createRoot(renderer).render(
+        React.createElement(App, {
+          serverUrl: args.serverUrl,
+          initialToken: session?.token ?? null,
+          initialEmail: session?.email ?? null,
+          refreshInterval: args.refresh * 1000,
+          onQuit: () => renderer.destroy()
+        })
+      )
+      // Wait until the renderer fires its "destroy" event, then exit cleanly
+      yield* Effect.promise(
+        () =>
+          new Promise<void>((resolve) => {
+            renderer.on("destroy", () => resolve())
+          })
+      )
+    })
+).pipe(
+  Command.withDescription("Open the deployment matrix dashboard in the terminal")
+)
+
+// ============================================================================
 // Root Command
 // ============================================================================
 
 const rootCommand = Command.make("dtapline").pipe(
   Command.withDescription("Dtapline CLI - Report deployments to your Dtapline API server"),
-  Command.withSubcommands([deployCommand])
+  Command.withSubcommands([deployCommand, loginCommand, dashboardCommand])
 )
 
 // ============================================================================
@@ -239,7 +351,7 @@ const cli = Command.run(rootCommand, {
 
 const MainLayer = Layer.mergeAll(
   NodeContext.layer,
-  NodeHttpClient.layerUndici,
+  NodeHttpClient.layer,
   CliConfig.layer({ showBuiltIns: false })
 )
 
