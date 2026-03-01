@@ -36,7 +36,7 @@ jobs:
           DTAPLINE_API_KEY: ${{ secrets.DTAPLINE_API_KEY }}
           DTAPLINE_SERVER_URL: ${{ vars.DTAPLINE_SERVER_URL }}
         run: |
-          pnpm tsx packages/cli/src/index.ts deploy production api \
+          pnpm --package=@dtapline/cli dlx dtap deploy production api \
             --status in_progress \
             --deployed-version "${GITHUB_REF_NAME##*@}"
 
@@ -91,7 +91,7 @@ jobs:
           DTAPLINE_API_KEY: ${{ secrets.DTAPLINE_API_KEY }}
           DTAPLINE_SERVER_URL: ${{ vars.DTAPLINE_SERVER_URL || steps.terraform.outputs.api_url }}
         run: |
-          pnpm tsx packages/cli/src/index.ts deploy production api \
+          pnpm --package=@dtapline/cli dlx dtap deploy production api \
             --status success \
             --deployed-version "${GITHUB_REF_NAME##*@}"
 
@@ -102,6 +102,6 @@ jobs:
           DTAPLINE_API_KEY: ${{ secrets.DTAPLINE_API_KEY }}
           DTAPLINE_SERVER_URL: ${{ vars.DTAPLINE_SERVER_URL || vars.API_BASE_URL }}
         run: |
-          pnpm tsx packages/cli/src/index.ts deploy production api \
+          pnpm --package=@dtapline/cli dlx dtap deploy production api \
             --status failed \
             --deployed-version "${GITHUB_REF_NAME##*@}"

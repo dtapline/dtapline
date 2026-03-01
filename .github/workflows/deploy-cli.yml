@@ -30,7 +30,7 @@ jobs:
           DTAPLINE_API_KEY: ${{ secrets.DTAPLINE_API_KEY }}
           DTAPLINE_SERVER_URL: ${{ vars.DTAPLINE_SERVER_URL }}
         run: |
-          pnpm tsx packages/cli/src/index.ts deploy production cli \
+          pnpm --package=@dtapline/cli dlx dtap deploy production cli \
             --status in_progress \
             --deployed-version "${GITHUB_REF_NAME##*@}"
 
@@ -51,7 +51,7 @@ jobs:
           DTAPLINE_API_KEY: ${{ secrets.DTAPLINE_API_KEY }}
           DTAPLINE_SERVER_URL: ${{ vars.DTAPLINE_SERVER_URL }}
         run: |
-          pnpm tsx packages/cli/src/index.ts deploy production cli \
+          pnpm --package=@dtapline/cli dlx dtap deploy production cli \
             --status success \
             --deployed-version "${GITHUB_REF_NAME##*@}"
 
@@ -61,6 +61,6 @@ jobs:
           DTAPLINE_API_KEY: ${{ secrets.DTAPLINE_API_KEY }}
           DTAPLINE_SERVER_URL: ${{ vars.DTAPLINE_SERVER_URL }}
         run: |
-          pnpm tsx packages/cli/src/index.ts deploy production cli \
+          pnpm --package=@dtapline/cli dlx dtap deploy production cli \
             --status failed \
             --deployed-version "${GITHUB_REF_NAME##*@}"

@@ -33,7 +33,7 @@ jobs:
           DTAPLINE_API_KEY: ${{ secrets.DTAPLINE_API_KEY }}
           DTAPLINE_SERVER_URL: ${{ vars.DTAPLINE_SERVER_URL }}
         run: |
-          pnpm tsx packages/cli/src/index.ts deploy development cli \
+          pnpm --package=@dtapline/cli dlx dtap deploy development cli \
             --status in_progress \
             --deployed-version "$(pnpm tsx scripts/get-next-version.ts @dtapline/cli)"
 
@@ -68,7 +68,7 @@ jobs:
           DTAPLINE_API_KEY: ${{ secrets.DTAPLINE_API_KEY }}
           DTAPLINE_SERVER_URL: ${{ vars.DTAPLINE_SERVER_URL }}
         run: |
-          pnpm tsx packages/cli/src/index.ts deploy development cli \
+          pnpm --package=@dtapline/cli dlx dtap deploy development cli \
             --status success \
             --deployed-version "$(pnpm tsx scripts/get-next-version.ts @dtapline/cli)"
 
@@ -78,7 +78,7 @@ jobs:
           DTAPLINE_API_KEY: ${{ secrets.DTAPLINE_API_KEY }}
           DTAPLINE_SERVER_URL: ${{ vars.DTAPLINE_SERVER_URL }}
         run: |
-          pnpm tsx packages/cli/src/index.ts deploy development cli \
+          pnpm --package=@dtapline/cli dlx dtap deploy development cli \
             --status failed \
             --deployed-version "$(pnpm tsx scripts/get-next-version.ts @dtapline/cli)"
 
@@ -106,7 +106,7 @@ jobs:
           DTAPLINE_API_KEY: ${{ secrets.DTAPLINE_API_KEY }}
           DTAPLINE_SERVER_URL: ${{ vars.DTAPLINE_SERVER_URL }}
         run: |
-          pnpm tsx packages/cli/src/index.ts deploy development api \
+          pnpm --package=@dtapline/cli dlx dtap deploy development api \
             --status in_progress \
             --deployed-version "$(pnpm tsx scripts/get-next-version.ts @dtapline/api)"
 
@@ -161,7 +161,7 @@ jobs:
           DTAPLINE_API_KEY: ${{ secrets.DTAPLINE_API_KEY }}
           DTAPLINE_SERVER_URL: ${{ vars.DTAPLINE_SERVER_URL || steps.terraform.outputs.api_url }}
         run: |
-          pnpm tsx packages/cli/src/index.ts deploy development api \
+          pnpm --package=@dtapline/cli dlx dtap deploy development api \
             --status success \
             --deployed-version "$(pnpm tsx scripts/get-next-version.ts @dtapline/api)"
 
@@ -172,7 +172,7 @@ jobs:
           DTAPLINE_API_KEY: ${{ secrets.DTAPLINE_API_KEY }}
           DTAPLINE_SERVER_URL: ${{ vars.DTAPLINE_SERVER_URL || vars.API_BASE_URL }}
         run: |
-          pnpm tsx packages/cli/src/index.ts deploy development api \
+          pnpm --package=@dtapline/cli dlx dtap deploy development api \
             --status failed \
             --deployed-version "$(pnpm tsx scripts/get-next-version.ts @dtapline/api)"
 
@@ -200,7 +200,7 @@ jobs:
           DTAPLINE_API_KEY: ${{ secrets.DTAPLINE_API_KEY }}
           DTAPLINE_SERVER_URL: ${{ vars.DTAPLINE_SERVER_URL }}
         run: |
-          pnpm tsx packages/cli/src/index.ts deploy development ui \
+          pnpm --package=@dtapline/cli dlx dtap deploy development ui \
             --status in_progress \
             --deployed-version "$(pnpm tsx scripts/get-next-version.ts @dtapline/ui)"
 
@@ -231,7 +231,7 @@ jobs:
           DTAPLINE_API_KEY: ${{ secrets.DTAPLINE_API_KEY }}
           DTAPLINE_SERVER_URL: ${{ vars.DTAPLINE_SERVER_URL || vars.API_BASE_URL }}
         run: |
-          pnpm tsx packages/cli/src/index.ts deploy development ui \
+          pnpm --package=@dtapline/cli dlx dtap deploy development ui \
             --status success \
             --deployed-version "$(pnpm tsx scripts/get-next-version.ts @dtapline/ui)"
 
@@ -242,6 +242,6 @@ jobs:
           DTAPLINE_API_KEY: ${{ secrets.DTAPLINE_API_KEY }}
           DTAPLINE_SERVER_URL: ${{ vars.DTAPLINE_SERVER_URL || vars.API_BASE_URL }}
         run: |
-          pnpm tsx packages/cli/src/index.ts deploy development ui \
+          pnpm --package=@dtapline/cli dlx dtap deploy development ui \
             --status failed \
             --deployed-version "$(pnpm tsx scripts/get-next-version.ts @dtapline/ui)"
