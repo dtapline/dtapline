@@ -80,6 +80,7 @@ fs.mkdirSync(cacheDir, { recursive: true })
  * For cross-compilation targets, downloads the Bun release from GitHub and
  * caches it in ~/.cache/dtapline-cli/bun-<ver>/ so it's only downloaded once.
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function fetchBunExecutable(
   os: string,
   arch: string
@@ -233,7 +234,7 @@ for (const target of targets) {
 
   // Pre-download the Bun executable for cross-compilation targets so we can
   // pass it via executablePath instead of relying on Bun's internal downloader.
-  const bunExePath = await fetchBunExecutable(target.os, target.arch)
+  // const bunExePath = await fetchBunExecutable(target.os, target.arch)
 
   try {
     await Bun.build({
@@ -243,8 +244,8 @@ for (const target of targets) {
         autoloadBunfig: false,
         autoloadDotenv: false,
         target: bunTarget as any,
-        outfile,
-        ...(bunExePath ? { executablePath: bunExePath } : {})
+        outfile
+        // ...(bunExePath ? { executablePath: bunExePath } : {})
       },
       define: {
         __VERSION__: JSON.stringify(pkg.version)
