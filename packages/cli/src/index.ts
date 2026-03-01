@@ -4,6 +4,7 @@ import { NodeContext, NodeHttpClient, NodeRuntime } from "@effect/platform-node"
 import { createCliRenderer } from "@opentui/core"
 import { createRoot } from "@opentui/react"
 import { Config, Console, Effect, Layer, Option, Schema } from "effect"
+import React from "react"
 import { detectCICD, getGitCommitSha } from "./cicd-detect.js"
 import { signIn } from "./dashboard/api-client.js"
 import { App } from "./dashboard/App.js"
@@ -307,12 +308,12 @@ const dashboardCommand = Command.make(
       const session = loadSession(args.serverUrl)
       const renderer = yield* Effect.promise(() => createCliRenderer())
       createRoot(renderer).render(
-        <App
-          serverUrl={args.serverUrl}
-          initialToken={session?.token ?? null}
-          refreshInterval={args.refresh * 1000}
-          onQuit={() => renderer.destroy()}
-        />
+        React.createElement(App, {
+          serverUrl: args.serverUrl,
+          initialToken: session?.token ?? null,
+          refreshInterval: args.refresh * 1000,
+          onQuit: () => renderer.destroy()
+        })
       )
       // Wait until the renderer fires its "destroy" event, then exit cleanly
       yield* Effect.promise(

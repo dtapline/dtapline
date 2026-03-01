@@ -237,7 +237,7 @@ for (const target of targets) {
 
   try {
     await Bun.build({
-      entrypoints: ["./src/index.tsx"],
+      entrypoints: ["./src/index.ts"],
       tsconfig: "./tsconfig.build.json",
       compile: {
         autoloadBunfig: false,
