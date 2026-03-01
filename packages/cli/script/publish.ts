@@ -4,10 +4,11 @@
  * Publish script — builds all platform binaries and publishes them to npm.
  *
  * Usage:
- *   bun run script/publish.ts [--tag <dist-tag>] [--dry-run]
+ *   bun run script/publish.ts [--tag <dist-tag>] [--snapshot-version <ver>] [--dry-run]
  *
- *   --tag       npm dist-tag (default: "latest")
- *   --dry-run   pack + smoke test, but do not actually publish
+ *   --tag                npm dist-tag (default: "latest")
+ *   --snapshot-version   override the version for all published packages
+ *   --dry-run            pack + smoke test, but do not actually publish
  *
  * What it does:
  *  1. Builds all platform binaries via build.ts
@@ -44,8 +45,10 @@ process.chdir(dir)
 const tagIdx = process.argv.indexOf("--tag")
 const tag = tagIdx !== -1 ? process.argv[tagIdx + 1] : "latest"
 const dryRun = process.argv.includes("--dry-run")
+const snapshotVersionIdx = process.argv.indexOf("--snapshot-version")
+const snapshotVersion = snapshotVersionIdx !== -1 ? process.argv[snapshotVersionIdx + 1] : undefined
 
-const version = pkg.version
+const version = snapshotVersion ?? pkg.version
 console.log(`publishing ${pkg.name}@${version} (tag: ${tag}${dryRun ? ", DRY RUN" : ""})`)
 
 // ── Smoke test the local-platform binary ─────────────────────────────────────
@@ -65,7 +68,7 @@ if (binaries[localPkgName]) {
 // ── Publish platform sub-packages ────────────────────────────────────────────
 const publishedPlatformPkgs: Record<string, string> = {}
 
-for (const [pkgName, pkgVersion] of Object.entries(binaries)) {
+for (const [pkgName] of Object.entries(binaries)) {
   const pkgDir = path.resolve(dir, `dist/${pkgName}`)
 
   // Ensure bin is executable
@@ -74,7 +77,15 @@ for (const [pkgName, pkgVersion] of Object.entries(binaries)) {
     fs.chmodSync(binFile, 0o755)
   }
 
-  console.log(`\npacking ${pkgName}@${pkgVersion}`)
+  // Stamp the version (may be overridden by --snapshot-version)
+  if (snapshotVersion) {
+    const pkgJsonPath = path.join(pkgDir, "package.json")
+    const pkgJson = JSON.parse(fs.readFileSync(pkgJsonPath, "utf8"))
+    pkgJson.version = version
+    fs.writeFileSync(pkgJsonPath, JSON.stringify(pkgJson, null, 2))
+  }
+
+  console.log(`\npacking ${pkgName}@${version}`)
   await $`npm pack`.cwd(pkgDir)
 
   // npm pack names the file differently — use glob to find it
@@ -91,7 +102,7 @@ for (const [pkgName, pkgVersion] of Object.entries(binaries)) {
     console.log(`  [dry-run] would publish ${tgzFiles[0]}`)
   }
 
-  publishedPlatformPkgs[pkgName] = pkgVersion
+  publishedPlatformPkgs[pkgName] = version
 }
 
 // ── Build + publish the main wrapper package ─────────────────────────────────

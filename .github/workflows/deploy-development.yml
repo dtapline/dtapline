@@ -42,30 +42,18 @@ jobs:
         with:
           bun-version: 1.3.9
 
-      - name: Build packages
-        run: pnpm build
-
-      - name: Prepare snapshot packages
-        working-directory: packages/cli
-        run: bun run script/publish.ts --dry-run
-
-      - name: Create CLI snapshot
+      - name: Publish CLI snapshot to npm
         id: snapshot
+        working-directory: packages/cli
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
-          pnpx pkg-pr-new@0.0.28 publish --pnpm --comment=off \
-            packages/cli/dist/@dtapline/cli \
-            packages/cli/dist/@dtapline/cli-darwin-arm64 \
-            packages/cli/dist/@dtapline/cli-darwin-x64 \
-            packages/cli/dist/@dtapline/cli-linux-arm64 \
-            packages/cli/dist/@dtapline/cli-linux-x64 \
-            packages/cli/dist/@dtapline/cli-linux-arm64-musl \
-            packages/cli/dist/@dtapline/cli-linux-x64-musl \
-            > /tmp/output.txt 2>&1 || true
-          cat /tmp/output.txt
-          # Extract the npm install URL from the output, removing ANSI codes first
-          CLI_URL=$(cat /tmp/output.txt | sed 's/\x1b\[[0-9;]*m//g' | grep -o 'https://pkg\.pr\.new/[^[:space:]]*' | head -1)
-          echo "url=$CLI_URL" >> $GITHUB_OUTPUT
-          echo "✅ CLI snapshot published: $CLI_URL"
+          echo "//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}" > ~/.npmrc
+          SNAPSHOT_VERSION="$(pnpm tsx ../../scripts/get-next-version.ts @dtapline/cli)"
+          bun run script/publish.ts --tag snapshot --snapshot-version "$SNAPSHOT_VERSION"
+          SNAPSHOT_URL="https://www.npmjs.com/package/@dtapline/cli/v/${SNAPSHOT_VERSION}"
+          echo "url=$SNAPSHOT_URL" >> $GITHUB_OUTPUT
+          echo "Install with: npm install @dtapline/cli@${SNAPSHOT_VERSION}"
 
       - name: Report deployment success
         if: success()
