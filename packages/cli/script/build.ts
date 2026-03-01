@@ -248,7 +248,7 @@ for (const target of targets) {
         // ...(bunExePath ? { executablePath: bunExePath } : {})
       },
       define: {
-        __VERSION__: JSON.stringify(process.env.DTAPLINE_BUILD_VERSION ?? pkg.version)
+        __VERSION__: JSON.stringify(pkg.version)
       },
       minify: true,
       sourcemap: "none"
