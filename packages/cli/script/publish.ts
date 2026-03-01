@@ -8,7 +8,7 @@
  *
  *   --tag                npm dist-tag (default: "latest")
  *   --snapshot-version   override the version for all published packages
- *   --dry-run            pack + smoke test, but do not actually publish
+ *   --dry-run            print what would be published without actually publishing
  *
  * What it does:
  *  1. Builds all platform binaries via build.ts
@@ -22,9 +22,7 @@
  * exec's the correct native binary from node_modules.
  *
  * Prerequisites:
- *   - `npm login` (or NPM_TOKEN env var set)
- *   - Run from packages/cli directory (or from the monorepo root via the
- *     `pnpm --filter @dtapline/cli build:binary` script)
+ *   - `npm login` (or NPM_TOKEN env var written to ~/.npmrc)
  */
 
 import { $ } from "bun"
@@ -33,7 +31,6 @@ import path from "path"
 import { fileURLToPath } from "url"
 
 import pkg from "../package.json"
-import { binaries } from "./build.ts"
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -49,15 +46,23 @@ const snapshotVersionIdx = process.argv.indexOf("--snapshot-version")
 const snapshotVersion = snapshotVersionIdx !== -1 ? process.argv[snapshotVersionIdx + 1] : undefined
 
 const version = snapshotVersion ?? pkg.version
+
+// Set env var BEFORE importing build.ts — build.ts runs at import time and
+// reads this to embed the correct version string in compiled binaries.
+process.env.DTAPLINE_BUILD_VERSION = version
+
+const { binaries } = await import("./build.ts")
 console.log(`publishing ${pkg.name}@${version} (tag: ${tag}${dryRun ? ", DRY RUN" : ""})`)
 
 // ── Smoke test the local-platform binary ─────────────────────────────────────
 const localOs = process.platform // "darwin" | "linux"
 const localArch = process.arch // "arm64" | "x64"
 const localPkgName = `${pkg.name}-${localOs}-${localArch}`
+// Strip @scope/ prefix — dist dirs never contain @ to avoid npm path confusion
+const localPkgDirName = localPkgName.replace(/^@[^/]+\//, "")
 
 if (binaries[localPkgName]) {
-  const localBin = path.resolve(dir, `dist/${localPkgName}/bin/dtapline`)
+  const localBin = path.resolve(dir, `dist/${localPkgDirName}/bin/dtapline`)
   console.log(`\nsmoking test: ${localBin} --version`)
   const result = await $`${localBin} --version`.quiet()
   console.log(`  → ${result.stdout.toString().trim()}`)
@@ -69,7 +74,9 @@ if (binaries[localPkgName]) {
 const publishedPlatformPkgs: Record<string, string> = {}
 
 for (const [pkgName] of Object.entries(binaries)) {
-  const pkgDir = path.resolve(dir, `dist/${pkgName}`)
+  // Strip @scope/ prefix from directory name — paths with @ confuse npm
+  const pkgDirName = pkgName.replace(/^@[^/]+\//, "")
+  const pkgDir = path.resolve(dir, `dist/${pkgDirName}`)
 
   // Ensure bin is executable
   const binFile = path.join(pkgDir, "bin", "dtapline")
@@ -77,29 +84,22 @@ for (const [pkgName] of Object.entries(binaries)) {
     fs.chmodSync(binFile, 0o755)
   }
 
-  // Stamp the version (may be overridden by --snapshot-version)
-  if (snapshotVersion) {
-    const pkgJsonPath = path.join(pkgDir, "package.json")
-    const pkgJson = JSON.parse(fs.readFileSync(pkgJsonPath, "utf8"))
-    pkgJson.version = version
-    fs.writeFileSync(pkgJsonPath, JSON.stringify(pkgJson, null, 2))
-  }
+  // Stamp version unconditionally — package.json in dist may have the base
+  // version from build.ts; we always want it to match what we're publishing
+  const pkgJsonPath = path.join(pkgDir, "package.json")
+  const pkgJson = await Bun.file(pkgJsonPath).json()
+  pkgJson.version = version
+  await Bun.write(pkgJsonPath, JSON.stringify(pkgJson, null, 2))
 
-  console.log(`\npacking ${pkgName}@${version}`)
-  await $`npm pack`.cwd(pkgDir)
-
-  // npm pack names the file differently — use glob to find it
-  const tgzFiles = fs.readdirSync(pkgDir).filter((f) => f.endsWith(".tgz"))
-  if (tgzFiles.length === 0) {
-    throw new Error(`No .tgz found after packing ${pkgName}`)
-  }
-  const tgzPath = path.join(pkgDir, tgzFiles[0])
+  console.log(`\npublishing ${pkgName}@${version}`)
 
   if (!dryRun) {
-    console.log(`  publishing ${tgzFiles[0]}`)
-    await $`npm publish ${tgzPath} --tag ${tag} --access public`
+    // Run npm publish directly from pkgDir — no tgz path argument, which
+    // avoids npm misinterpreting @-scoped paths as package specifiers.
+    await $`npm publish --tag ${tag} --access public --userconfig ~/.npmrc`.cwd(pkgDir)
   } else {
-    console.log(`  [dry-run] would publish ${tgzFiles[0]}`)
+    await $`npm pack --dry-run`.cwd(pkgDir)
+    console.log(`  [dry-run] would publish above`)
   }
 
   publishedPlatformPkgs[pkgName] = version
@@ -110,7 +110,8 @@ for (const [pkgName] of Object.entries(binaries)) {
 //  - bin/dtapline  →  the Node.js CJS wrapper that resolves the platform binary
 //  - optionalDependencies  →  all platform sub-packages at the same version
 
-const wrapperDir = path.resolve(dir, "dist/@dtapline/cli")
+// No @ in path — same reason as platform packages above
+const wrapperDir = path.resolve(dir, "dist/dtapline-cli-wrapper")
 await $`mkdir -p ${wrapperDir}/bin`
 
 // Copy the Node.js bin wrapper
@@ -137,24 +138,21 @@ const wrapperPkg = {
   )
 }
 
-await Bun.file(path.join(wrapperDir, "package.json")).write(
-  JSON.stringify(wrapperPkg, null, 2)
-)
+await Bun.write(path.join(wrapperDir, "package.json"), JSON.stringify(wrapperPkg, null, 2))
 
-console.log(`\npacking ${pkg.name}@${version} (wrapper)`)
-await $`npm pack`.cwd(wrapperDir)
-
-const wrapperTgzFiles = fs.readdirSync(wrapperDir).filter((f) => f.endsWith(".tgz"))
-if (wrapperTgzFiles.length === 0) {
-  throw new Error(`No .tgz found after packing wrapper`)
+// Verify version before publishing
+const writtenPkg = await Bun.file(path.join(wrapperDir, "package.json")).json()
+if (writtenPkg.version !== version) {
+  throw new Error(`Wrapper package.json version mismatch: expected ${version}, got ${writtenPkg.version}`)
 }
-const wrapperTgzPath = path.join(wrapperDir, wrapperTgzFiles[0])
+
+console.log(`\npublishing ${pkg.name}@${version} (wrapper)`)
 
 if (!dryRun) {
-  console.log(`  publishing ${wrapperTgzFiles[0]}`)
-  await $`npm publish ${wrapperTgzPath} --tag ${tag} --access public`
+  await $`npm publish --tag ${tag} --access public --userconfig ~/.npmrc`.cwd(wrapperDir)
 } else {
-  console.log(`  [dry-run] would publish ${wrapperTgzFiles[0]}`)
+  await $`npm pack --dry-run`.cwd(wrapperDir)
+  console.log(`  [dry-run] would publish above`)
 }
 
 console.log(

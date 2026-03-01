@@ -189,9 +189,11 @@ for (const target of targets) {
   ]
     .filter(Boolean)
     .join("-")
+  // Strip @scope/ prefix — dist dirs never contain @ to avoid npm path confusion
+  const pkgDirName = pkgName.replace(/^@[^/]+\//, "")
   console.log(`\nbuilding ${pkgName}`)
 
-  await $`mkdir -p dist/${pkgName}/bin`
+  await $`mkdir -p dist/${pkgDirName}/bin`
 
   // ── 1. Find the native shared library for this target ───────────────────────
   const platformPkgDir = await fetchOpentuiPlatformPkg(target.os, target.arch)
@@ -203,7 +205,7 @@ for (const target of targets) {
   }
   const libFile = libFiles[0]
   const libSrc = path.join(platformPkgDir, libFile)
-  const libDest = path.join(dir, `dist/${pkgName}/bin`, libFile)
+  const libDest = path.join(dir, `dist/${pkgDirName}/bin`, libFile)
   fs.copyFileSync(libSrc, libDest)
   console.log(`  copied native lib: ${libFile}`)
 
