@@ -33,7 +33,6 @@ import path from "path"
 import { fileURLToPath } from "url"
 
 import pkg from "../package.json"
-import { binaries } from "./build.ts"
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -49,6 +48,12 @@ const snapshotVersionIdx = process.argv.indexOf("--snapshot-version")
 const snapshotVersion = snapshotVersionIdx !== -1 ? process.argv[snapshotVersionIdx + 1] : undefined
 
 const version = snapshotVersion ?? pkg.version
+
+// Set env var before importing build.ts so the compiled binaries embed the
+// correct version string (build.ts reads DTAPLINE_BUILD_VERSION at build time)
+process.env.DTAPLINE_BUILD_VERSION = version
+
+const { binaries } = await import("./build.ts")
 console.log(`publishing ${pkg.name}@${version} (tag: ${tag}${dryRun ? ", DRY RUN" : ""})`)
 
 // ── Smoke test the local-platform binary ─────────────────────────────────────
@@ -77,13 +82,12 @@ for (const [pkgName] of Object.entries(binaries)) {
     fs.chmodSync(binFile, 0o755)
   }
 
-  // Stamp the version (may be overridden by --snapshot-version)
-  if (snapshotVersion) {
-    const pkgJsonPath = path.join(pkgDir, "package.json")
-    const pkgJson = JSON.parse(fs.readFileSync(pkgJsonPath, "utf8"))
-    pkgJson.version = version
-    fs.writeFileSync(pkgJsonPath, JSON.stringify(pkgJson, null, 2))
-  }
+  // Stamp the version — ensures package.json matches what we're publishing,
+  // whether it's the regular release version or a snapshot override
+  const pkgJsonPath = path.join(pkgDir, "package.json")
+  const pkgJson = await Bun.file(pkgJsonPath).json()
+  pkgJson.version = version
+  await Bun.write(pkgJsonPath, JSON.stringify(pkgJson, null, 2))
 
   console.log(`\npacking ${pkgName}@${version}`)
   await $`npm pack`.cwd(pkgDir)
@@ -97,7 +101,7 @@ for (const [pkgName] of Object.entries(binaries)) {
 
   if (!dryRun) {
     console.log(`  publishing ${tgzFiles[0]}`)
-    await $`npm publish ${tgzPath} --tag ${tag} --access public`
+    await $`npm publish ${tgzPath} --tag ${tag} --access public --userconfig ~/.npmrc`
   } else {
     console.log(`  [dry-run] would publish ${tgzFiles[0]}`)
   }
@@ -137,9 +141,13 @@ const wrapperPkg = {
   )
 }
 
-await Bun.file(path.join(wrapperDir, "package.json")).write(
-  JSON.stringify(wrapperPkg, null, 2)
-)
+await Bun.write(path.join(wrapperDir, "package.json"), JSON.stringify(wrapperPkg, null, 2))
+
+// Verify the written package.json before packing
+const writtenPkg = await Bun.file(path.join(wrapperDir, "package.json")).json()
+if (writtenPkg.version !== version) {
+  throw new Error(`Wrapper package.json version mismatch: expected ${version}, got ${writtenPkg.version}`)
+}
 
 console.log(`\npacking ${pkg.name}@${version} (wrapper)`)
 await $`npm pack`.cwd(wrapperDir)
@@ -152,7 +160,7 @@ const wrapperTgzPath = path.join(wrapperDir, wrapperTgzFiles[0])
 
 if (!dryRun) {
   console.log(`  publishing ${wrapperTgzFiles[0]}`)
-  await $`npm publish ${wrapperTgzPath} --tag ${tag} --access public`
+  await $`npm publish ${wrapperTgzPath} --tag ${tag} --access public --userconfig ~/.npmrc`
 } else {
   console.log(`  [dry-run] would publish ${wrapperTgzFiles[0]}`)
 }
