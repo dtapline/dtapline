@@ -4,18 +4,10 @@
 /**
  * dtapline — platform binary resolver
  *
- * This is a plain Node.js CJS script (no dependencies, no transpilation).
- * It locates the prebuilt native binary for the current OS/arch inside
- * node_modules and delegates execution to it.
- *
- * The native binaries live in optionalDependency packages named:
- *   @dtapline/cli-<os>-<arch>
- *
- * npm/pnpm/yarn installs only the matching os+cpu package at install time
- * (because they are listed as optionalDependencies and each sub-package has
- * "os" and "cpu" fields that restrict installation to the matching platform).
- *
- * Override with env var:  DTAPLINE_BIN_PATH=/path/to/dtapline
+ * Resolution order:
+ *  1. DTAPLINE_BIN_PATH env var  — explicit override
+ *  2. bin/.dtapline               — hard-linked/copied by postinstall.mjs (preferred)
+ *  3. node_modules traversal      — fallback when postinstall didn't run
  */
 
 const childProcess = require("child_process")
@@ -34,13 +26,19 @@ function run(target) {
   process.exit(typeof result.status === "number" ? result.status : 0)
 }
 
-// Escape hatch: explicit binary path via env var
+// 1. Escape hatch: explicit binary path via env var
 const envPath = process.env.DTAPLINE_BIN_PATH
-if (envPath) {
-  run(envPath)
-}
+if (envPath) run(envPath)
 
-// Map Node.js platform/arch to our package naming convention
+const scriptPath = fs.realpathSync(__filename)
+const scriptDir = path.dirname(scriptPath)
+
+// 2. Postinstall-linked binary — self-contained, works even when optional deps
+//    were not installed through the registry (e.g. behind a proxy like Artifactory)
+const cached = path.join(scriptDir, ".dtapline")
+if (fs.existsSync(cached)) run(cached)
+
+// 3. Fallback: walk up node_modules looking for the platform sub-package
 const platformMap = { darwin: "darwin", linux: "linux" }
 const archMap = { x64: "x64", arm64: "arm64" }
 
@@ -50,38 +48,25 @@ const arch = archMap[os.arch()]
 if (!platform || !arch) {
   console.error(
     `dtapline: unsupported platform ${os.platform()}-${os.arch()}\n` +
-      `Supported platforms: darwin-arm64, darwin-x64, linux-arm64, linux-x64`,
+      `Supported platforms: darwin-arm64, darwin-x64, linux-arm64, linux-x64`
   )
   process.exit(1)
 }
 
-// Expected package name prefix, e.g. "@dtapline/cli-darwin-arm64"
 const base = `@dtapline/cli-${platform}-${arch}`
-const binary = "dtapline"
 
-/**
- * Walk up the directory tree from startDir looking for a node_modules directory
- * that contains a matching @dtapline/cli-<platform>-<arch> package.
- */
 function findBinary(startDir) {
   let current = startDir
   for (;;) {
-    // Check both scoped (@dtapline/cli-darwin-arm64) and flat layouts
-    const scopedPath = path.join(current, "node_modules", "@dtapline", `cli-${platform}-${arch}`, "bin", binary)
-    if (fs.existsSync(scopedPath)) {
-      return scopedPath
-    }
-
+    const candidate = path.join(current, "node_modules", "@dtapline", `cli-${platform}-${arch}`, "bin", "dtapline")
+    if (fs.existsSync(candidate)) return candidate
     const parent = path.dirname(current)
-    if (parent === current) {
-      // Reached filesystem root
-      return undefined
-    }
+    if (parent === current) return undefined
     current = parent
   }
 }
 
-const resolved = findBinary(path.dirname(fs.realpathSync(__filename)))
+const resolved = findBinary(scriptDir)
 
 if (!resolved) {
   console.error(
@@ -90,7 +75,7 @@ if (!resolved) {
       `If you installed dtapline with npm/pnpm/yarn, this usually means the\n` +
       `optional dependency for your platform was not installed. Try:\n\n` +
       `  npm install ${base}\n\n` +
-      `Or set DTAPLINE_BIN_PATH=/path/to/dtapline to point directly to a binary.`,
+      `Or set DTAPLINE_BIN_PATH=/path/to/dtapline to point directly to a binary.`
   )
   process.exit(1)
 }

@@ -120,6 +120,12 @@ const binWrapperDest = path.join(wrapperDir, "bin/dtapline")
 fs.copyFileSync(binWrapperSrc, binWrapperDest)
 fs.chmodSync(binWrapperDest, 0o755)
 
+// Copy postinstall.mjs — runs after install and hard-links the native binary
+// into bin/.dtapline so the wrapper works even behind registry proxies
+const postinstallSrc = path.resolve(dir, "script/postinstall.mjs")
+const postinstallDest = path.join(wrapperDir, "postinstall.mjs")
+fs.copyFileSync(postinstallSrc, postinstallDest)
+
 // Build the wrapper package.json
 const wrapperPkg = {
   name: pkg.name,
@@ -131,7 +137,10 @@ const wrapperPkg = {
     dtapline: "./bin/dtapline",
     dtap: "./bin/dtapline"
   },
-  files: ["bin"],
+  scripts: {
+    postinstall: "node ./postinstall.mjs || true"
+  },
+  files: ["bin", "postinstall.mjs"],
   publishConfig: { access: "public" },
   optionalDependencies: Object.fromEntries(
     Object.entries(publishedPlatformPkgs).map(([name, ver]) => [name, ver])
