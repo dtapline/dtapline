@@ -55,14 +55,16 @@ const { binaries } = await import("./build.ts")
 console.log(`publishing ${pkg.name}@${version} (tag: ${tag}${dryRun ? ", DRY RUN" : ""})`)
 
 // ── Smoke test the local-platform binary ─────────────────────────────────────
-const localOs = process.platform // "darwin" | "linux"
+const localOs = process.platform // "darwin" | "linux" | "win32"
 const localArch = process.arch // "arm64" | "x64"
-const localPkgName = `${pkg.name}-${localOs}-${localArch}`
+const localPlatform = localOs === "win32" ? "windows" : localOs
+const localPkgName = `${pkg.name}-${localPlatform}-${localArch}`
 // Strip @scope/ prefix — dist dirs never contain @ to avoid npm path confusion
 const localPkgDirName = localPkgName.replace(/^@[^/]+\//, "")
+const localBinaryName = localOs === "win32" ? "dtapline.exe" : "dtapline"
 
 if (binaries[localPkgName]) {
-  const localBin = path.resolve(dir, `dist/${localPkgDirName}/bin/dtapline`)
+  const localBin = path.resolve(dir, `dist/${localPkgDirName}/bin/${localBinaryName}`)
   console.log(`\nsmoking test: ${localBin} --version`)
   const result = await $`${localBin} --version`.quiet()
   console.log(`  → ${result.stdout.toString().trim()}`)

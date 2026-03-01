@@ -93,13 +93,20 @@ async function main() {
   const targetName = isWindows ? ".dtapline.exe" : ".dtapline"
   const target = path.join(__dirname, "bin", targetName)
 
+  // Atomic swap: link to a temp name first, then rename over the target.
+  // This avoids a brief window where the target doesn't exist (unlinkSync gap).
+  // If hard-linking fails (e.g. cross-filesystem with pnpm store), fall back to copy.
+  const tmp = `${target}.tmp`
+  if (fs.existsSync(tmp)) fs.unlinkSync(tmp)
   if (fs.existsSync(target)) fs.unlinkSync(target)
 
   try {
-    fs.linkSync(binaryPath, target)
+    fs.linkSync(binaryPath, tmp)
+    fs.renameSync(tmp, target)
     console.log(`dtapline postinstall: linked ${target} -> ${binaryPath}`)
   } catch {
     // Hard link can fail across filesystems (e.g. pnpm content-addressable store)
+    if (fs.existsSync(tmp)) fs.unlinkSync(tmp)
     fs.copyFileSync(binaryPath, target)
     console.log(`dtapline postinstall: copied ${target} <- ${binaryPath}`)
   }
@@ -108,7 +115,9 @@ async function main() {
 }
 
 main().catch((err) => {
-  // postinstall failures must not break the install — just warn
+  // Exit 1 so the caller knows something went wrong.
+  // The wrapper package.json runs this as `node ./postinstall.mjs || true`
+  // so npm install itself is never broken by this failure.
   console.warn(`dtapline postinstall: warning: ${err.message}`)
-  process.exit(0)
+  process.exit(1)
 })
