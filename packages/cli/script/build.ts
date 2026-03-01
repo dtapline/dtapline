@@ -232,7 +232,7 @@ for (const target of targets) {
   }
 
   const bunTarget = `bun-${target.os}-${target.arch}`
-  const outfile = `dist/${pkgName}/bin/dtapline`
+  const outfile = `dist/${pkgDirName}/bin/dtapline`
 
   // Pre-download the Bun executable for cross-compilation targets so we can
   // pass it via executablePath instead of relying on Bun's internal downloader.
@@ -250,7 +250,7 @@ for (const target of targets) {
         // ...(bunExePath ? { executablePath: bunExePath } : {})
       },
       define: {
-        __VERSION__: JSON.stringify(pkg.version)
+        __VERSION__: JSON.stringify(process.env.DTAPLINE_BUILD_VERSION ?? pkg.version)
       },
       minify: true,
       sourcemap: "none"
@@ -263,11 +263,12 @@ for (const target of targets) {
   console.log(`  binary: ${outfile}`)
 
   // ── 3. Platform sub-package package.json ────────────────────────────────────
-  await Bun.file(`dist/${pkgName}/package.json`).write(
+  await Bun.write(
+    `dist/${pkgDirName}/package.json`,
     JSON.stringify(
       {
         name: pkgName,
-        version: pkg.version,
+        version: process.env.DTAPLINE_BUILD_VERSION ?? pkg.version,
         description: `Prebuilt ${target.os}-${target.arch} binary for ${pkg.name}`,
         os: [target.os],
         cpu: [target.arch],
