@@ -189,9 +189,12 @@ for (const target of targets) {
   ]
     .filter(Boolean)
     .join("-")
+  // Directory name: strip leading @scope/ to avoid npm misinterpreting the path
+  // as a package specifier (e.g. "@dtapline/cli-darwin-arm64" → "cli-darwin-arm64")
+  const pkgDirName = pkgName.replace(/^@[^/]+\//, "")
   console.log(`\nbuilding ${pkgName}`)
 
-  await $`mkdir -p dist/${pkgName}/bin`
+  await $`mkdir -p dist/${pkgDirName}/bin`
 
   // ── 1. Find the native shared library for this target ───────────────────────
   const platformPkgDir = await fetchOpentuiPlatformPkg(target.os, target.arch)
@@ -203,7 +206,7 @@ for (const target of targets) {
   }
   const libFile = libFiles[0]
   const libSrc = path.join(platformPkgDir, libFile)
-  const libDest = path.join(dir, `dist/${pkgName}/bin`, libFile)
+  const libDest = path.join(dir, `dist/${pkgDirName}/bin`, libFile)
   fs.copyFileSync(libSrc, libDest)
   console.log(`  copied native lib: ${libFile}`)
 
@@ -230,7 +233,7 @@ for (const target of targets) {
   }
 
   const bunTarget = `bun-${target.os}-${target.arch}`
-  const outfile = `dist/${pkgName}/bin/dtapline`
+  const outfile = `dist/${pkgDirName}/bin/dtapline`
 
   // Pre-download the Bun executable for cross-compilation targets so we can
   // pass it via executablePath instead of relying on Bun's internal downloader.
@@ -261,7 +264,7 @@ for (const target of targets) {
   console.log(`  binary: ${outfile}`)
 
   // ── 3. Platform sub-package package.json ────────────────────────────────────
-  await Bun.file(`dist/${pkgName}/package.json`).write(
+  await Bun.file(`dist/${pkgDirName}/package.json`).write(
     JSON.stringify(
       {
         name: pkgName,

@@ -60,9 +60,10 @@ console.log(`publishing ${pkg.name}@${version} (tag: ${tag}${dryRun ? ", DRY RUN
 const localOs = process.platform // "darwin" | "linux"
 const localArch = process.arch // "arm64" | "x64"
 const localPkgName = `${pkg.name}-${localOs}-${localArch}`
+const localPkgDirName = localPkgName.replace(/^@[^/]+\//, "")
 
 if (binaries[localPkgName]) {
-  const localBin = path.resolve(dir, `dist/${localPkgName}/bin/dtapline`)
+  const localBin = path.resolve(dir, `dist/${localPkgDirName}/bin/dtapline`)
   console.log(`\nsmoking test: ${localBin} --version`)
   const result = await $`${localBin} --version`.quiet()
   console.log(`  → ${result.stdout.toString().trim()}`)
@@ -74,7 +75,8 @@ if (binaries[localPkgName]) {
 const publishedPlatformPkgs: Record<string, string> = {}
 
 for (const [pkgName] of Object.entries(binaries)) {
-  const pkgDir = path.resolve(dir, `dist/${pkgName}`)
+  const pkgDirName = pkgName.replace(/^@[^/]+\//, "")
+  const pkgDir = path.resolve(dir, `dist/${pkgDirName}`)
 
   // Ensure bin is executable
   const binFile = path.join(pkgDir, "bin", "dtapline")
@@ -114,7 +116,7 @@ for (const [pkgName] of Object.entries(binaries)) {
 //  - bin/dtapline  →  the Node.js CJS wrapper that resolves the platform binary
 //  - optionalDependencies  →  all platform sub-packages at the same version
 
-const wrapperDir = path.resolve(dir, "dist/@dtapline/cli")
+const wrapperDir = path.resolve(dir, "dist/dtapline-cli-wrapper")
 await $`mkdir -p ${wrapperDir}/bin`
 
 // Copy the Node.js bin wrapper
@@ -149,7 +151,8 @@ if (writtenPkg.version !== version) {
   throw new Error(`Wrapper package.json version mismatch: expected ${version}, got ${writtenPkg.version}`)
 }
 
-console.log(`\npacking ${pkg.name}@${version} (wrapper)`)
+console.log(`\npacking ${pkg.name}@${version} (wrapper) from ${wrapperDir}`)
+console.log(`  wrapper package.json: ${JSON.stringify(writtenPkg, null, 2)}`)
 await $`npm pack`.cwd(wrapperDir)
 
 const wrapperTgzFiles = fs.readdirSync(wrapperDir).filter((f) => f.endsWith(".tgz"))
