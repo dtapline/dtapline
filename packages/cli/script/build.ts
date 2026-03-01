@@ -45,7 +45,7 @@ process.chdir(dir)
 const singleFlag = process.argv.includes("--single")
 
 const allTargets: Array<{ os: string; arch: "arm64" | "x64"; abi?: "musl" }> = [
-  // { os: "win32", arch: "x64" },
+  { os: "win32", arch: "x64" },
   { os: "darwin", arch: "arm64" },
   { os: "darwin", arch: "x64" },
   { os: "linux", arch: "arm64" },
@@ -198,7 +198,7 @@ for (const target of targets) {
   // ── 1. Find the native shared library for this target ───────────────────────
   const platformPkgDir = await fetchOpentuiPlatformPkg(target.os, target.arch)
 
-  const libExt = target.os === "darwin" ? "dylib" : "so"
+  const libExt = target.os === "darwin" ? "dylib" : target.os === "win32" ? "dll" : "so"
   const libFiles = fs.readdirSync(platformPkgDir).filter((f) => f.endsWith(`.${libExt}`))
   if (libFiles.length === 0) {
     throw new Error(`No .${libExt} found in ${platformPkgDir}`)
@@ -232,7 +232,8 @@ for (const target of targets) {
   }
 
   const bunTarget = `bun-${target.os}-${target.arch}`
-  const outfile = `dist/${pkgDirName}/bin/dtapline`
+  const binaryName = target.os === "win32" ? "dtapline.exe" : "dtapline"
+  const outfile = `dist/${pkgDirName}/bin/${binaryName}`
 
   // Pre-download the Bun executable for cross-compilation targets so we can
   // pass it via executablePath instead of relying on Bun's internal downloader.
@@ -259,7 +260,7 @@ for (const target of targets) {
     if (linkCreated) fs.rmSync(nodeModulesLink)
   }
 
-  fs.chmodSync(outfile, 0o755)
+  if (target.os !== "win32") fs.chmodSync(outfile, 0o755)
   console.log(`  binary: ${outfile}`)
 
   // ── 3. Platform sub-package package.json ────────────────────────────────────

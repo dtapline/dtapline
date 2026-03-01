@@ -78,9 +78,10 @@ for (const [pkgName] of Object.entries(binaries)) {
   const pkgDirName = pkgName.replace(/^@[^/]+\//, "")
   const pkgDir = path.resolve(dir, `dist/${pkgDirName}`)
 
-  // Ensure bin is executable
-  const binFile = path.join(pkgDir, "bin", "dtapline")
-  if (fs.existsSync(binFile)) {
+  // Ensure bin is executable (skip on Windows — .exe doesn't use Unix permissions)
+  const binaryName = pkgName.includes("-windows-") ? "dtapline.exe" : "dtapline"
+  const binFile = path.join(pkgDir, "bin", binaryName)
+  if (fs.existsSync(binFile) && !pkgName.includes("-windows-")) {
     fs.chmodSync(binFile, 0o755)
   }
 

@@ -40,7 +40,7 @@ function isMusl() {
     // ignore
   }
   try {
-    const { spawnSync } = await import("child_process")
+    const { spawnSync } = require("child_process")
     const result = spawnSync("ldd", ["--version"], { encoding: "utf8" })
     const text = ((result.stdout ?? "") + (result.stderr ?? "")).toLowerCase()
     if (text.includes("musl")) return true
@@ -53,18 +53,18 @@ function isMusl() {
 async function findBinary() {
   const { arch, platform } = detectPlatform()
 
-  // Build ordered list of candidate package names (musl, baseline variants)
+  // Build ordered list of candidate package names (musl variants for linux)
   const base = `@dtapline/cli-${platform}-${arch}`
   const names = []
 
-  if (platform === "linux" && (await isMusl())) {
+  if (platform === "linux" && isMusl()) {
     names.push(`${base}-musl`, base)
   } else {
     names.push(base)
     if (platform === "linux") names.push(`${base}-musl`)
   }
 
-  const binaryName = "dtapline"
+  const binaryName = platform === "windows" ? "dtapline.exe" : "dtapline"
 
   for (const name of names) {
     try {
@@ -87,14 +87,11 @@ async function findBinary() {
 }
 
 async function main() {
-  if (os.platform() === "win32") {
-    // Windows: the .exe is shipped inside the platform package; no hard-link needed
-    console.log("dtapline postinstall: Windows detected, skipping binary link")
-    return
-  }
-
+  const { platform } = detectPlatform()
+  const isWindows = platform === "windows"
   const binaryPath = await findBinary()
-  const target = path.join(__dirname, "bin", ".dtapline")
+  const targetName = isWindows ? ".dtapline.exe" : ".dtapline"
+  const target = path.join(__dirname, "bin", targetName)
 
   if (fs.existsSync(target)) fs.unlinkSync(target)
 
@@ -107,7 +104,7 @@ async function main() {
     console.log(`dtapline postinstall: copied ${target} <- ${binaryPath}`)
   }
 
-  fs.chmodSync(target, 0o755)
+  if (!isWindows) fs.chmodSync(target, 0o755)
 }
 
 main().catch((err) => {

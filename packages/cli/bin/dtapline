@@ -35,11 +35,13 @@ const scriptDir = path.dirname(scriptPath)
 
 // 2. Postinstall-linked binary — self-contained, works even when optional deps
 //    were not installed through the registry (e.g. behind a proxy like Artifactory)
-const cached = path.join(scriptDir, ".dtapline")
+const isWindows = os.platform() === "win32"
+const cachedName = isWindows ? ".dtapline.exe" : ".dtapline"
+const cached = path.join(scriptDir, cachedName)
 if (fs.existsSync(cached)) run(cached)
 
 // 3. Fallback: walk up node_modules looking for the platform sub-package
-const platformMap = { darwin: "darwin", linux: "linux" }
+const platformMap = { darwin: "darwin", linux: "linux", win32: "windows" }
 const archMap = { x64: "x64", arm64: "arm64" }
 
 const platform = platformMap[os.platform()]
@@ -48,17 +50,18 @@ const arch = archMap[os.arch()]
 if (!platform || !arch) {
   console.error(
     `dtapline: unsupported platform ${os.platform()}-${os.arch()}\n` +
-      `Supported platforms: darwin-arm64, darwin-x64, linux-arm64, linux-x64`
+      `Supported platforms: darwin-arm64, darwin-x64, linux-arm64, linux-x64, windows-x64`
   )
   process.exit(1)
 }
 
 const base = `@dtapline/cli-${platform}-${arch}`
+const binaryFile = isWindows ? "dtapline.exe" : "dtapline"
 
 function findBinary(startDir) {
   let current = startDir
   for (;;) {
-    const candidate = path.join(current, "node_modules", "@dtapline", `cli-${platform}-${arch}`, "bin", "dtapline")
+    const candidate = path.join(current, "node_modules", "@dtapline", `cli-${platform}-${arch}`, "bin", binaryFile)
     if (fs.existsSync(candidate)) return candidate
     const parent = path.dirname(current)
     if (parent === current) return undefined
