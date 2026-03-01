@@ -28,6 +28,10 @@ jobs:
       - name: Install dependencies
         uses: ./.github/actions/setup
 
+      - name: Compute versions
+        run: |
+          echo "CLI_VERSION=$(pnpm tsx scripts/get-next-version.ts @dtapline/cli)" >> $GITHUB_ENV
+
       - name: Report deployment in progress
         env:
           DTAPLINE_API_KEY: ${{ secrets.DTAPLINE_API_KEY }}
@@ -35,7 +39,7 @@ jobs:
         run: |
           pnpm --package=@dtapline/cli dlx dtap deploy development cli \
             --status in_progress \
-            --deployed-version "$(pnpm tsx scripts/get-next-version.ts @dtapline/cli)"
+            --deployed-version "$CLI_VERSION"
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
@@ -49,11 +53,9 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           echo "//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}" > ~/.npmrc
-          SNAPSHOT_VERSION="$(pnpm tsx ../../scripts/get-next-version.ts @dtapline/cli)"
-          bun run script/publish.ts --tag snapshot --snapshot-version "$SNAPSHOT_VERSION"
-          SNAPSHOT_URL="https://www.npmjs.com/package/@dtapline/cli/v/${SNAPSHOT_VERSION}"
-          echo "url=$SNAPSHOT_URL" >> $GITHUB_OUTPUT
-          echo "Install with: npm install @dtapline/cli@${SNAPSHOT_VERSION}"
+          bun run script/publish.ts --tag snapshot --snapshot-version "$CLI_VERSION"
+          echo "url=https://www.npmjs.com/package/@dtapline/cli/v/${CLI_VERSION}" >> $GITHUB_OUTPUT
+          echo "Install with: npm install @dtapline/cli@${CLI_VERSION}"
 
       - name: Report deployment success
         if: success()
@@ -63,7 +65,7 @@ jobs:
         run: |
           pnpm --package=@dtapline/cli dlx dtap deploy development cli \
             --status success \
-            --deployed-version "$(pnpm tsx scripts/get-next-version.ts @dtapline/cli)"
+            --deployed-version "$CLI_VERSION"
 
       - name: Report deployment failure
         if: failure()
@@ -73,7 +75,7 @@ jobs:
         run: |
           pnpm --package=@dtapline/cli dlx dtap deploy development cli \
             --status failed \
-            --deployed-version "$(pnpm tsx scripts/get-next-version.ts @dtapline/cli)"
+            --deployed-version "$CLI_VERSION"
 
   deploy-api:
     name: Deploy API Server to Development
@@ -93,6 +95,11 @@ jobs:
       - name: Install dependencies
         uses: ./.github/actions/setup
 
+      - name: Compute version
+        working-directory: .
+        run: |
+          echo "API_VERSION=$(pnpm tsx scripts/get-next-version.ts @dtapline/api)" >> $GITHUB_ENV
+
       - name: Report deployment in progress
         working-directory: .
         env:
@@ -101,7 +108,7 @@ jobs:
         run: |
           pnpm --package=@dtapline/cli dlx dtap deploy development api \
             --status in_progress \
-            --deployed-version "$(pnpm tsx scripts/get-next-version.ts @dtapline/api)"
+            --deployed-version "$API_VERSION"
 
       - name: Bundle Lambda code
         run: pnpm build
@@ -156,7 +163,7 @@ jobs:
         run: |
           pnpm --package=@dtapline/cli dlx dtap deploy development api \
             --status success \
-            --deployed-version "$(pnpm tsx scripts/get-next-version.ts @dtapline/api)"
+            --deployed-version "$API_VERSION"
 
       - name: Report failed deployment
         if: failure()
@@ -167,7 +174,7 @@ jobs:
         run: |
           pnpm --package=@dtapline/cli dlx dtap deploy development api \
             --status failed \
-            --deployed-version "$(pnpm tsx scripts/get-next-version.ts @dtapline/api)"
+            --deployed-version "$API_VERSION"
 
   deploy-ui:
     name: Deploy UI to Development
@@ -187,6 +194,11 @@ jobs:
       - name: Install dependencies
         uses: ./.github/actions/setup
 
+      - name: Compute version
+        working-directory: .
+        run: |
+          echo "UI_VERSION=$(pnpm tsx scripts/get-next-version.ts @dtapline/ui)" >> $GITHUB_ENV
+
       - name: Report deployment in progress
         working-directory: .
         env:
@@ -195,7 +207,7 @@ jobs:
         run: |
           pnpm --package=@dtapline/cli dlx dtap deploy development ui \
             --status in_progress \
-            --deployed-version "$(pnpm tsx scripts/get-next-version.ts @dtapline/ui)"
+            --deployed-version "$UI_VERSION"
 
       - name: Build UI
         run: pnpm build
@@ -226,7 +238,7 @@ jobs:
         run: |
           pnpm --package=@dtapline/cli dlx dtap deploy development ui \
             --status success \
-            --deployed-version "$(pnpm tsx scripts/get-next-version.ts @dtapline/ui)"
+            --deployed-version "$UI_VERSION"
 
       - name: Report failed deployment
         if: failure()
@@ -237,4 +249,4 @@ jobs:
         run: |
           pnpm --package=@dtapline/cli dlx dtap deploy development ui \
             --status failed \
-            --deployed-version "$(pnpm tsx scripts/get-next-version.ts @dtapline/ui)"
+            --deployed-version "$UI_VERSION"
