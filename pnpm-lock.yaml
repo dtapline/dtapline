@@ -223,15 +223,15 @@ importers:
       '@dtapline/domain':
         specifier: workspace:*
         version: link:../domain/dist
+      '@types/bun':
+        specifier: 1.3.9
+        version: 1.3.9
       '@types/node':
         specifier: ^22.0.0
         version: 22.14.0
       '@types/react':
         specifier: ^19.0.0
         version: 19.1.0
-      tsup:
-        specifier: ^8.3.5
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
 
   packages/domain:
     dependencies:
@@ -3254,6 +3254,9 @@ packages:
     resolution: {integrity: sha512-WRZOuCuaz8UcZZE4R5HXTco2goQSI2XxjGY3hbM/xDvwmqFWd4ivooImsMx65OKM6CtNKbnZ5YL+YwAwK7c1dg==}
     deprecated: This is a stub types definition. bcryptjs provides its own type definitions, so you do not need this installed.
 
+  '@types/bun@1.3.9':
+    resolution: {integrity: sha512-KQ571yULOdWJiMH+RIWIOZ7B2RXQGpL1YQrBtLIV3FqDcCu6FsbFUBwhdKUlCKUpS3PJDsHlJ1QKlpxoVR+xtw==}
+
   '@types/dedent@0.7.0':
     resolution: {integrity: sha512-EGlKlgMhnLt/cM4DbUSafFdrkeJoC9Mvnj0PUCU7tFmTjMjNRT957kXCx0wYm3JuEq4o4ZsS5vG+NlkM2DMd2A==}
 
@@ -3827,6 +3830,9 @@ packages:
     resolution: {integrity: sha512-Lh1oQAYHDcnesJauieA4UNkWGXY9hYck7OA5IaRwE3Bp6K2F2pJSNYqq+hIy7P3uOvo3km3oxS8304g5gDMl/w==}
     peerDependencies:
       typescript: ^5
+
+  bun-types@1.3.9:
+    resolution: {integrity: sha512-+UBWWOakIP4Tswh0Bt0QD0alpTY8cb5hvgiYeWCMet9YukHbzuruIEeXC2D7nMJPB12kbh8C7XJykSexEqGKJg==}
 
   bun-webgpu-darwin-arm64@0.1.5:
     resolution: {integrity: sha512-qM7W5IaFpWYGPDcNiQ8DOng3noQ97gxpH2MFH1mGsdKwI0T4oy++egSh5Z7s6AQx8WKgc9GzAsTUM4KZkFdacw==}
@@ -10138,6 +10144,10 @@ snapshots:
     dependencies:
       bcryptjs: 3.0.3
 
+  '@types/bun@1.3.9':
+    dependencies:
+      bun-types: 1.3.9
+
   '@types/dedent@0.7.0': {}
 
   '@types/eslint@8.56.12':
@@ -10701,6 +10711,10 @@ snapshots:
   bun-ffi-structs@0.1.2(typescript@5.9.3):
     dependencies:
       typescript: 5.9.3
+
+  bun-types@1.3.9:
+    dependencies:
+      '@types/node': 22.14.0
 
   bun-webgpu-darwin-arm64@0.1.5:
     optional: true
