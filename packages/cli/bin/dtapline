@@ -15,8 +15,19 @@ const fs = require("fs")
 const path = require("path")
 const os = require("os")
 
+// Binary alias names — if npx passes the alias as the first user arg (argv[2]),
+// strip it so that `npx @dtapline/cli dtap dashboard` works like `dtap dashboard`.
+const BINARY_ALIASES = ["dtap", "dtapline"]
+
 function run(target) {
-  const result = childProcess.spawnSync(target, process.argv.slice(2), {
+  let userArgs = process.argv.slice(2)
+  // When invoked via `npx <pkg> dtap <subcommand>`, npx passes the binary alias
+  // as the first argument. Strip it so the subcommand is correctly at argv[2]
+  // inside the native binary.
+  if (userArgs.length > 0 && BINARY_ALIASES.includes(userArgs[0])) {
+    userArgs = userArgs.slice(1)
+  }
+  const result = childProcess.spawnSync(target, userArgs, {
     stdio: "inherit",
   })
   if (result.error) {
