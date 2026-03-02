@@ -9,11 +9,10 @@
 import { DtaplineApi } from "@dtapline/domain/Api"
 import type { Deployment } from "@dtapline/domain/Deployment"
 import type { Environment } from "@dtapline/domain/Environment"
-import type { Project } from "@dtapline/domain/Project"
-import { ProjectId } from "@dtapline/domain/Project"
+import type { Project, ProjectId } from "@dtapline/domain/Project"
 import type { Service } from "@dtapline/domain/Service"
 import { BunHttpClient } from "@effect/platform-bun"
-import { Effect, Schema } from "effect"
+import * as Effect from "effect/Effect"
 import { HttpClient, HttpClientRequest } from "effect/unstable/http"
 import { HttpApiClient } from "effect/unstable/httpapi"
 
@@ -149,13 +148,13 @@ export async function getProjects(
 export async function getMatrix(
   serverUrl: string,
   token: string,
-  projectId: string
+  projectId: ProjectId
 ): Promise<ProjectMatrix> {
   return runWithClient(
     Effect.gen(function*() {
       const client = yield* makeSessionClient(serverUrl, token)
       return yield* client.projects.getMatrix({
-        params: { projectId: Schema.decodeSync(ProjectId)(projectId) }
+        params: { projectId }
       })
     })
   )

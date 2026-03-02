@@ -6,7 +6,8 @@
  * Adapted from @pms/websocket router.
  */
 import type { APIGatewayProxyResultV2, Context } from "aws-lambda"
-import { Effect, Schema } from "effect"
+import * as Effect from "effect/Effect"
+import * as Schema from "effect/Schema"
 import type {
   QueryParams,
   WebsocketConnectRequest,

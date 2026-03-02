@@ -11,8 +11,8 @@
  * 3. On success, stores connection in DynamoDB with userId
  * 4. On disconnect, removes connection from DynamoDB
  */
-import type { makeDynamoDBStore } from "@effect-aws/dynamodb"
-import { DynamoDBStore } from "@effect-aws/dynamodb"
+import type { makeDynamoDBStore } from "@effect-aws/dynamodb/DynamoDBStore"
+import { DynamoDBStore } from "@effect-aws/dynamodb/DynamoDBStore"
 import * as Effect from "effect/Effect"
 import { MongoDatabase } from "../MongoDB.js"
 import { websocketEventRouter } from "./router.js"

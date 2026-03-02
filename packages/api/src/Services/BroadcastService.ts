@@ -6,9 +6,9 @@
  * DynamoDB + API Gateway Management API. In local dev, it uses
  * in-memory WebSocket connections.
  */
-import { ApiGatewayManagementApiService } from "@effect-aws/client-api-gateway-management-api"
-import type { makeDynamoDBStore } from "@effect-aws/dynamodb"
-import { DynamoDBStore } from "@effect-aws/dynamodb"
+import { ApiGatewayManagementApiService } from "@effect-aws/client-api-gateway-management-api/ApiGatewayManagementApiService"
+import type { makeDynamoDBStore } from "@effect-aws/dynamodb/DynamoDBStore"
+import { DynamoDBStore } from "@effect-aws/dynamodb/DynamoDBStore"
 import * as Config from "effect/Config"
 import * as Effect from "effect/Effect"
 import * as Layer from "effect/Layer"

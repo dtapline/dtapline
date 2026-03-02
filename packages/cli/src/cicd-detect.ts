@@ -5,7 +5,8 @@
 
 import { BunServices } from "@effect/platform-bun"
 import * as Effect from "effect/Effect"
-import { ChildProcess } from "effect/unstable/process"
+import * as ChildProcess from "effect/unstable/process/ChildProcess"
+import * as ChildProcessSpawner from "effect/unstable/process/ChildProcessSpawner"
 
 export interface CICDInfo {
   platform: string
@@ -285,10 +286,13 @@ export function getCICDIcon(platform: string): string | undefined {
  * Get the current git commit SHA by running `git rev-parse HEAD`
  * Returns an Effect that resolves to the SHA or undefined if git is not available
  */
-export const getGitCommitSha = (): Effect.Effect<string | undefined> =>
-  ChildProcess.make("git", ["rev-parse", "HEAD"]).pipe(
-    ChildProcess.string,
-    Effect.map((output) => output.trim() || undefined),
-    Effect.catch(() => Effect.succeed(undefined)),
-    Effect.provide(BunServices.layer)
-  )
+export const getGitCommitSha = (): Effect.Effect<string | undefined, never, ChildProcessSpawner.ChildProcessSpawner> =>
+  Effect.gen(function*() {
+    const spawner = yield* ChildProcessSpawner.ChildProcessSpawner
+    return yield* ChildProcess.make("git", ["rev-parse", "HEAD"]).pipe(
+      spawner.string,
+      Effect.map((output) => output.trim() || undefined),
+      Effect.catch(() => Effect.succeed(undefined)),
+      Effect.provide(BunServices.layer)
+    )
+  })
