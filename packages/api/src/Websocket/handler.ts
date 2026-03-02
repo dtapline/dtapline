@@ -13,7 +13,7 @@
  */
 import type { makeDynamoDBStore } from "@effect-aws/dynamodb"
 import { DynamoDBStore } from "@effect-aws/dynamodb"
-import { Effect } from "effect"
+import * as Effect from "effect/Effect"
 import { MongoDatabase } from "../MongoDB.js"
 import { websocketEventRouter } from "./router.js"
 
@@ -21,7 +21,7 @@ import { websocketEventRouter } from "./router.js"
  * Concrete type for DynamoDBStore instance.
  * TypeScript 5.7+ cannot resolve the proxy types in DynamoDBStore.Type.
  */
-type DynamoDBStoreInstance = Effect.Effect.Success<ReturnType<typeof makeDynamoDBStore>>
+type DynamoDBStoreInstance = Effect.Success<ReturnType<typeof makeDynamoDBStore>>
 
 export const handler = websocketEventRouter<DynamoDBStore | MongoDatabase, never>({
   CONNECT: (req, queryParams) =>

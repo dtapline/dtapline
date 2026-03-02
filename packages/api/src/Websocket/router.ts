@@ -32,7 +32,7 @@ type RoutesConfig<R, E> = {
  */
 export const websocketEventRouter = <R, E>(routes: RoutesConfig<R, E>) => (event: unknown, _context: Context) =>
   Effect.gen(function*() {
-    const parsed = yield* Schema.decodeUnknown(WebsocketEvent)(event, { errors: "all" })
+    const parsed = yield* Schema.decodeUnknownEffect(WebsocketEvent)(event, { errors: "all" })
     const { queryStringParameters, requestContext } = parsed
 
     const route = routes[requestContext.eventType] as

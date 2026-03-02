@@ -3,7 +3,7 @@
  * Detects which CI/CD platform the CLI is running on based on environment variables
  */
 
-import { NodeServices } from "@effect/platform-node"
+import { BunServices } from "@effect/platform-bun"
 import * as Effect from "effect/Effect"
 import { ChildProcess } from "effect/unstable/process"
 
@@ -290,5 +290,5 @@ export const getGitCommitSha = (): Effect.Effect<string | undefined> =>
     ChildProcess.string,
     Effect.map((output) => output.trim() || undefined),
     Effect.catch(() => Effect.succeed(undefined)),
-    Effect.provide(NodeServices.layer)
+    Effect.provide(BunServices.layer)
   )

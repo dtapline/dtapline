@@ -2,6 +2,7 @@ packages:
   - packages/*
 
 catalog:
-  "effect": "4.0.0-beta.10"
-  "@effect/platform-node": "4.0.0-beta.10"
-  "@effect/vitest": "4.0.0-beta.10"
+  "effect": "4.0.0-beta.23"
+  "@effect/platform-node": "4.0.0-beta.23"
+  "@effect/platform-bun": "4.0.0-beta.23"
+  "@effect/vitest": "4.0.0-beta.23"

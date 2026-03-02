@@ -6,15 +6,18 @@ settings:
 
 catalogs:
   default:
+    '@effect/platform-bun':
+      specifier: 4.0.0-beta.23
+      version: 4.0.0-beta.23
     '@effect/platform-node':
-      specifier: 4.0.0-beta.10
-      version: 4.0.0-beta.10
+      specifier: 4.0.0-beta.23
+      version: 4.0.0-beta.23
     '@effect/vitest':
-      specifier: 4.0.0-beta.10
-      version: 4.0.0-beta.10
+      specifier: 4.0.0-beta.23
+      version: 4.0.0-beta.23
     effect:
-      specifier: 4.0.0-beta.10
-      version: 4.0.0-beta.10
+      specifier: 4.0.0-beta.23
+      version: 4.0.0-beta.23
 
 overrides:
   vitest: ^2.0.5
@@ -67,7 +70,7 @@ importers:
         version: 0.2.0
       '@effect/vitest':
         specifier: 'catalog:'
-        version: 4.0.0-beta.10(effect@4.0.0-beta.10)(vitest@2.1.9(@types/node@22.14.0)(lightningcss@1.31.1)(terser@5.46.0))
+        version: 4.0.0-beta.23(effect@4.0.0-beta.23)(vitest@2.1.9(@types/node@22.14.0)(lightningcss@1.31.1)(terser@5.46.0))
       '@eslint/compat':
         specifier: 1.2.2
         version: 1.2.2(eslint@9.24.0(jiti@2.6.1))
@@ -91,7 +94,7 @@ importers:
         version: 0.4.0(patch_hash=lz2aochwly4t7pzapzh4fqay4m)(@babel/core@7.26.10)
       effect:
         specifier: 'catalog:'
-        version: 4.0.0-beta.10
+        version: 4.0.0-beta.23
       eslint:
         specifier: ^9.13.0
         version: 9.24.0(jiti@2.6.1)
@@ -151,22 +154,22 @@ importers:
         version: link:../domain/dist
       '@effect-aws/client-api-gateway-management-api':
         specifier: ^2.0.0-beta.2
-        version: 2.0.0-beta.2(effect@4.0.0-beta.10)
+        version: 2.0.0-beta.2(effect@4.0.0-beta.23)
       '@effect-aws/client-dynamodb':
         specifier: ^2.0.0-beta.2
-        version: 2.0.0-beta.2(effect@4.0.0-beta.10)
+        version: 2.0.0-beta.2(effect@4.0.0-beta.23)
       '@effect-aws/dynamodb':
         specifier: ^2.0.0-beta.2
-        version: 2.0.0-beta.2(@effect-aws/client-dynamodb@2.0.0-beta.2(effect@4.0.0-beta.10))(effect@4.0.0-beta.10)
+        version: 2.0.0-beta.2(@effect-aws/client-dynamodb@2.0.0-beta.2(effect@4.0.0-beta.23))(effect@4.0.0-beta.23)
       '@effect-aws/lambda':
         specifier: ^2.0.0-beta.2
-        version: 2.0.0-beta.2(@effect/platform-node-shared@4.0.0-beta.23(effect@4.0.0-beta.10))(effect@4.0.0-beta.10)
+        version: 2.0.0-beta.2(@effect/platform-node-shared@4.0.0-beta.23(effect@4.0.0-beta.23))(effect@4.0.0-beta.23)
       '@effect-aws/powertools-logger':
         specifier: ^2.0.0-beta.2
-        version: 2.0.0-beta.2(@aws-lambda-powertools/logger@2.31.0)(effect@4.0.0-beta.10)
+        version: 2.0.0-beta.2(@aws-lambda-powertools/logger@2.31.0)(effect@4.0.0-beta.23)
       '@effect/platform-node':
         specifier: 'catalog:'
-        version: 4.0.0-beta.10(effect@4.0.0-beta.10)(ioredis@5.10.0)
+        version: 4.0.0-beta.23(effect@4.0.0-beta.23)(ioredis@5.10.0)
       aws4:
         specifier: ^1.13.2
         version: 1.13.2
@@ -181,7 +184,7 @@ importers:
         version: 17.2.3
       effect:
         specifier: 'catalog:'
-        version: 4.0.0-beta.10
+        version: 4.0.0-beta.23
       mongodb:
         specifier: ^7.0.0
         version: 7.1.0(socks@2.8.7)
@@ -210,9 +213,9 @@ importers:
       '@dtapline/domain':
         specifier: workspace:*
         version: link:../domain/dist
-      '@effect/platform-node':
+      '@effect/platform-bun':
         specifier: 'catalog:'
-        version: 4.0.0-beta.10(effect@4.0.0-beta.10)(ioredis@5.10.0)
+        version: 4.0.0-beta.23(effect@4.0.0-beta.23)
       '@opentui/core':
         specifier: ^0.1.82
         version: 0.1.82(stage-js@1.0.1)(typescript@5.9.3)(web-tree-sitter@0.25.10)
@@ -224,7 +227,7 @@ importers:
         version: 4.1.0
       effect:
         specifier: 'catalog:'
-        version: 4.0.0-beta.10
+        version: 4.0.0-beta.23
       react:
         specifier: ^19.0.0
         version: 19.2.4
@@ -243,7 +246,7 @@ importers:
     dependencies:
       effect:
         specifier: 'catalog:'
-        version: 4.0.0-beta.10
+        version: 4.0.0-beta.23
     publishDirectory: dist
 
   packages/ui:
@@ -1248,23 +1251,28 @@ packages:
   '@effect/language-service@0.2.0':
     resolution: {integrity: sha512-DoK41yKGyQv79o0ca8gxEogMlt+IphXkdCXwgenbQjH1BXKD7tJAr0+VsDhblycQcvQ39f1l9NZN9CBqjM9ALA==}
 
+  '@effect/platform-bun@4.0.0-beta.23':
+    resolution: {integrity: sha512-hLoC4mZBfXV2ZE9iWiuW6jzARGi6h0GU9ZC0hB1Z1ko558pVP8OHhZ8yQp6pPJaF5nBS74jx8DIk6kvJ8UVTiQ==}
+    peerDependencies:
+      effect: ^4.0.0-beta.23
+
   '@effect/platform-node-shared@4.0.0-beta.23':
     resolution: {integrity: sha512-iYy0oPMAKnpWEum1u8v42BcDAkUEK+AuiYGMHAnf+GJYlQTYbIcIQcLjAQ68yQuDf3n+la91TSs0MaiA3F2Svw==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
       effect: ^4.0.0-beta.23
 
-  '@effect/platform-node@4.0.0-beta.10':
-    resolution: {integrity: sha512-ikZ/uyos5okYAHE+wWOwZkHgriFUTY3aY8Kdqbj/ro8xw0z9YXWN4fbyQAZUWkBcieDKS36N+QfHRMPG4fEWRA==}
+  '@effect/platform-node@4.0.0-beta.23':
+    resolution: {integrity: sha512-7CNVrUbxXXxXsUWtyJrrBMpf5JtjDJpuhIPIQssACYTtD711EQdy3itHHxXrIjXf7vBhx0XrekQ3PJUSN9usIw==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
-      effect: ^4.0.0-beta.10
+      effect: ^4.0.0-beta.23
       ioredis: ^5.7.0
 
-  '@effect/vitest@4.0.0-beta.10':
-    resolution: {integrity: sha512-WmE8vCNw+eDoAq9CwwymrAdIBw1f+8hDP3AUF7jyC7/Cj/kyAYOFwkbtKmDXIFaTlf7G/2fmulEXeCO5W8j0kQ==}
+  '@effect/vitest@4.0.0-beta.23':
+    resolution: {integrity: sha512-2ezxm8jpBuoY9UsrwUyGsbs1lwKodR6NGV/g/rypoPN3L6WABXOcZs2mhFmY8y5EXnGZnSgsWhpxwYlEo29jcA==}
     peerDependencies:
-      effect: ^4.0.0-beta.10
+      effect: ^4.0.0-beta.23
       vitest: ^2.0.5
 
   '@emnapi/core@1.8.1':
@@ -3972,8 +3980,8 @@ packages:
   eastasianwidth@0.2.0:
     resolution: {integrity: sha512-I88TYZWc9XiYHRQ4/3c5rjjfgkjhLyW2luGIheGERbNQ6OY7yTybanSpDXZa8y7VUP9YmDcYa+eyq4ca7iLqWA==}
 
-  effect@4.0.0-beta.10:
-    resolution: {integrity: sha512-UvxWmT0uzWZqNmQODfW7y1zb0LMlH3xtSn/UESpck2Wvv6SogxibYPWKKNcUsRMm5wwprOoW2IwItYLQyZpe8Q==}
+  effect@4.0.0-beta.23:
+    resolution: {integrity: sha512-bu6Lv2Tjs8QBMz9/TfPrNur6wqRCykW0rOZCJuaylt6g6sT28niL9L4Aeak/7XTsnYp5bCWaqRrSYANBVkPFQw==}
 
   ejs@3.1.10:
     resolution: {integrity: sha512-UeJmFfOrAQS8OJWPZ4qtgHyWExa088/MtK5UEyoJGFH67cDEXkZSviOiKRCZ4Xij0zxI3JECgYs3oKx+AizQBA==}
@@ -8049,48 +8057,48 @@ snapshots:
 
   '@dprint/typescript@0.91.8': {}
 
-  '@effect-aws/client-api-gateway-management-api@2.0.0-beta.2(effect@4.0.0-beta.10)':
+  '@effect-aws/client-api-gateway-management-api@2.0.0-beta.2(effect@4.0.0-beta.23)':
     dependencies:
       '@aws-sdk/client-apigatewaymanagementapi': 3.990.0
-      '@effect-aws/commons': 1.0.0-beta.2(effect@4.0.0-beta.10)
-      effect: 4.0.0-beta.10
+      '@effect-aws/commons': 1.0.0-beta.2(effect@4.0.0-beta.23)
+      effect: 4.0.0-beta.23
     transitivePeerDependencies:
       - aws-crt
 
-  '@effect-aws/client-dynamodb@2.0.0-beta.2(effect@4.0.0-beta.10)':
+  '@effect-aws/client-dynamodb@2.0.0-beta.2(effect@4.0.0-beta.23)':
     dependencies:
       '@aws-sdk/client-dynamodb': 3.990.0
-      '@effect-aws/commons': 1.0.0-beta.2(effect@4.0.0-beta.10)
-      effect: 4.0.0-beta.10
+      '@effect-aws/commons': 1.0.0-beta.2(effect@4.0.0-beta.23)
+      effect: 4.0.0-beta.23
     transitivePeerDependencies:
       - aws-crt
 
-  '@effect-aws/commons@1.0.0-beta.2(effect@4.0.0-beta.10)':
+  '@effect-aws/commons@1.0.0-beta.2(effect@4.0.0-beta.23)':
     dependencies:
       '@smithy/protocol-http': 5.3.10
       '@smithy/smithy-client': 4.12.0
       '@smithy/types': 4.13.0
-      effect: 4.0.0-beta.10
+      effect: 4.0.0-beta.23
 
-  '@effect-aws/dynamodb@2.0.0-beta.2(@effect-aws/client-dynamodb@2.0.0-beta.2(effect@4.0.0-beta.10))(effect@4.0.0-beta.10)':
+  '@effect-aws/dynamodb@2.0.0-beta.2(@effect-aws/client-dynamodb@2.0.0-beta.2(effect@4.0.0-beta.23))(effect@4.0.0-beta.23)':
     dependencies:
       '@aws-sdk/client-dynamodb': 3.990.0
       '@aws-sdk/lib-dynamodb': 3.990.0(@aws-sdk/client-dynamodb@3.990.0)
-      '@effect-aws/client-dynamodb': 2.0.0-beta.2(effect@4.0.0-beta.10)
-      '@effect-aws/commons': 1.0.0-beta.2(effect@4.0.0-beta.10)
-      effect: 4.0.0-beta.10
+      '@effect-aws/client-dynamodb': 2.0.0-beta.2(effect@4.0.0-beta.23)
+      '@effect-aws/commons': 1.0.0-beta.2(effect@4.0.0-beta.23)
+      effect: 4.0.0-beta.23
     transitivePeerDependencies:
       - aws-crt
 
-  '@effect-aws/lambda@2.0.0-beta.2(@effect/platform-node-shared@4.0.0-beta.23(effect@4.0.0-beta.10))(effect@4.0.0-beta.10)':
+  '@effect-aws/lambda@2.0.0-beta.2(@effect/platform-node-shared@4.0.0-beta.23(effect@4.0.0-beta.23))(effect@4.0.0-beta.23)':
     dependencies:
-      '@effect/platform-node-shared': 4.0.0-beta.23(effect@4.0.0-beta.10)
-      effect: 4.0.0-beta.10
+      '@effect/platform-node-shared': 4.0.0-beta.23(effect@4.0.0-beta.23)
+      effect: 4.0.0-beta.23
 
-  '@effect-aws/powertools-logger@2.0.0-beta.2(@aws-lambda-powertools/logger@2.31.0)(effect@4.0.0-beta.10)':
+  '@effect-aws/powertools-logger@2.0.0-beta.2(@aws-lambda-powertools/logger@2.31.0)(effect@4.0.0-beta.23)':
     dependencies:
       '@aws-lambda-powertools/logger': 2.31.0
-      effect: 4.0.0-beta.10
+      effect: 4.0.0-beta.23
 
   '@effect/build-utils@0.7.9': {}
 
@@ -8102,19 +8110,27 @@ snapshots:
 
   '@effect/language-service@0.2.0': {}
 
-  '@effect/platform-node-shared@4.0.0-beta.23(effect@4.0.0-beta.10)':
+  '@effect/platform-bun@4.0.0-beta.23(effect@4.0.0-beta.23)':
+    dependencies:
+      '@effect/platform-node-shared': 4.0.0-beta.23(effect@4.0.0-beta.23)
+      effect: 4.0.0-beta.23
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
+
+  '@effect/platform-node-shared@4.0.0-beta.23(effect@4.0.0-beta.23)':
     dependencies:
       '@types/ws': 8.18.1
-      effect: 4.0.0-beta.10
+      effect: 4.0.0-beta.23
       ws: 8.19.0
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
 
-  '@effect/platform-node@4.0.0-beta.10(effect@4.0.0-beta.10)(ioredis@5.10.0)':
+  '@effect/platform-node@4.0.0-beta.23(effect@4.0.0-beta.23)(ioredis@5.10.0)':
     dependencies:
-      '@effect/platform-node-shared': 4.0.0-beta.23(effect@4.0.0-beta.10)
-      effect: 4.0.0-beta.10
+      '@effect/platform-node-shared': 4.0.0-beta.23(effect@4.0.0-beta.23)
+      effect: 4.0.0-beta.23
       ioredis: 5.10.0
       mime: 4.1.0
       undici: 7.22.0
@@ -8122,9 +8138,9 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
-  '@effect/vitest@4.0.0-beta.10(effect@4.0.0-beta.10)(vitest@2.1.9(@types/node@22.14.0)(lightningcss@1.31.1)(terser@5.46.0))':
+  '@effect/vitest@4.0.0-beta.23(effect@4.0.0-beta.23)(vitest@2.1.9(@types/node@22.14.0)(lightningcss@1.31.1)(terser@5.46.0))':
     dependencies:
-      effect: 4.0.0-beta.10
+      effect: 4.0.0-beta.23
       vitest: 2.1.9(@types/node@22.14.0)(lightningcss@1.31.1)(terser@5.46.0)
 
   '@emnapi/core@1.8.1':
@@ -10706,7 +10722,7 @@ snapshots:
 
   eastasianwidth@0.2.0: {}
 
-  effect@4.0.0-beta.10:
+  effect@4.0.0-beta.23:
     dependencies:
       '@standard-schema/spec': 1.1.0
       fast-check: 4.5.3

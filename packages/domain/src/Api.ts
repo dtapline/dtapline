@@ -49,7 +49,6 @@ export class DeploymentsWebhookGroup extends HttpApiGroup.make("deploymentsWebho
 export class ProjectsGroup extends HttpApiGroup.make("projects")
   .add(
     HttpApiEndpoint.get("listProjects", "/api/v1/projects", {
-      payload: CreateProjectInput.fields,
       success: Schema.Struct({
         projects: Schema.Array(Project)
       }),

@@ -10,7 +10,7 @@ import * as S from "effect/Schema"
 // Request Context schemas
 // ============================================================================
 
-const BaseWebsocketRequest = S.Struct({
+const BaseWebsocketRequest = {
   routeKey: S.String,
   extendedRequestId: S.String,
   requestTime: S.String,
@@ -23,31 +23,31 @@ const BaseWebsocketRequest = S.Struct({
   domainName: S.String,
   connectionId: S.String,
   apiId: S.String
-})
+}
 
 export const WebsocketConnectRequest = S.Struct({
   eventType: S.Literal("CONNECT")
-}).pipe(S.extend(BaseWebsocketRequest))
+}).pipe(S.fieldsAssign(BaseWebsocketRequest))
 export type WebsocketConnectRequest = S.Schema.Type<typeof WebsocketConnectRequest>
 
 export const WebsocketMessageRequest = S.Struct({
   eventType: S.Literal("MESSAGE"),
   messageId: S.String
-}).pipe(S.extend(BaseWebsocketRequest))
+}).pipe(S.fieldsAssign(BaseWebsocketRequest))
 export type WebsocketMessageRequest = S.Schema.Type<typeof WebsocketMessageRequest>
 
 export const WebsocketDisconnectRequest = S.Struct({
   eventType: S.Literal("DISCONNECT"),
   disconnectStatusCode: S.Number,
   disconnectReason: S.String
-}).pipe(S.extend(BaseWebsocketRequest))
+}).pipe(S.fieldsAssign(BaseWebsocketRequest))
 export type WebsocketDisconnectRequest = S.Schema.Type<typeof WebsocketDisconnectRequest>
 
-export const WebsocketRequestContext = S.Union(
+export const WebsocketRequestContext = S.Union([
   WebsocketConnectRequest,
   WebsocketMessageRequest,
   WebsocketDisconnectRequest
-)
+])
 export type WebsocketRequestContext = S.Schema.Type<typeof WebsocketRequestContext>
 
 // ============================================================================

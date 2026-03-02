@@ -9,7 +9,11 @@
 import { ApiGatewayManagementApiService } from "@effect-aws/client-api-gateway-management-api"
 import type { makeDynamoDBStore } from "@effect-aws/dynamodb"
 import { DynamoDBStore } from "@effect-aws/dynamodb"
-import { Config, Context, Effect, Layer, Schema } from "effect"
+import * as Config from "effect/Config"
+import * as Effect from "effect/Effect"
+import * as Layer from "effect/Layer"
+import * as Schema from "effect/Schema"
+import * as ServiceMap from "effect/ServiceMap"
 import { ConnectionsStoreLive } from "../Websocket/context.js"
 import { ConnectionRecord, type WebsocketMessage } from "../Websocket/schemas.js"
 
@@ -17,7 +21,7 @@ import { ConnectionRecord, type WebsocketMessage } from "../Websocket/schemas.js
  * Concrete type for DynamoDBStore instance.
  * TypeScript 5.7+ cannot resolve the proxy types in DynamoDBStore.Type.
  */
-type DynamoDBStoreInstance = Effect.Effect.Success<ReturnType<typeof makeDynamoDBStore>>
+type DynamoDBStoreInstance = Effect.Success<ReturnType<typeof makeDynamoDBStore>>
 
 /**
  * BroadcastService interface
@@ -35,7 +39,7 @@ export interface BroadcastService {
 /**
  * Service tag
  */
-export const BroadcastService = Context.GenericTag<BroadcastService>("BroadcastService")
+export const BroadcastService = ServiceMap.Service<BroadcastService>("BroadcastService")
 
 /**
  * Live implementation for AWS Lambda
@@ -59,7 +63,7 @@ export const BroadcastServiceLive = Layer.effect(
             ExpressionAttributeValues: { ":userId": userId }
           })
 
-          const connections = yield* Schema.decodeUnknown(
+          const connections = yield* Schema.decodeUnknownEffect(
             Schema.Array(ConnectionRecord)
           )(items)
 
@@ -82,7 +86,7 @@ export const BroadcastServiceLive = Layer.effect(
           )
         }).pipe(
           // Broadcasting should never fail the main request
-          Effect.catchAllCause((cause) => Effect.logWarning("Broadcast failed", { cause, userId }))
+          Effect.catchCause((cause) => Effect.logWarning("Broadcast failed", { cause, userId }))
         )
     })
   })
@@ -98,7 +102,7 @@ export const AGMApiServiceLive = Effect.gen(function*() {
   return ApiGatewayManagementApiService.layer({
     endpoint: `https://${url.host}${url.pathname}`
   })
-}).pipe(Layer.unwrapEffect)
+}).pipe(Layer.unwrap)
 
 /**
  * Complete broadcast layer for production Lambda

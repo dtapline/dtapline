@@ -1,10 +1,11 @@
 import { DtaplineApi } from "@dtapline/domain/Api"
-import { Args, CliConfig, Command, Options } from "@effect/cli"
-import { HttpApiClient, HttpClient, HttpClientRequest } from "@effect/platform"
-import { NodeContext, NodeHttpClient, NodeRuntime } from "@effect/platform-node"
+import { BunHttpClient, BunRuntime, BunServices } from "@effect/platform-bun"
 import { createCliRenderer } from "@opentui/core"
 import { createRoot } from "@opentui/react"
 import { Config, Console, Effect, Layer, Option } from "effect"
+import { Argument as Args, Command, Flag as Options } from "effect/unstable/cli"
+import { HttpClient, HttpClientRequest } from "effect/unstable/http"
+import { HttpApiClient } from "effect/unstable/httpapi"
 import React from "react"
 import { detectCICD, getGitCommitSha } from "./cicd-detect.js"
 import { signIn } from "./dashboard/api-client.js"
@@ -187,7 +188,7 @@ const deployCommand = Command.make(
           })
         }
       }).pipe(
-        Effect.catchAll((error) =>
+        Effect.catch((error) =>
           Effect.gen(function*() {
             yield* Console.error("❌ Failed to report deployment:")
             yield* Console.error(String(error))
@@ -324,12 +325,12 @@ const cli = Command.run(rootCommand, {
 })
 
 const MainLayer = Layer.mergeAll(
-  NodeHttpClient.layer,
-  NodeServices.layer
+  BunHttpClient.layer,
+  BunServices.layer
 )
 
 cli.pipe(
   Effect.provide(MainLayer),
   Effect.tapCause(Effect.logError),
-  NodeRuntime.runMain
+  BunRuntime.runMain
 )
