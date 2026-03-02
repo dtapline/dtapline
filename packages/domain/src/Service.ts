@@ -13,7 +13,7 @@ export class Service extends Schema.Class<Service>("Service")({
   repositoryUrl: Schema.optional(Schema.String.pipe(Schema.pattern(/^https?:\/\/.+/))),
   iconUrl: Schema.optional(Schema.String.pipe(Schema.pattern(/^https?:\/\/.+/))),
   archived: Schema.Boolean,
-  createdAt: Schema.DateFromSelf
+  createdAt: Schema.Date
 }) {}
 
 // Create service input

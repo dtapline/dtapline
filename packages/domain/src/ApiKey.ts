@@ -18,9 +18,9 @@ export class ApiKey extends Schema.Class<ApiKey>("ApiKey")({
   keyPrefix: Schema.String, // First few characters for identification (e.g., "cm_XyZ")
   name: Schema.String.pipe(Schema.minLength(1), Schema.maxLength(100)),
   scopes: Schema.Array(ApiKeyScope),
-  createdAt: Schema.DateFromSelf,
-  lastUsedAt: Schema.optional(Schema.DateFromSelf),
-  expiresAt: Schema.optional(Schema.DateFromSelf)
+  createdAt: Schema.Date,
+  lastUsedAt: Schema.optional(Schema.Date),
+  expiresAt: Schema.optional(Schema.Date)
 }) {}
 
 // Create API key input
@@ -36,6 +36,6 @@ export class ApiKeyResponse extends Schema.Struct({
   keyPrefix: Schema.String,
   name: Schema.String,
   scopes: Schema.Array(ApiKeyScope),
-  createdAt: Schema.DateFromSelf,
-  lastUsedAt: Schema.optional(Schema.DateFromSelf)
+  createdAt: Schema.Date,
+  lastUsedAt: Schema.optional(Schema.Date)
 }) {}

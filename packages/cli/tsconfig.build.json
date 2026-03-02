@@ -4,14 +4,16 @@
     { "path": "../domain/tsconfig.build.json" }
   ],
   "compilerOptions": {
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
     "target": "ES2022",
-    "lib": ["ES2022"],
+    "lib": ["ES2022", "DOM"],
     "types": ["node"],
     "rootDir": "src",
     "outDir": "dist",
-    "composite": true
+    "composite": true,
+    "jsx": "react-jsx",
+    "jsxImportSource": "@opentui/react"
   },
-  "include": ["src/**/*.ts"]
+  "include": ["src/**/*.ts", "src/**/*.tsx"]
 }

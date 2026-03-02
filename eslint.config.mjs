@@ -21,6 +21,22 @@ export default [
   {
     ignores: ["**/dist", "**/build", "**/docs", "**/*.md"]
   },
+  {
+    // Plain Node.js scripts (.mjs, bin/* wrappers) — no TypeScript parser, node globals
+    files: ["**/script/*.mjs", "**/bin/*"],
+    languageOptions: {
+      parser: undefined,
+      globals: {
+        console: "readonly",
+        process: "readonly",
+        __dirname: "readonly",
+        __filename: "readonly",
+        require: "readonly",
+        module: "readonly",
+        exports: "readonly"
+      }
+    }
+  },
   ...compat.extends(
     "eslint:recommended",
     "plugin:@typescript-eslint/eslint-recommended",

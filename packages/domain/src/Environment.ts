@@ -13,7 +13,7 @@ export class Environment extends Schema.Class<Environment>("Environment")({
   color: Schema.optional(Schema.String.pipe(Schema.pattern(/^#[0-9A-Fa-f]{6}$/))), // Hex color
   order: Schema.Number.pipe(Schema.int(), Schema.greaterThanOrEqualTo(0)),
   archived: Schema.Boolean,
-  createdAt: Schema.DateFromSelf
+  createdAt: Schema.Date
 }) {}
 
 // Create environment input

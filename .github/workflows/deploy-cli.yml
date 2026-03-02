@@ -30,12 +30,14 @@ jobs:
           DTAPLINE_API_KEY: ${{ secrets.DTAPLINE_API_KEY }}
           DTAPLINE_SERVER_URL: ${{ vars.DTAPLINE_SERVER_URL }}
         run: |
-          pnpm tsx packages/cli/src/index.ts deploy production cli \
+          pnpm --package=@dtapline/cli dlx dtap deploy production cli \
             --status in_progress \
             --deployed-version "${GITHUB_REF_NAME##*@}"
 
-      - name: Build packages
-        run: pnpm build
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.9
 
       - name: Publish to NPM
         working-directory: packages/cli
@@ -43,7 +45,7 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           echo "//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}" > ~/.npmrc
-          npm publish --access public
+          bun run script/publish.ts
 
       - name: Report deployment success
         if: success()
@@ -51,7 +53,7 @@ jobs:
           DTAPLINE_API_KEY: ${{ secrets.DTAPLINE_API_KEY }}
           DTAPLINE_SERVER_URL: ${{ vars.DTAPLINE_SERVER_URL }}
         run: |
-          pnpm tsx packages/cli/src/index.ts deploy production cli \
+          pnpm --package=@dtapline/cli dlx dtap deploy production cli \
             --status success \
             --deployed-version "${GITHUB_REF_NAME##*@}"
 
@@ -61,6 +63,6 @@ jobs:
           DTAPLINE_API_KEY: ${{ secrets.DTAPLINE_API_KEY }}
           DTAPLINE_SERVER_URL: ${{ vars.DTAPLINE_SERVER_URL }}
         run: |
-          pnpm tsx packages/cli/src/index.ts deploy production cli \
+          pnpm --package=@dtapline/cli dlx dtap deploy production cli \
             --status failed \
             --deployed-version "${GITHUB_REF_NAME##*@}"

@@ -1,0 +1,97 @@
+#!/usr/bin/env node
+"use strict"
+
+/**
+ * dtapline — platform binary resolver
+ *
+ * Resolution order:
+ *  1. DTAPLINE_BIN_PATH env var  — explicit override
+ *  2. bin/.dtapline               — hard-linked/copied by postinstall.mjs (preferred)
+ *  3. node_modules traversal      — fallback when postinstall didn't run
+ */
+
+const childProcess = require("child_process")
+const fs = require("fs")
+const path = require("path")
+const os = require("os")
+
+// Binary alias names — if npx passes the alias as the first user arg (argv[2]),
+// strip it so that `npx @dtapline/cli dtap dashboard` works like `dtap dashboard`.
+const BINARY_ALIASES = ["dtap", "dtapline"]
+
+function run(target) {
+  let userArgs = process.argv.slice(2)
+  // When invoked via `npx <pkg> dtap <subcommand>`, npx passes the binary alias
+  // as the first argument. Strip it so the subcommand is correctly at argv[2]
+  // inside the native binary.
+  if (userArgs.length > 0 && BINARY_ALIASES.includes(userArgs[0])) {
+    userArgs = userArgs.slice(1)
+  }
+  const result = childProcess.spawnSync(target, userArgs, {
+    stdio: "inherit",
+  })
+  if (result.error) {
+    console.error(result.error.message)
+    process.exit(1)
+  }
+  process.exit(typeof result.status === "number" ? result.status : 0)
+}
+
+// 1. Escape hatch: explicit binary path via env var
+const envPath = process.env.DTAPLINE_BIN_PATH
+if (envPath) run(envPath)
+
+const scriptPath = fs.realpathSync(__filename)
+const scriptDir = path.dirname(scriptPath)
+
+// 2. Postinstall-linked binary — self-contained, works even when optional deps
+//    were not installed through the registry (e.g. behind a proxy like Artifactory)
+const isWindows = os.platform() === "win32"
+const cachedName = isWindows ? ".dtapline.exe" : ".dtapline"
+const cached = path.join(scriptDir, cachedName)
+if (fs.existsSync(cached)) run(cached)
+
+// 3. Fallback: walk up node_modules looking for the platform sub-package
+const platformMap = { darwin: "darwin", linux: "linux", win32: "windows" }
+const archMap = { x64: "x64", arm64: "arm64" }
+
+const platform = platformMap[os.platform()]
+const arch = archMap[os.arch()]
+
+if (!platform || !arch) {
+  console.error(
+    `dtapline: unsupported platform ${os.platform()}-${os.arch()}\n` +
+      `Supported platforms: darwin-arm64, darwin-x64, linux-arm64, linux-x64, windows-x64`
+  )
+  process.exit(1)
+}
+
+const base = `@dtapline/cli-${platform}-${arch}`
+const binaryFile = isWindows ? "dtapline.exe" : "dtapline"
+
+function findBinary(startDir) {
+  let current = startDir
+  for (;;) {
+    const candidate = path.join(current, "node_modules", "@dtapline", `cli-${platform}-${arch}`, "bin", binaryFile)
+    if (fs.existsSync(candidate)) return candidate
+    const parent = path.dirname(current)
+    if (parent === current) return undefined
+    current = parent
+  }
+}
+
+const resolved = findBinary(scriptDir)
+
+if (!resolved) {
+  console.error(
+    `dtapline: could not find the native binary for ${platform}-${arch}.\n\n` +
+      `Expected package: ${base}\n\n` +
+      `If you installed dtapline with npm/pnpm/yarn, this usually means the\n` +
+      `optional dependency for your platform was not installed. Try:\n\n` +
+      `  npm install ${base}\n\n` +
+      `Or set DTAPLINE_BIN_PATH=/path/to/dtapline to point directly to a binary.`
+  )
+  process.exit(1)
+}
+
+run(resolved)

@@ -140,7 +140,7 @@ export class ProjectsGroup extends HttpApiGroup.make("projects")
               gitTag: Schema.optional(Schema.String),
               pullRequestUrl: Schema.optional(Schema.String),
               deployedBy: Schema.optional(Schema.String),
-              deployedAt: Schema.DateFromSelf,
+              deployedAt: Schema.Date,
               status: Schema.Literal("success", "failed", "in_progress", "rolled_back"),
               buildUrl: Schema.optional(Schema.String),
               releaseNotes: Schema.optional(Schema.String),
@@ -194,7 +194,7 @@ export class ProjectsGroup extends HttpApiGroup.make("projects")
                 Schema.Struct({
                   version: Schema.String,
                   commitSha: Schema.String,
-                  deployedAt: Schema.DateFromSelf,
+                  deployedAt: Schema.Date,
                   gitTag: Schema.optional(Schema.String),
                   pullRequestUrl: Schema.optional(Schema.String)
                 })
@@ -203,7 +203,7 @@ export class ProjectsGroup extends HttpApiGroup.make("projects")
                 Schema.Struct({
                   version: Schema.String,
                   commitSha: Schema.String,
-                  deployedAt: Schema.DateFromSelf,
+                  deployedAt: Schema.Date,
                   gitTag: Schema.optional(Schema.String),
                   pullRequestUrl: Schema.optional(Schema.String)
                 })

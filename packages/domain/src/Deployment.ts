@@ -13,7 +13,7 @@ export type DeploymentStatus = Schema.Schema.Type<typeof DeploymentStatus>
 // Status history entry
 export const DeploymentStatusHistoryEntry = Schema.Struct({
   status: DeploymentStatus,
-  timestamp: Schema.DateFromSelf,
+  timestamp: Schema.Date,
   cicdBuildId: Schema.optional(Schema.String),
   cicdBuildUrl: Schema.optional(Schema.String.pipe(Schema.pattern(/^https?:\/\/.+/)))
 })
@@ -35,7 +35,7 @@ export class Deployment extends Schema.Class<Deployment>("Deployment")({
 
   // Metadata
   deployedBy: Schema.optional(Schema.String),
-  deployedAt: Schema.DateFromSelf,
+  deployedAt: Schema.Date,
   status: DeploymentStatus,
 
   // Status history - tracks all status changes and retries
