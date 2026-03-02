@@ -12,7 +12,7 @@ export class VersionPattern extends Schema.Class<VersionPattern>("VersionPattern
   defaultPattern: Schema.String, // e.g., "v?(\\d+\\.\\d+\\.\\d+)"
   // Per-service pattern overrides
   servicePatterns: Schema.optional(Schema.Record({ key: Schema.String, value: Schema.String })),
-  updatedAt: Schema.DateFromSelf
+  updatedAt: Schema.Date
 }) {}
 
 // Update version pattern input

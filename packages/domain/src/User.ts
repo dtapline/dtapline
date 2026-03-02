@@ -27,6 +27,6 @@ export class User extends Schema.Class<User>("User")({
   emailVerified: Schema.Boolean,
   image: Schema.NullOr(Schema.String),
   role: UserRole,
-  createdAt: Schema.DateFromSelf,
-  updatedAt: Schema.DateFromSelf
+  createdAt: Schema.Date,
+  updatedAt: Schema.Date
 }) {}

@@ -1,9 +1,10 @@
+import { DtaplineApi } from "@dtapline/domain/Api"
 import { Args, CliConfig, Command, Options } from "@effect/cli"
-import { HttpBody, HttpClient, HttpClientRequest } from "@effect/platform"
+import { HttpApiClient, HttpClient, HttpClientRequest } from "@effect/platform"
 import { NodeContext, NodeHttpClient, NodeRuntime } from "@effect/platform-node"
 import { createCliRenderer } from "@opentui/core"
 import { createRoot } from "@opentui/react"
-import { Config, Console, Effect, Layer, Option, Schema } from "effect"
+import { Config, Console, Effect, Layer, Option } from "effect"
 import React from "react"
 import { detectCICD, getGitCommitSha } from "./cicd-detect.js"
 import { signIn } from "./dashboard/api-client.js"
@@ -25,15 +26,6 @@ function getVersion(): string {
     return "dev"
   }
 }
-
-// Response schema for type safety
-const DeploymentResponse = Schema.Struct({
-  id: Schema.String,
-  version: Schema.String,
-  message: Schema.String
-})
-
-type DeploymentResponse = typeof DeploymentResponse.Type
 
 // ============================================================================
 // CLI Arguments
@@ -157,26 +149,6 @@ const deployCommand = Command.make(
         ? args.deployedBy.value
         : cicdInfo.actor || (cicdInfo.detected ? cicdInfo.platform : undefined)
 
-      // Build the deployment payload
-      const payload = {
-        environment: args.environment,
-        service: args.service,
-        commitSha,
-        ...(Option.isSome(args.deployedVersion) && { version: args.deployedVersion.value }),
-        ...(gitTag && { gitTag }),
-        ...(Option.isSome(args.prUrl) && { pullRequestUrl: args.prUrl.value }),
-        ...(deployedBy && { deployedBy }),
-        status: args.status,
-        ...(Option.isSome(args.buildUrl) && { buildUrl: args.buildUrl.value }),
-        ...(cicdInfo.detected && !Option.isSome(args.buildUrl) && cicdInfo.buildUrl && { buildUrl: cicdInfo.buildUrl }),
-        ...(Option.isSome(args.releaseNotes) && { releaseNotes: args.releaseNotes.value }),
-        ...(cicdInfo.detected && {
-          cicdPlatform: cicdInfo.platform,
-          cicdBuildUrl: cicdInfo.buildUrl,
-          cicdBuildId: cicdInfo.buildId
-        })
-      }
-
       yield* Console.log(`  Environment: ${args.environment}`)
       yield* Console.log(`  Service: ${args.service}`)
       yield* Console.log(`  Commit: ${commitSha}`)
@@ -185,29 +157,36 @@ const deployCommand = Command.make(
       if (cicdInfo.detected) yield* Console.log(`  CI/CD Platform: ${cicdInfo.platform}`)
       yield* Console.log(`  Status: ${args.status}`)
 
-      // Send webhook request
-      const httpClient = yield* HttpClient.HttpClient
+      // Build typed API client from the shared DtaplineApi schema
+      const client = yield* HttpApiClient.make(DtaplineApi, {
+        baseUrl: args.serverUrl,
+        transformClient: HttpClient.mapRequest(
+          HttpClientRequest.setHeader("Authorization", `Bearer ${args.apiKey}`)
+        )
+      })
 
-      const body = HttpBody.text(JSON.stringify(payload), "application/json")
-      const request = HttpClientRequest.post(`${args.serverUrl}/api/v1/deployments`).pipe(
-        HttpClientRequest.setHeader("Authorization", `Bearer ${args.apiKey}`),
-        HttpClientRequest.setBody(body)
-      )
-
-      const response: DeploymentResponse = yield* httpClient.execute(request).pipe(
-        Effect.flatMap((res) => {
-          // Check for non-success status codes
-          if (res.status !== 200 && res.status !== 201) {
-            return Effect.gen(function*() {
-              const text = yield* res.text
-              yield* Console.error(`❌ Server returned status ${res.status}:`)
-              yield* Console.error(text)
-              return yield* Effect.fail(new Error(`Server error: ${res.status}`))
-            })
-          }
-          return res.json
-        }),
-        Effect.flatMap((json) => Schema.decodeUnknown(DeploymentResponse)(json)),
+      const response = yield* client.deploymentsWebhook.createDeployment({
+        payload: {
+          environment: args.environment,
+          service: args.service,
+          commitSha,
+          ...(Option.isSome(args.deployedVersion) && { version: args.deployedVersion.value }),
+          ...(gitTag && { gitTag }),
+          ...(Option.isSome(args.prUrl) && { pullRequestUrl: args.prUrl.value }),
+          ...(deployedBy && { deployedBy }),
+          status: args.status,
+          ...(Option.isSome(args.buildUrl) && { buildUrl: args.buildUrl.value }),
+          ...(cicdInfo.detected && !Option.isSome(args.buildUrl) && cicdInfo.buildUrl && {
+            buildUrl: cicdInfo.buildUrl
+          }),
+          ...(Option.isSome(args.releaseNotes) && { releaseNotes: args.releaseNotes.value }),
+          ...(cicdInfo.detected && {
+            cicdPlatform: cicdInfo.platform,
+            cicdBuildUrl: cicdInfo.buildUrl,
+            cicdBuildId: cicdInfo.buildId
+          })
+        }
+      }).pipe(
         Effect.catchAll((error) =>
           Effect.gen(function*() {
             yield* Console.error("❌ Failed to report deployment:")

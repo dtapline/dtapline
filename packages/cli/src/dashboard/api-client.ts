@@ -2,10 +2,36 @@
  * HTTP API client for the dashboard TUI
  *
  * Authenticates via Better Auth session cookie.
- * Fetches projects list and per-project deployment matrices.
+ * Uses HttpApiClient.make(DtaplineApi) to derive a fully typed client from
+ * the shared domain API definition — no hand-written interfaces needed.
  */
 
-import type { Deployment, Environment, Project, ProjectMatrix, Service } from "./types.js"
+import { DtaplineApi } from "@dtapline/domain/Api"
+import type { Deployment } from "@dtapline/domain/Deployment"
+import type { Environment } from "@dtapline/domain/Environment"
+import { ProjectId } from "@dtapline/domain/Project"
+import type { Project } from "@dtapline/domain/Project"
+import type { Service } from "@dtapline/domain/Service"
+import { HttpApiClient, HttpClient, HttpClientRequest } from "@effect/platform"
+import { NodeHttpClient } from "@effect/platform-node"
+import { Effect, Schema } from "effect"
+
+export { type Deployment, type Environment, type Project, type Service }
+
+export interface ProjectMatrix {
+  readonly environments: ReadonlyArray<Environment>
+  readonly services: ReadonlyArray<Service>
+  readonly deployments: Record<string, Record<string, Deployment | null>>
+}
+
+export interface ProjectMatrixData {
+  readonly project: Project
+  readonly matrix: ProjectMatrix
+}
+
+// ============================================================================
+// Error types
+// ============================================================================
 
 export class AuthExpiredError extends Error {
   readonly _tag = "AuthExpiredError"
@@ -26,68 +52,44 @@ export class ApiError extends Error {
   }
 }
 
-async function apiFetch<T>(
-  serverUrl: string,
-  token: string,
-  path: string
-): Promise<T> {
-  const url = `${serverUrl}${path}`
-  const response = await fetch(url, {
-    headers: {
-      "Cookie": `better-auth.session_token=${token}`,
-      "Content-Type": "application/json"
-    }
+// ============================================================================
+// Client factory
+// ============================================================================
+
+/**
+ * Build a DtaplineApi client that authenticates via Better Auth session cookie.
+ */
+function makeSessionClient(serverUrl: string, token: string) {
+  return HttpApiClient.make(DtaplineApi, {
+    baseUrl: serverUrl,
+    transformClient: HttpClient.mapRequest(
+      HttpClientRequest.setHeader("Cookie", `better-auth.session_token=${token}`)
+    )
   })
-
-  if (response.status === 401 || response.status === 403) {
-    throw new AuthExpiredError()
-  }
-
-  if (!response.ok) {
-    const text = await response.text().catch(() => "")
-    throw new ApiError(`HTTP ${response.status}: ${text}`, response.status)
-  }
-
-  return response.json() as Promise<T>
 }
 
-interface ProjectsResponse {
-  projects: Array<{
-    id: string
-    name: string
-    description?: string | null
-  }>
+/**
+ * Run an Effect that requires HttpClient with NodeHttpClient.layer provided,
+ * translating 401/403 errors into AuthExpiredError and other failures into ApiError.
+ */
+async function runWithClient<A>(effect: Effect.Effect<A, unknown, HttpClient.HttpClient>): Promise<A> {
+  const program = effect.pipe(
+    Effect.provide(NodeHttpClient.layer)
+  )
+  const result = await Effect.runPromise(program as Effect.Effect<A, unknown, never>).catch((err) => {
+    // Check for HttpClientError with status 401/403
+    const status = (err as { response?: { status?: number } })?.response?.status
+    if (status === 401 || status === 403) {
+      throw new AuthExpiredError()
+    }
+    throw new ApiError(err instanceof Error ? err.message : String(err))
+  })
+  return result
 }
 
-interface MatrixResponse {
-  environments: Array<{
-    id: string
-    name: string
-    slug: string
-    color: string
-    order: number
-  }>
-  services: Array<{
-    id: string
-    name: string
-    slug: string
-    repositoryUrl?: string | null
-  }>
-  deployments: Record<
-    string,
-    Record<
-      string,
-      {
-        id: string
-        version: string
-        status: string
-        deployedAt: string
-        environmentId: string
-        serviceId: string
-      } | null
-    >
-  >
-}
+// ============================================================================
+// Auth
+// ============================================================================
 
 export async function signIn(
   serverUrl: string,
@@ -122,62 +124,38 @@ export async function signIn(
   return decodeURIComponent(match[1])
 }
 
+// ============================================================================
+// Projects
+// ============================================================================
+
 export async function getProjects(
   serverUrl: string,
   token: string
 ): Promise<ReadonlyArray<Project>> {
-  const data = await apiFetch<ProjectsResponse>(serverUrl, token, "/api/v1/projects")
-  return data.projects.map((p) => ({
-    id: p.id,
-    name: p.name,
-    description: p.description ?? null
-  }))
+  return runWithClient(
+    Effect.gen(function*() {
+      const client = yield* makeSessionClient(serverUrl, token)
+      const result = yield* client.projects.listProjects({})
+      return result.projects
+    })
+  )
 }
+
+// ============================================================================
+// Matrix
+// ============================================================================
 
 export async function getMatrix(
   serverUrl: string,
   token: string,
   projectId: string
 ): Promise<ProjectMatrix> {
-  const data = await apiFetch<MatrixResponse>(
-    serverUrl,
-    token,
-    `/api/v1/projects/${projectId}/matrix`
+  return runWithClient(
+    Effect.gen(function*() {
+      const client = yield* makeSessionClient(serverUrl, token)
+      return yield* client.projects.getMatrix({
+        path: { projectId: Schema.decodeSync(ProjectId)(projectId) }
+      })
+    })
   )
-
-  const environments: ReadonlyArray<Environment> = data.environments.map((e) => ({
-    id: e.id,
-    name: e.name,
-    slug: e.slug,
-    color: e.color,
-    order: e.order
-  }))
-
-  const services: ReadonlyArray<Service> = data.services.map((s) => ({
-    id: s.id,
-    name: s.name,
-    slug: s.slug,
-    repositoryUrl: s.repositoryUrl ?? null
-  }))
-
-  const deployments: Record<string, Record<string, Deployment | null>> = {}
-  for (const [envId, serviceMap] of Object.entries(data.deployments)) {
-    deployments[envId] = {}
-    for (const [serviceId, dep] of Object.entries(serviceMap)) {
-      if (dep === null) {
-        deployments[envId]![serviceId] = null
-      } else {
-        deployments[envId]![serviceId] = {
-          id: dep.id,
-          version: dep.version,
-          status: dep.status as Deployment["status"],
-          deployedAt: dep.deployedAt,
-          environmentId: dep.environmentId,
-          serviceId: dep.serviceId
-        }
-      }
-    }
-  }
-
-  return { environments, services, deployments }
 }

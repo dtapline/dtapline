@@ -35,9 +35,9 @@ function getStatusInfo(status: Deployment["status"]): StatusInfo {
   }
 }
 
-function relativeTime(dateStr: string): string {
+function relativeTime(date: Date): string {
   try {
-    return formatDistanceToNow(new Date(dateStr), { addSuffix: true })
+    return formatDistanceToNow(date, { addSuffix: true })
   } catch {
     return ""
   }

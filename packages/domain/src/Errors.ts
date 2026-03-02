@@ -115,7 +115,7 @@ export class ApiKeyExpired extends Schema.TaggedError<ApiKeyExpired>()(
   "ApiKeyExpired",
   {
     apiKeyId: Schema.String,
-    expiresAt: Schema.DateFromSelf,
+    expiresAt: Schema.Date,
     message: Schema.String
   }
 ) {}

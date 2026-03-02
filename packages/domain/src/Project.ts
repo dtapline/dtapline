@@ -18,8 +18,8 @@ export class Project extends Schema.Class<Project>("Project")({
   gitRepoUrl: Schema.optional(Schema.String.pipe(Schema.pattern(/^https?:\/\/.+/))),
   selectedEnvironmentIds: Schema.Array(EnvironmentId).pipe(Schema.optional), // Environments enabled for this project
   tier: Schema.optionalWith(ProjectTier, { default: () => "free" as const }),
-  createdAt: Schema.DateFromSelf,
-  updatedAt: Schema.DateFromSelf
+  createdAt: Schema.Date,
+  updatedAt: Schema.Date
 }) {}
 
 // Create project input (for API)
