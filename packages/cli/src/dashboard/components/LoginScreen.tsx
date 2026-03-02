@@ -45,16 +45,28 @@ export function LoginScreen({ expiredMessage, onLogin, serverUrl }: LoginScreenP
     }
   }, [email, password, serverUrl, onLogin])
 
+  const isLoading = status === "loading"
+
   useKeyboard((key) => {
     if (key.name === "tab") {
       setFocused((prev) => (prev === "email" ? "password" : "email"))
+      return
     }
     if (key.name === "return" || key.name === "enter") {
       void handleSubmit()
+      return
+    }
+    // Build the real password from raw keystrokes when the password field is focused.
+    // The <input> is display-only (no onInput), showing only "•" characters.
+    if (focused === "password" && !isLoading) {
+      if (key.name === "backspace" || key.name === "delete") {
+        setPassword((prev) => prev.slice(0, -1))
+      } else if (key.sequence && key.sequence.length === 1 && !key.ctrl && !key.meta) {
+        // Single printable character
+        setPassword((prev) => prev + key.sequence)
+      }
     }
   })
-
-  const isLoading = status === "loading"
 
   return (
     <box
@@ -118,8 +130,8 @@ export function LoginScreen({ expiredMessage, onLogin, serverUrl }: LoginScreenP
         >
           <input
             placeholder="••••••••"
+            value={"•".repeat(password.length)}
             focused={focused === "password" && !isLoading}
-            onInput={setPassword}
             onSubmit={() => void handleSubmit()}
           />
         </box>
