@@ -1,5 +1,12 @@
 # @dtapline/ui
 
+## 0.5.1
+
+### Patch Changes
+
+- Updated dependencies [[`d923065`](https://github.com/dtapline/dtapline/commit/d923065a7489e59acaa8c8d216f9fdb029b4663c)]:
+  - @dtapline/domain@0.3.2
+
 ## 0.5.0
 
 ### Minor Changes
