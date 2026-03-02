@@ -1,5 +1,5 @@
-import type { ApiKey, ApiKeyScope, CreateApiKeyInput } from "@dtapline/domain/ApiKey"
-import { ApiKeyId } from "@dtapline/domain/ApiKey"
+import { ApiKey, ApiKeyId } from "@dtapline/domain/ApiKey"
+import type { ApiKeyScope, CreateApiKeyInput } from "@dtapline/domain/ApiKey"
 import * as Errors from "@dtapline/domain/Errors"
 import type { ProjectId } from "@dtapline/domain/Project"
 import type { UserId } from "@dtapline/domain/User"
@@ -69,18 +69,19 @@ export class ApiKeysRepository extends ServiceMap.Service<ApiKeysRepository, {
 /**
  * Helper to convert MongoDB document to ApiKey
  */
-const docToApiKey = (doc: ApiKeyDocument): any => ({
-  id: Schema.decodeSync(ApiKeyId)(doc._id.toHexString()),
-  projectId: doc.projectId as unknown as ProjectId,
-  userId: doc.userId as unknown as UserId,
-  keyHash: doc.keyHash,
-  keyPrefix: doc.keyPrefix,
-  name: doc.name,
-  scopes: doc.scopes,
-  createdAt: doc.createdAt,
-  lastUsedAt: doc.lastUsedAt ?? undefined,
-  expiresAt: doc.expiresAt ?? undefined
-})
+const docToApiKey = (doc: ApiKeyDocument) =>
+  new ApiKey({
+    id: Schema.decodeSync(ApiKeyId)(doc._id.toHexString()),
+    projectId: doc.projectId as unknown as ProjectId,
+    userId: doc.userId as unknown as UserId,
+    keyHash: doc.keyHash,
+    keyPrefix: doc.keyPrefix,
+    name: doc.name,
+    scopes: doc.scopes,
+    createdAt: doc.createdAt,
+    ...(doc.lastUsedAt != null && { lastUsedAt: doc.lastUsedAt }),
+    ...(doc.expiresAt != null && { expiresAt: doc.expiresAt })
+  })
 
 /**
  * Generate a secure random API key

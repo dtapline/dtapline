@@ -1,4 +1,5 @@
 import * as Schema from "effect/Schema"
+import { DateFromString } from "./DateFromString.js"
 import { UserId } from "./User.js"
 
 // Branded type for Environment ID
@@ -14,7 +15,7 @@ export class Environment extends Schema.Class<Environment>("Environment")({
   color: Schema.optional(Schema.String.pipe(Schema.check(Schema.isPattern(/^#[0-9A-Fa-f]{6}$/)))), // Hex color
   order: Schema.Int.pipe(Schema.check(Schema.isGreaterThanOrEqualTo(0))),
   archived: Schema.Boolean,
-  createdAt: Schema.Date
+  createdAt: DateFromString
 }) {}
 
 // Create environment input

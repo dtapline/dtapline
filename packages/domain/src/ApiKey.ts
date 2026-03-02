@@ -1,5 +1,6 @@
 import * as Schema from "effect/Schema"
 import * as SchemaGetter from "effect/SchemaGetter"
+import { DateFromString } from "./DateFromString.js"
 import { ProjectId } from "./Project.js"
 import { UserId } from "./User.js"
 
@@ -19,9 +20,9 @@ export class ApiKey extends Schema.Class<ApiKey>("ApiKey")({
   keyPrefix: Schema.String, // First few characters for identification (e.g., "cm_XyZ")
   name: Schema.String.check(Schema.isMinLength(1), Schema.isMaxLength(100)),
   scopes: Schema.Array(ApiKeyScope),
-  createdAt: Schema.Date,
-  lastUsedAt: Schema.optional(Schema.Date),
-  expiresAt: Schema.optional(Schema.Date)
+  createdAt: DateFromString,
+  lastUsedAt: Schema.optional(DateFromString),
+  expiresAt: Schema.optional(DateFromString)
 }) {}
 
 // Create API key input
@@ -44,6 +45,6 @@ export const ApiKeyResponse = Schema.Struct({
   keyPrefix: Schema.String,
   name: Schema.String,
   scopes: Schema.Array(ApiKeyScope),
-  createdAt: Schema.Date,
-  lastUsedAt: Schema.optional(Schema.Date)
+  createdAt: DateFromString,
+  lastUsedAt: Schema.optional(DateFromString)
 })

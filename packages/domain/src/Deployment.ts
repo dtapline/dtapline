@@ -1,5 +1,6 @@
 import * as Schema from "effect/Schema"
 import * as SchemaGetter from "effect/SchemaGetter"
+import { DateFromString } from "./DateFromString.js"
 import { EnvironmentId } from "./Environment.js"
 import { ProjectId } from "./Project.js"
 import { ServiceId } from "./Service.js"
@@ -14,7 +15,7 @@ export type DeploymentStatus = Schema.Schema.Type<typeof DeploymentStatus>
 // Status history entry
 export const DeploymentStatusHistoryEntry = Schema.Struct({
   status: DeploymentStatus,
-  timestamp: Schema.Date,
+  timestamp: DateFromString,
   cicdBuildId: Schema.optional(Schema.String),
   cicdBuildUrl: Schema.optional(Schema.String.check(Schema.isPattern(/^https?:\/\/.+/)))
 })
@@ -36,7 +37,7 @@ export class Deployment extends Schema.Class<Deployment>("Deployment")({
 
   // Metadata
   deployedBy: Schema.optional(Schema.String),
-  deployedAt: Schema.Date,
+  deployedAt: DateFromString,
   status: DeploymentStatus,
 
   // Status history - tracks all status changes and retries

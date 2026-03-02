@@ -1,4 +1,5 @@
 import * as Schema from "effect/Schema"
+import { DateFromString } from "./DateFromString.js"
 
 // Base error for all dtapline errors
 export class DtaplineError extends Schema.TaggedErrorClass<DtaplineError>()(
@@ -115,7 +116,7 @@ export class ApiKeyExpired extends Schema.TaggedErrorClass<ApiKeyExpired>()(
   "ApiKeyExpired",
   {
     apiKeyId: Schema.String,
-    expiresAt: Schema.Date,
+    expiresAt: DateFromString,
     message: Schema.String
   }
 ) {}

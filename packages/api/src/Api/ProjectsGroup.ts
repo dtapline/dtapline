@@ -1,4 +1,5 @@
 import { DtaplineApi } from "@dtapline/domain/Api"
+import { Deployment } from "@dtapline/domain/Deployment"
 import { DeploymentNotFound, PlanLimitExceeded } from "@dtapline/domain/Errors"
 import { RoleLimits } from "@dtapline/domain/User"
 import * as Effect from "effect/Effect"
@@ -153,11 +154,12 @@ export const ProjectsGroupLive = HttpApiBuilder.group(
               Effect.catch(() => Effect.succeed(undefined))
             )
 
-            // Return deployment with calculated diffUrl
-            return {
-              ...deployment,
-              diffUrl: diffUrl ?? deployment.diffUrl
+            // Return deployment with calculated diffUrl (must be class instance for Schema.Class encoding)
+            const finalDiffUrl = diffUrl ?? deployment.diffUrl
+            if (finalDiffUrl != null && finalDiffUrl !== deployment.diffUrl) {
+              return new Deployment({ ...deployment, diffUrl: finalDiffUrl })
             }
+            return deployment
           }))
         // GET /api/v1/projects/:projectId/compare
         .handle("compareEnvironments", ({ params: { projectId }, query: { env1, env2 } }) =>
@@ -197,7 +199,7 @@ export const ProjectsGroupLive = HttpApiBuilder.group(
                   } :
                   null,
                 status,
-                compareUrl: serviceComp.compareUrl ?? undefined
+                ...(serviceComp.compareUrl != null && { compareUrl: serviceComp.compareUrl })
               }
             })
 

@@ -7,8 +7,8 @@ import {
   ServiceNotFound
 } from "@dtapline/domain/Errors"
 import type { ProjectId } from "@dtapline/domain/Project"
-import type { CreateServiceInput, Service, UpdateServiceInput } from "@dtapline/domain/Service"
-import { ServiceId } from "@dtapline/domain/Service"
+import { Service, ServiceId } from "@dtapline/domain/Service"
+import type { CreateServiceInput, UpdateServiceInput } from "@dtapline/domain/Service"
 import { RoleLimits } from "@dtapline/domain/User"
 import * as Effect from "effect/Effect"
 import * as Layer from "effect/Layer"
@@ -84,16 +84,17 @@ export class ServicesRepository extends ServiceMap.Service<ServicesRepository, {
 /**
  * Helper to convert MongoDB document to Service
  */
-const docToService = (doc: ServiceDocument): any => ({
-  id: Schema.decodeSync(ServiceId)(doc._id.toHexString()),
-  projectId: doc.projectId as unknown as ProjectId,
-  slug: doc.slug,
-  name: doc.name,
-  repositoryUrl: doc.repositoryUrl ?? undefined,
-  iconUrl: doc.iconUrl ?? undefined,
-  archived: doc.archived,
-  createdAt: doc.createdAt
-})
+const docToService = (doc: ServiceDocument) =>
+  new Service({
+    id: Schema.decodeSync(ServiceId)(doc._id.toHexString()),
+    projectId: doc.projectId as unknown as ProjectId,
+    slug: doc.slug,
+    name: doc.name,
+    ...(doc.repositoryUrl != null && { repositoryUrl: doc.repositoryUrl }),
+    ...(doc.iconUrl != null && { iconUrl: doc.iconUrl }),
+    archived: doc.archived,
+    createdAt: doc.createdAt
+  })
 
 /**
  * Live implementation of ServicesRepository

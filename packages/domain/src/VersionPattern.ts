@@ -1,4 +1,5 @@
 import * as Schema from "effect/Schema"
+import { DateFromString } from "./DateFromString.js"
 import { ProjectId } from "./Project.js"
 
 // Branded type for VersionPattern ID
@@ -12,7 +13,7 @@ export class VersionPattern extends Schema.Class<VersionPattern>("VersionPattern
   defaultPattern: Schema.String, // e.g., "v?(\\d+\\.\\d+\\.\\d+)"
   // Per-service pattern overrides
   servicePatterns: Schema.optional(Schema.Record(Schema.String, Schema.String)),
-  updatedAt: Schema.Date
+  updatedAt: DateFromString
 }) {}
 
 // Update version pattern input

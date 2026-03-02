@@ -2,6 +2,7 @@ import * as Schema from "effect/Schema"
 import { HttpApi, HttpApiEndpoint, HttpApiGroup, HttpApiMiddleware, HttpApiSchema } from "effect/unstable/httpapi"
 import { Forbidden } from "effect/unstable/httpapi/HttpApiError"
 import { ApiKeyResponse, CreateApiKeyInput } from "./ApiKey.js"
+import { DateFromString } from "./DateFromString.js"
 import { CreateDeploymentInput, Deployment, DeploymentFilters, DeploymentId } from "./Deployment.js"
 import { CreateEnvironmentInput, Environment, EnvironmentId, UpdateEnvironmentInput } from "./Environment.js"
 import * as Errors from "./Errors.js"
@@ -150,7 +151,7 @@ export class ProjectsGroup extends HttpApiGroup.make("projects")
             gitTag: Schema.optional(Schema.String),
             pullRequestUrl: Schema.optional(Schema.String),
             deployedBy: Schema.optional(Schema.String),
-            deployedAt: Schema.Date,
+            deployedAt: DateFromString,
             status: Schema.Literals(["success", "failed", "in_progress", "rolled_back"]),
             buildUrl: Schema.optional(Schema.String),
             releaseNotes: Schema.optional(Schema.String),
@@ -204,7 +205,7 @@ export class ProjectsGroup extends HttpApiGroup.make("projects")
               Schema.Struct({
                 version: Schema.String,
                 commitSha: Schema.String,
-                deployedAt: Schema.Date,
+                deployedAt: DateFromString,
                 gitTag: Schema.optional(Schema.String),
                 pullRequestUrl: Schema.optional(Schema.String)
               })
@@ -213,7 +214,7 @@ export class ProjectsGroup extends HttpApiGroup.make("projects")
               Schema.Struct({
                 version: Schema.String,
                 commitSha: Schema.String,
-                deployedAt: Schema.Date,
+                deployedAt: DateFromString,
                 gitTag: Schema.optional(Schema.String),
                 pullRequestUrl: Schema.optional(Schema.String)
               })

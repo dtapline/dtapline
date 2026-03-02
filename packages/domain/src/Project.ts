@@ -1,5 +1,6 @@
 import * as Schema from "effect/Schema"
 import * as SchemaGetter from "effect/SchemaGetter"
+import { DateFromString } from "./DateFromString.js"
 import { EnvironmentId } from "./Environment.js"
 import { UserId } from "./User.js"
 
@@ -25,8 +26,8 @@ export class Project extends Schema.Class<Project>("Project")({
       encode: SchemaGetter.required()
     })
   ),
-  createdAt: Schema.Date,
-  updatedAt: Schema.Date
+  createdAt: DateFromString,
+  updatedAt: DateFromString
 }) {}
 
 // Create project input (for API)

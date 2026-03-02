@@ -1,4 +1,5 @@
 import * as Schema from "effect/Schema"
+import { DateFromString } from "./DateFromString.js"
 import { ProjectId } from "./Project.js"
 
 // Branded type for Service ID
@@ -14,7 +15,7 @@ export class Service extends Schema.Class<Service>("Service")({
   repositoryUrl: Schema.optional(Schema.String.check(Schema.isPattern(/^https?:\/\/.+/))),
   iconUrl: Schema.optional(Schema.String.check(Schema.isPattern(/^https?:\/\/.+/))),
   archived: Schema.Boolean,
-  createdAt: Schema.Date
+  createdAt: DateFromString
 }) {}
 
 // Create service input

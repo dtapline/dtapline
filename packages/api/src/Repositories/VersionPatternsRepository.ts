@@ -1,7 +1,7 @@
 import { DatabaseError } from "@dtapline/domain/Errors"
 import type { ProjectId } from "@dtapline/domain/Project"
-import type { UpdateVersionPatternInput, VersionPattern } from "@dtapline/domain/VersionPattern"
-import { VersionPatternId } from "@dtapline/domain/VersionPattern"
+import { VersionPattern, VersionPatternId } from "@dtapline/domain/VersionPattern"
+import type { UpdateVersionPatternInput } from "@dtapline/domain/VersionPattern"
 import * as Effect from "effect/Effect"
 import * as Layer from "effect/Layer"
 import * as Schema from "effect/Schema"
@@ -51,13 +51,14 @@ export class VersionPatternsRepository extends ServiceMap.Service<VersionPattern
 /**
  * Helper to convert MongoDB document to VersionPattern
  */
-const docToVersionPattern = (doc: VersionPatternDocument): any => ({
-  id: Schema.decodeSync(VersionPatternId)(doc._id.toHexString()),
-  projectId: doc.projectId as unknown as ProjectId,
-  defaultPattern: doc.defaultPattern,
-  servicePatterns: doc.servicePatterns ?? undefined,
-  updatedAt: doc.updatedAt
-})
+const docToVersionPattern = (doc: VersionPatternDocument) =>
+  new VersionPattern({
+    id: Schema.decodeSync(VersionPatternId)(doc._id.toHexString()),
+    projectId: doc.projectId as unknown as ProjectId,
+    defaultPattern: doc.defaultPattern,
+    ...(doc.servicePatterns != null && { servicePatterns: doc.servicePatterns }),
+    updatedAt: doc.updatedAt
+  })
 
 /**
  * Live implementation of VersionPatternsRepository

@@ -1,4 +1,5 @@
 import * as Schema from "effect/Schema"
+import { DateFromString } from "./DateFromString.js"
 
 // Branded type for User ID
 export const UserId = Schema.String.pipe(Schema.brand("UserId"))
@@ -28,6 +29,6 @@ export class User extends Schema.Class<User>("User")({
   emailVerified: Schema.Boolean,
   image: Schema.NullOr(Schema.String),
   role: UserRole,
-  createdAt: Schema.Date,
-  updatedAt: Schema.Date
+  createdAt: DateFromString,
+  updatedAt: DateFromString
 }) {}

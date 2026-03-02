@@ -1,7 +1,7 @@
 import { EnvironmentId } from "@dtapline/domain/Environment"
 import { DatabaseError, ProjectAlreadyExists, ProjectNotFound } from "@dtapline/domain/Errors"
-import type { CreateProjectInput, Project, UpdateProjectInput } from "@dtapline/domain/Project"
-import { ProjectId } from "@dtapline/domain/Project"
+import { Project, ProjectId } from "@dtapline/domain/Project"
+import type { CreateProjectInput, UpdateProjectInput } from "@dtapline/domain/Project"
 import type { UserId } from "@dtapline/domain/User"
 import * as Effect from "effect/Effect"
 import * as Layer from "effect/Layer"
@@ -61,19 +61,20 @@ export class ProjectsRepository extends ServiceMap.Service<ProjectsRepository, {
 /**
  * Helper to convert MongoDB document to Project
  */
-const docToProject = (doc: ProjectDocument): any => ({
-  id: Schema.decodeSync(ProjectId)(doc._id.toHexString()),
-  userId: doc.userId as unknown as UserId,
-  name: doc.name,
-  description: doc.description ?? undefined,
-  gitRepoUrl: doc.gitRepoUrl ?? undefined,
-  selectedEnvironmentIds: doc.selectedEnvironmentIds
-    ? doc.selectedEnvironmentIds.map((id) => Schema.decodeSync(EnvironmentId)(id))
-    : undefined,
-  tier: doc.tier,
-  createdAt: doc.createdAt,
-  updatedAt: doc.updatedAt
-})
+const docToProject = (doc: ProjectDocument) =>
+  new Project({
+    id: Schema.decodeSync(ProjectId)(doc._id.toHexString()),
+    userId: doc.userId as unknown as UserId,
+    name: doc.name,
+    ...(doc.description != null && { description: doc.description }),
+    ...(doc.gitRepoUrl != null && { gitRepoUrl: doc.gitRepoUrl }),
+    ...(doc.selectedEnvironmentIds != null && {
+      selectedEnvironmentIds: doc.selectedEnvironmentIds.map((id) => Schema.decodeSync(EnvironmentId)(id))
+    }),
+    tier: doc.tier,
+    createdAt: doc.createdAt,
+    updatedAt: doc.updatedAt
+  })
 
 /**
  * Live implementation of ProjectsRepository

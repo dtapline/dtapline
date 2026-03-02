@@ -1,10 +1,5 @@
-import type {
-  CreateDeploymentInput,
-  Deployment,
-  DeploymentFilters,
-  DeploymentStatus
-} from "@dtapline/domain/Deployment"
-import { DeploymentId } from "@dtapline/domain/Deployment"
+import { Deployment, DeploymentId } from "@dtapline/domain/Deployment"
+import type { CreateDeploymentInput, DeploymentFilters, DeploymentStatus } from "@dtapline/domain/Deployment"
 import type { EnvironmentId } from "@dtapline/domain/Environment"
 import { DatabaseError, DeploymentNotFound } from "@dtapline/domain/Errors"
 import type { ProjectId } from "@dtapline/domain/Project"
@@ -120,12 +115,12 @@ export class DeploymentsRepository extends ServiceMap.Service<DeploymentsReposit
  * Helper to convert MongoDB document to Deployment
  * Handles backward compatibility for old deployments without deploymentHash
  */
-const docToDeployment = (doc: DeploymentDocument): any => {
+const docToDeployment = (doc: DeploymentDocument) => {
   // Lazy migration: generate hash for old deployments
   const deploymentHash = doc.deploymentHash ||
     generateDeploymentHash(doc.projectId, doc.environmentId, doc.serviceId, doc.commitSha, doc.version)
 
-  return {
+  return new Deployment({
     id: Schema.decodeSync(DeploymentId)(doc._id.toHexString()),
     deploymentHash,
     projectId: doc.projectId as unknown as ProjectId,
@@ -133,26 +128,26 @@ const docToDeployment = (doc: DeploymentDocument): any => {
     serviceId: doc.serviceId as unknown as ServiceId,
     version: doc.version,
     commitSha: doc.commitSha,
-    gitTag: doc.gitTag ?? undefined,
-    pullRequestUrl: doc.pullRequestUrl ?? undefined,
-    deployedBy: doc.deployedBy ?? undefined,
+    ...(doc.gitTag != null && { gitTag: doc.gitTag }),
+    ...(doc.pullRequestUrl != null && { pullRequestUrl: doc.pullRequestUrl }),
+    ...(doc.deployedBy != null && { deployedBy: doc.deployedBy }),
     deployedAt: doc.deployedAt,
     status: doc.status,
     // Backward compatibility: empty array for old deployments
     statusHistory: (doc.statusHistory || []).map((entry) => ({
       status: entry.status,
       timestamp: entry.timestamp,
-      cicdBuildId: entry.cicdBuildId ?? undefined,
-      cicdBuildUrl: entry.cicdBuildUrl ?? undefined
+      ...(entry.cicdBuildId != null && { cicdBuildId: entry.cicdBuildId }),
+      ...(entry.cicdBuildUrl != null && { cicdBuildUrl: entry.cicdBuildUrl })
     })),
-    buildUrl: doc.buildUrl ?? undefined,
-    diffUrl: doc.diffUrl ?? undefined,
-    releaseNotes: doc.releaseNotes ?? undefined,
-    metadata: doc.metadata ?? undefined,
-    cicdPlatform: doc.cicdPlatform ?? undefined,
-    cicdBuildUrl: doc.cicdBuildUrl ?? undefined,
-    cicdBuildId: doc.cicdBuildId ?? undefined
-  }
+    ...(doc.buildUrl != null && { buildUrl: doc.buildUrl }),
+    ...(doc.diffUrl != null && { diffUrl: doc.diffUrl }),
+    ...(doc.releaseNotes != null && { releaseNotes: doc.releaseNotes }),
+    ...(doc.metadata != null && { metadata: doc.metadata }),
+    ...(doc.cicdPlatform != null && { cicdPlatform: doc.cicdPlatform }),
+    ...(doc.cicdBuildUrl != null && { cicdBuildUrl: doc.cicdBuildUrl }),
+    ...(doc.cicdBuildId != null && { cicdBuildId: doc.cicdBuildId })
+  })
 }
 
 /**

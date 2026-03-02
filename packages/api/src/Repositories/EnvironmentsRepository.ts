@@ -1,5 +1,5 @@
-import type { CreateEnvironmentInput, Environment, UpdateEnvironmentInput } from "@dtapline/domain/Environment"
-import { EnvironmentId } from "@dtapline/domain/Environment"
+import { Environment, EnvironmentId } from "@dtapline/domain/Environment"
+import type { CreateEnvironmentInput, UpdateEnvironmentInput } from "@dtapline/domain/Environment"
 import {
   DatabaseError,
   EnvironmentAlreadyExists,
@@ -91,16 +91,17 @@ export class EnvironmentsRepository extends ServiceMap.Service<EnvironmentsRepos
 /**
  * Helper to convert MongoDB document to Environment
  */
-const docToEnvironment = (doc: EnvironmentDocument): any => ({
-  id: Schema.decodeSync(EnvironmentId)(doc._id.toHexString()),
-  userId: doc.userId as unknown as UserId,
-  slug: doc.slug,
-  name: doc.name,
-  color: doc.color ?? undefined,
-  order: doc.order,
-  archived: doc.archived,
-  createdAt: doc.createdAt
-})
+const docToEnvironment = (doc: EnvironmentDocument) =>
+  new Environment({
+    id: Schema.decodeSync(EnvironmentId)(doc._id.toHexString()),
+    userId: doc.userId as unknown as UserId,
+    slug: doc.slug,
+    name: doc.name,
+    ...(doc.color != null && { color: doc.color }),
+    order: doc.order,
+    archived: doc.archived,
+    createdAt: doc.createdAt
+  })
 
 /**
  * Default colors for auto-created environments (cycle through)
