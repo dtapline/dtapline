@@ -42,10 +42,16 @@ export const BetterAuthLive = Layer.effect(
       advanced: {
         // Set default cookie attributes to ensure secure cookies with SameSite=None for OAuth flows when using netlify.app subdomains.
         // NOTE: This does not work in iOS Chrome browser due to a known issue with SameSite=None cookies, see https://github.com/better-auth/better-auth/issues/5892
-        defaultCookieAttributes: {
-          sameSite: "None",
-          secure: true
-        }
+        // When authUrl is HTTP (e.g. localhost in tests), we skip secure+SameSite=None so that
+        // supertest's cookie jar (which speaks HTTP) can still send session cookies.
+        ...(config.authUrl.startsWith("https://")
+          ? {
+            defaultCookieAttributes: {
+              sameSite: "None" as const,
+              secure: true
+            }
+          }
+          : {})
       },
 
       account: {

@@ -20,7 +20,7 @@
     "access": "public"
   },
   "scripts": {
-    "build": "bun run script/build.ts",
+    "build": "bun run script/build.ts --single",
     "clean": "rm -rf dist",
     "check": "tsc -b tsconfig.json",
     "test": "vitest"
