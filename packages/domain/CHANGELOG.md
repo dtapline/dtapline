@@ -1,5 +1,13 @@
 # @dtapline/domain
 
+## 0.3.2
+
+### Patch Changes
+
+- [#26](https://github.com/dtapline/dtapline/pull/26) [`d923065`](https://github.com/dtapline/dtapline/commit/d923065a7489e59acaa8c8d216f9fdb029b4663c) Thanks @floydspace! - Replace `Schema.DateFromSelf` with `Schema.Date` (alias for `Schema.DateFromString`) across all domain schemas.
+
+  `DateFromSelf` encodes `Date → Date` (identity), so when `HttpApiClient` receives an ISO date string from JSON and attempts to decode it via `DateFromSelf`, it fails because the schema expects a `Date` instance. `Schema.Date` correctly decodes `string → Date`, matching the actual wire format.
+
 ## 0.3.1
 
 ### Patch Changes

@@ -1,5 +1,23 @@
 # @dtapline/cli
 
+## 0.5.0
+
+### Minor Changes
+
+- [#26](https://github.com/dtapline/dtapline/pull/26) [`d923065`](https://github.com/dtapline/dtapline/commit/d923065a7489e59acaa8c8d216f9fdb029b4663c) Thanks @floydspace! - Add interactive terminal dashboard (`dtapline dashboard`) with a live deployment matrix showing all projects, environments, and services. Includes login command with email/password auth and session management.
+
+- [#26](https://github.com/dtapline/dtapline/pull/26) [`d923065`](https://github.com/dtapline/dtapline/commit/d923065a7489e59acaa8c8d216f9fdb029b4663c) Thanks @floydspace! - Refactor CLI to use `@dtapline/domain` as the single source of truth for API schemas via `HttpApiClient.make(DtaplineApi)`.
+
+  - Replace hand-written `DeploymentResponse` schema and manual `HttpClientRequest` plumbing in `src/index.ts` with a typed client derived from `DtaplineApi`
+  - Replace raw `fetch()` calls and local `ProjectsResponse`/`MatrixResponse` interfaces in `src/dashboard/api-client.ts` with `HttpApiClient.make(DtaplineApi)`
+  - Remove duplicate domain type definitions from `src/dashboard/types.ts`; re-export `Environment`, `Service`, `Deployment`, `Project`, `ProjectMatrix`, `ProjectMatrixData` from the domain package
+  - Move `@dtapline/domain` from `devDependencies` to `dependencies`
+
+### Patch Changes
+
+- Updated dependencies [[`d923065`](https://github.com/dtapline/dtapline/commit/d923065a7489e59acaa8c8d216f9fdb029b4663c)]:
+  - @dtapline/domain@0.3.2
+
 ## 0.4.0
 
 ### Minor Changes
