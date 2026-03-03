@@ -1,8 +1,11 @@
 import { DatabaseError } from "@dtapline/domain/Errors"
 import type { ProjectId } from "@dtapline/domain/Project"
-import type { UpdateVersionPatternInput, VersionPattern } from "@dtapline/domain/VersionPattern"
-import { VersionPatternId } from "@dtapline/domain/VersionPattern"
-import { Context, Effect, Layer, Schema } from "effect"
+import { VersionPattern, VersionPatternId } from "@dtapline/domain/VersionPattern"
+import type { UpdateVersionPatternInput } from "@dtapline/domain/VersionPattern"
+import * as Effect from "effect/Effect"
+import * as Layer from "effect/Layer"
+import * as Schema from "effect/Schema"
+import * as ServiceMap from "effect/ServiceMap"
 import type { ObjectId } from "mongodb"
 import { MongoDatabase } from "../MongoDB.js"
 
@@ -25,39 +28,37 @@ const DEFAULT_VERSION_PATTERN = "v?(\\d+\\.\\d+\\.\\d+)"
 /**
  * Version Patterns Repository interface
  */
-export class VersionPatternsRepository extends Context.Tag("VersionPatternsRepository")<
-  VersionPatternsRepository,
-  {
-    readonly getOrCreate: (
-      projectId: string
-    ) => Effect.Effect<VersionPattern, DatabaseError>
+export class VersionPatternsRepository extends ServiceMap.Service<VersionPatternsRepository, {
+  readonly getOrCreate: (
+    projectId: string
+  ) => Effect.Effect<VersionPattern, DatabaseError>
 
-    readonly update: (
-      projectId: string,
-      input: typeof UpdateVersionPatternInput.Type
-    ) => Effect.Effect<VersionPattern, DatabaseError>
+  readonly update: (
+    projectId: string,
+    input: typeof UpdateVersionPatternInput.Type
+  ) => Effect.Effect<VersionPattern, DatabaseError>
 
-    readonly getPatternForService: (
-      projectId: string,
-      serviceName: string
-    ) => Effect.Effect<string, DatabaseError>
+  readonly getPatternForService: (
+    projectId: string,
+    serviceName: string
+  ) => Effect.Effect<string, DatabaseError>
 
-    readonly delete: (
-      projectId: string
-    ) => Effect.Effect<void, DatabaseError>
-  }
->() {}
+  readonly delete: (
+    projectId: string
+  ) => Effect.Effect<void, DatabaseError>
+}>()("VersionPatternsRepository") {}
 
 /**
  * Helper to convert MongoDB document to VersionPattern
  */
-const docToVersionPattern = (doc: VersionPatternDocument): any => ({
-  id: Schema.decodeSync(VersionPatternId)(doc._id.toHexString()),
-  projectId: doc.projectId as unknown as ProjectId,
-  defaultPattern: doc.defaultPattern,
-  servicePatterns: doc.servicePatterns ?? undefined,
-  updatedAt: doc.updatedAt
-})
+const docToVersionPattern = (doc: VersionPatternDocument) =>
+  new VersionPattern({
+    id: Schema.decodeSync(VersionPatternId)(doc._id.toHexString()),
+    projectId: doc.projectId as unknown as ProjectId,
+    defaultPattern: doc.defaultPattern,
+    ...(doc.servicePatterns != null && { servicePatterns: doc.servicePatterns }),
+    updatedAt: doc.updatedAt
+  })
 
 /**
  * Live implementation of VersionPatternsRepository

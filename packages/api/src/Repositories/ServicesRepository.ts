@@ -7,10 +7,13 @@ import {
   ServiceNotFound
 } from "@dtapline/domain/Errors"
 import type { ProjectId } from "@dtapline/domain/Project"
-import type { CreateServiceInput, Service, UpdateServiceInput } from "@dtapline/domain/Service"
-import { ServiceId } from "@dtapline/domain/Service"
+import { Service, ServiceId } from "@dtapline/domain/Service"
+import type { CreateServiceInput, UpdateServiceInput } from "@dtapline/domain/Service"
 import { RoleLimits } from "@dtapline/domain/User"
-import { Context, Effect, Layer, Schema } from "effect"
+import * as Effect from "effect/Effect"
+import * as Layer from "effect/Layer"
+import * as Schema from "effect/Schema"
+import * as ServiceMap from "effect/ServiceMap"
 import { ObjectId } from "mongodb"
 import { MongoDatabase } from "../MongoDB.js"
 import { ProjectsRepository } from "./ProjectsRepository.js"
@@ -32,68 +35,66 @@ interface ServiceDocument {
 /**
  * Services Repository interface
  */
-export class ServicesRepository extends Context.Tag("ServicesRepository")<
-  ServicesRepository,
-  {
-    readonly create: (
-      projectId: string,
-      input: typeof CreateServiceInput.Type
-    ) => Effect.Effect<Service, ServiceAlreadyExists | DatabaseError>
+export class ServicesRepository extends ServiceMap.Service<ServicesRepository, {
+  readonly create: (
+    projectId: string,
+    input: typeof CreateServiceInput.Type
+  ) => Effect.Effect<Service, ServiceAlreadyExists | DatabaseError>
 
-    readonly findById: (
-      serviceId: string
-    ) => Effect.Effect<Service, ServiceNotFound | DatabaseError>
+  readonly findById: (
+    serviceId: string
+  ) => Effect.Effect<Service, ServiceNotFound | DatabaseError>
 
-    readonly findByProjectId: (
-      projectId: string,
-      includeArchived?: boolean
-    ) => Effect.Effect<ReadonlyArray<Service>, DatabaseError>
+  readonly findByProjectId: (
+    projectId: string,
+    includeArchived?: boolean
+  ) => Effect.Effect<ReadonlyArray<Service>, DatabaseError>
 
-    readonly findByName: (
-      projectId: string,
-      slug: string
-    ) => Effect.Effect<Service | null, DatabaseError>
+  readonly findByName: (
+    projectId: string,
+    slug: string
+  ) => Effect.Effect<Service | null, DatabaseError>
 
-    readonly getOrCreate: (
-      projectId: string,
-      slug: string,
-      name?: string,
-      repositoryUrl?: string
-    ) => Effect.Effect<Service, DatabaseError | PlanLimitExceeded | ProjectNotFound>
+  readonly getOrCreate: (
+    projectId: string,
+    slug: string,
+    name?: string,
+    repositoryUrl?: string
+  ) => Effect.Effect<Service, DatabaseError | PlanLimitExceeded | ProjectNotFound>
 
-    readonly update: (
-      serviceId: string,
-      input: typeof UpdateServiceInput.Type
-    ) => Effect.Effect<Service, ServiceNotFound | DatabaseError>
+  readonly update: (
+    serviceId: string,
+    input: typeof UpdateServiceInput.Type
+  ) => Effect.Effect<Service, ServiceNotFound | DatabaseError>
 
-    readonly archive: (
-      serviceId: string
-    ) => Effect.Effect<void, ServiceNotFound | DatabaseError>
+  readonly archive: (
+    serviceId: string
+  ) => Effect.Effect<void, ServiceNotFound | DatabaseError>
 
-    readonly hardDelete: (
-      serviceId: string
-    ) => Effect.Effect<void, ServiceNotFound | ServiceHasDeployments | DatabaseError>
+  readonly hardDelete: (
+    serviceId: string
+  ) => Effect.Effect<void, ServiceNotFound | ServiceHasDeployments | DatabaseError>
 
-    readonly exists: (
-      projectId: string,
-      slug: string
-    ) => Effect.Effect<boolean, DatabaseError>
-  }
->() {}
+  readonly exists: (
+    projectId: string,
+    slug: string
+  ) => Effect.Effect<boolean, DatabaseError>
+}>()("ServicesRepository") {}
 
 /**
  * Helper to convert MongoDB document to Service
  */
-const docToService = (doc: ServiceDocument): any => ({
-  id: Schema.decodeSync(ServiceId)(doc._id.toHexString()),
-  projectId: doc.projectId as unknown as ProjectId,
-  slug: doc.slug,
-  name: doc.name,
-  repositoryUrl: doc.repositoryUrl ?? undefined,
-  iconUrl: doc.iconUrl ?? undefined,
-  archived: doc.archived,
-  createdAt: doc.createdAt
-})
+const docToService = (doc: ServiceDocument) =>
+  new Service({
+    id: Schema.decodeSync(ServiceId)(doc._id.toHexString()),
+    projectId: doc.projectId as unknown as ProjectId,
+    slug: doc.slug,
+    name: doc.name,
+    ...(doc.repositoryUrl != null && { repositoryUrl: doc.repositoryUrl }),
+    ...(doc.iconUrl != null && { iconUrl: doc.iconUrl }),
+    archived: doc.archived,
+    createdAt: doc.createdAt
+  })
 
 /**
  * Live implementation of ServicesRepository

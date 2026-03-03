@@ -1,6 +1,6 @@
 import { DtaplineApi } from "@dtapline/domain/Api"
-import { HttpApiBuilder } from "@effect/platform"
-import { Effect } from "effect"
+import * as Effect from "effect/Effect"
+import { HttpApiBuilder } from "effect/unstable/httpapi"
 import { EnvironmentsRepository } from "../Repositories/EnvironmentsRepository.js"
 import { AuthService } from "../Services/AuthService.js"
 
@@ -32,18 +32,18 @@ export const EnvironmentsGroupLive = HttpApiBuilder.group(
             return { environment }
           }))
         // PUT /api/v1/environments/:environmentId
-        .handle("updateEnvironment", ({ path: { environmentId }, payload }) =>
+        .handle("updateEnvironment", ({ params: { environmentId }, payload }) =>
           Effect.gen(function*() {
             const environment = yield* environmentsRepo.update(environmentId, payload)
             return { environment }
           }))
         // PUT /api/v1/environments/:environmentId/reorder
-        .handle("reorderEnvironment", ({ path: { environmentId }, payload }) =>
+        .handle("reorderEnvironment", ({ params: { environmentId }, payload }) =>
           environmentsRepo.reorder(environmentId, payload.newOrder))
         // DELETE /api/v1/environments/:environmentId (soft delete/archive)
-        .handle("archiveEnvironment", ({ path: { environmentId } }) =>
+        .handle("archiveEnvironment", ({ params: { environmentId } }) =>
           environmentsRepo.archive(environmentId))
         // DELETE /api/v1/environments/:environmentId/hard (hard delete)
-        .handle("deleteEnvironment", ({ path: { environmentId } }) => environmentsRepo.hardDelete(environmentId))
+        .handle("deleteEnvironment", ({ params: { environmentId } }) => environmentsRepo.hardDelete(environmentId))
     })
 )

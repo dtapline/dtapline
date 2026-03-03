@@ -5,9 +5,11 @@
  * Used by both the WebSocket handler Lambda (put/delete)
  * and the broadcast logic in the API Lambda (scan).
  */
-import { DynamoDBServiceConfig } from "@effect-aws/client-dynamodb"
-import { DynamoDBDocument, DynamoDBStore } from "@effect-aws/dynamodb"
-import { Config, Layer } from "effect"
+import { setDynamoDBServiceConfig } from "@effect-aws/client-dynamodb/DynamoDBServiceConfig"
+import { DynamoDBDocumentService } from "@effect-aws/dynamodb/DynamoDBDocumentService"
+import { DynamoDBStore } from "@effect-aws/dynamodb/DynamoDBStore"
+import * as Config from "effect/Config"
+import * as Layer from "effect/Layer"
 
 /**
  * DynamoDB connection store layer for the WebSocket handler Lambda
@@ -16,8 +18,6 @@ import { Config, Layer } from "effect"
 export const ConnectionsStoreLive = DynamoDBStore.layerConfig({
   tableName: Config.string("WS_CONNECTIONS_TABLE")
 }).pipe(
-  Layer.provide(DynamoDBDocument.defaultLayer),
-  Layer.provide(
-    DynamoDBServiceConfig.setDynamoDBServiceConfig({ logger: true })
-  )
+  Layer.provide(DynamoDBDocumentService.defaultLayer),
+  Layer.provide(setDynamoDBServiceConfig({ logger: true }))
 )

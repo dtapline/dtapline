@@ -1,8 +1,8 @@
 import { DtaplineApi } from "@dtapline/domain/Api"
 import { PlanLimitExceeded } from "@dtapline/domain/Errors"
 import { RoleLimits } from "@dtapline/domain/User"
-import { HttpApiBuilder } from "@effect/platform"
-import { Effect } from "effect"
+import * as Effect from "effect/Effect"
+import { HttpApiBuilder } from "effect/unstable/httpapi"
 import { ProjectsRepository } from "../Repositories/ProjectsRepository.js"
 import { ServicesRepository } from "../Repositories/ServicesRepository.js"
 import { AuthService } from "../Services/AuthService.js"
@@ -22,7 +22,7 @@ export const ServicesGroupLive = HttpApiBuilder.group(
 
       return handlers
         // GET /api/v1/projects/:projectId/services
-        .handle("listServices", ({ path: { projectId } }) =>
+        .handle("listServices", ({ params: { projectId } }) =>
           Effect.gen(function*() {
             // Verify project exists
             yield* projectsRepo.findById(projectId)
@@ -30,7 +30,7 @@ export const ServicesGroupLive = HttpApiBuilder.group(
             return { services }
           }))
         // POST /api/v1/projects/:projectId/services
-        .handle("createService", ({ path: { projectId }, payload, request }) =>
+        .handle("createService", ({ params: { projectId }, payload, request }) =>
           Effect.gen(function*() {
             // Get authenticated user
             const user = yield* authService.getCurrentUser(request)
@@ -56,14 +56,14 @@ export const ServicesGroupLive = HttpApiBuilder.group(
             return { service }
           }))
         // PUT /api/v1/projects/:projectId/services/:serviceId
-        .handle("updateService", ({ path: { serviceId }, payload }) =>
+        .handle("updateService", ({ params: { serviceId }, payload }) =>
           Effect.gen(function*() {
             const service = yield* servicesRepo.update(serviceId, payload)
             return { service }
           }))
         // DELETE /api/v1/projects/:projectId/services/:serviceId (soft delete/archive)
-        .handle("archiveService", ({ path: { serviceId } }) => servicesRepo.archive(serviceId))
+        .handle("archiveService", ({ params: { serviceId } }) => servicesRepo.archive(serviceId))
         // DELETE /api/v1/projects/:projectId/services/:serviceId/hard (hard delete)
-        .handle("deleteService", ({ path: { serviceId } }) => servicesRepo.hardDelete(serviceId))
+        .handle("deleteService", ({ params: { serviceId } }) => servicesRepo.hardDelete(serviceId))
     })
 )

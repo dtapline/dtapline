@@ -6,7 +6,8 @@
  * Adapted from @pms/websocket router.
  */
 import type { APIGatewayProxyResultV2, Context } from "aws-lambda"
-import { Effect, Schema } from "effect"
+import * as Effect from "effect/Effect"
+import * as Schema from "effect/Schema"
 import type {
   QueryParams,
   WebsocketConnectRequest,
@@ -32,7 +33,7 @@ type RoutesConfig<R, E> = {
  */
 export const websocketEventRouter = <R, E>(routes: RoutesConfig<R, E>) => (event: unknown, _context: Context) =>
   Effect.gen(function*() {
-    const parsed = yield* Schema.decodeUnknown(WebsocketEvent)(event, { errors: "all" })
+    const parsed = yield* Schema.decodeUnknownEffect(WebsocketEvent)(event, { errors: "all" })
     const { queryStringParameters, requestContext } = parsed
 
     const route = routes[requestContext.eventType] as

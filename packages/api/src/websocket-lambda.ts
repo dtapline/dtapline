@@ -10,8 +10,8 @@
  * - WS_CONNECTIONS_TABLE: DynamoDB table name for storing connections
  * - MONGODB_URI: MongoDB connection string (for session validation)
  */
-import { LambdaHandler } from "@effect-aws/lambda"
-import { Layer } from "effect"
+import * as LambdaHandler from "@effect-aws/lambda/LambdaHandler"
+import * as Layer from "effect/Layer"
 import { ServerConfigLive } from "./Config.js"
 import { MongoDBLive } from "./MongoDB.js"
 import { ConnectionsStoreLive } from "./Websocket/context.js"

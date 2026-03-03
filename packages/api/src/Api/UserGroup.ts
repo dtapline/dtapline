@@ -1,6 +1,6 @@
 import { DtaplineApi } from "@dtapline/domain/Api"
-import { HttpApiBuilder } from "@effect/platform"
-import { Effect } from "effect"
+import * as Effect from "effect/Effect"
+import { HttpApiBuilder } from "effect/unstable/httpapi"
 import { AuthService } from "../Services/AuthService.js"
 
 /**

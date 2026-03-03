@@ -1,7 +1,7 @@
 import { DtaplineApi } from "@dtapline/domain/Api"
 import { InvalidApiKey, UnauthorizedApiKey } from "@dtapline/domain/Errors"
-import { HttpApiBuilder } from "@effect/platform"
-import { Effect } from "effect"
+import * as Effect from "effect/Effect"
+import { HttpApiBuilder } from "effect/unstable/httpapi"
 import { ApiKeysRepository } from "../Repositories/ApiKeysRepository.js"
 import { BroadcastService } from "../Services/BroadcastService.js"
 import { DeploymentService } from "../Services/DeploymentService.js"
@@ -48,7 +48,7 @@ export const DeploymentsWebhookGroupLive = HttpApiBuilder.group(
 
           // 4. Update last used timestamp (ignore failures)
           yield* apiKeysRepo.updateLastUsed(String(apiKey.id)).pipe(
-            Effect.catchAll(() => Effect.void)
+            Effect.catch(() => Effect.void)
           )
 
           // 5. Process the deployment webhook

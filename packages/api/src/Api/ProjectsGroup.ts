@@ -1,8 +1,9 @@
 import { DtaplineApi } from "@dtapline/domain/Api"
+import { Deployment } from "@dtapline/domain/Deployment"
 import { DeploymentNotFound, PlanLimitExceeded } from "@dtapline/domain/Errors"
 import { RoleLimits } from "@dtapline/domain/User"
-import { HttpApiBuilder } from "@effect/platform"
-import { Effect } from "effect"
+import * as Effect from "effect/Effect"
+import { HttpApiBuilder } from "effect/unstable/httpapi"
 import { DeploymentsRepository } from "../Repositories/DeploymentsRepository.js"
 import { EnvironmentsRepository } from "../Repositories/EnvironmentsRepository.js"
 import { ProjectsRepository } from "../Repositories/ProjectsRepository.js"
@@ -65,17 +66,17 @@ export const ProjectsGroupLive = HttpApiBuilder.group(
             return { project }
           }))
         // GET /api/v1/projects/:projectId
-        .handle("getProject", ({ path: { projectId } }) => projectsRepo.findById(projectId))
+        .handle("getProject", ({ params: { projectId } }) => projectsRepo.findById(projectId))
         // PUT /api/v1/projects/:projectId
-        .handle("updateProject", ({ path: { projectId }, payload }) =>
+        .handle("updateProject", ({ params: { projectId }, payload }) =>
           Effect.gen(function*() {
             const project = yield* projectsRepo.update(projectId, payload)
             return { project }
           }))
         // DELETE /api/v1/projects/:projectId
-        .handle("deleteProject", ({ path: { projectId } }) => projectsRepo.delete(projectId))
+        .handle("deleteProject", ({ params: { projectId } }) => projectsRepo.delete(projectId))
         // GET /api/v1/projects/:projectId/matrix
-        .handle("getMatrix", ({ path: { projectId } }) =>
+        .handle("getMatrix", ({ params: { projectId } }) =>
           Effect.gen(function*() {
             const matrix = yield* matrixService.getMatrix(projectId)
 
@@ -101,11 +102,11 @@ export const ProjectsGroupLive = HttpApiBuilder.group(
             }
           }))
         // GET /api/v1/projects/:projectId/deployments
-        .handle("getDeployments", ({ path: { projectId }, urlParams }) =>
+        .handle("getDeployments", ({ params: { projectId }, query }) =>
           Effect.gen(function*() {
             // Find deployments with filters
-            const deployments = yield* deploymentsRepo.findByFilters(projectId, urlParams)
-            const total = yield* deploymentsRepo.countByFilters(projectId, urlParams)
+            const deployments = yield* deploymentsRepo.findByFilters(projectId, query)
+            const total = yield* deploymentsRepo.countByFilters(projectId, query)
 
             // Enrich deployments with environment and service data
             const enrichedDeployments = yield* Effect.all(
@@ -125,12 +126,12 @@ export const ProjectsGroupLive = HttpApiBuilder.group(
             return {
               deployments: enrichedDeployments,
               total,
-              limit: urlParams.limit ?? 50,
-              offset: urlParams.offset ?? 0
+              limit: query.limit ?? 50,
+              offset: query.offset ?? 0
             }
           }))
         // GET /api/v1/projects/:projectId/deployments/:deploymentId
-        .handle("getDeployment", ({ path: { deploymentId, projectId } }) =>
+        .handle("getDeployment", ({ params: { deploymentId, projectId } }) =>
           Effect.gen(function*() {
             // Verify project exists
             yield* projectsRepo.findById(projectId)
@@ -150,17 +151,18 @@ export const ProjectsGroupLive = HttpApiBuilder.group(
 
             // Calculate diff URL on-the-fly if not present (catch errors since it's best-effort)
             const diffUrl = yield* deploymentService.calculateDiffUrl(deployment).pipe(
-              Effect.catchAll(() => Effect.succeed(undefined))
+              Effect.catch(() => Effect.succeed(undefined))
             )
 
-            // Return deployment with calculated diffUrl
-            return {
-              ...deployment,
-              diffUrl: diffUrl ?? deployment.diffUrl
+            // Return deployment with calculated diffUrl (must be class instance for Schema.Class encoding)
+            const finalDiffUrl = diffUrl ?? deployment.diffUrl
+            if (finalDiffUrl != null && finalDiffUrl !== deployment.diffUrl) {
+              return new Deployment({ ...deployment, diffUrl: finalDiffUrl })
             }
+            return deployment
           }))
         // GET /api/v1/projects/:projectId/compare
-        .handle("compareEnvironments", ({ path: { projectId }, urlParams: { env1, env2 } }) =>
+        .handle("compareEnvironments", ({ params: { projectId }, query: { env1, env2 } }) =>
           Effect.gen(function*() {
             const comparison = yield* comparisonService.compareEnvironments(projectId, env1, env2)
 
@@ -197,7 +199,7 @@ export const ProjectsGroupLive = HttpApiBuilder.group(
                   } :
                   null,
                 status,
-                compareUrl: serviceComp.compareUrl ?? undefined
+                ...(serviceComp.compareUrl != null && { compareUrl: serviceComp.compareUrl })
               }
             })
 

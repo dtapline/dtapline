@@ -1,6 +1,6 @@
 import { DtaplineApi } from "@dtapline/domain/Api"
-import { HttpApiBuilder } from "@effect/platform"
-import { Effect } from "effect"
+import * as Effect from "effect/Effect"
+import { HttpApiBuilder } from "effect/unstable/httpapi"
 import { ApiKeysRepository } from "../Repositories/ApiKeysRepository.js"
 import { AuthService } from "../Services/AuthService.js"
 
@@ -18,13 +18,13 @@ export const ApiKeysGroupLive = HttpApiBuilder.group(
 
       return handlers
         // GET /api/v1/projects/:projectId/api-keys
-        .handle("listApiKeys", ({ path: { projectId } }) =>
+        .handle("listApiKeys", ({ params: { projectId } }) =>
           Effect.gen(function*() {
             const apiKeys = yield* apiKeysRepo.findByProjectId(projectId)
             return { apiKeys }
           }))
         // POST /api/v1/projects/:projectId/api-keys
-        .handle("createApiKey", ({ path: { projectId }, payload, request }) =>
+        .handle("createApiKey", ({ params: { projectId }, payload, request }) =>
           Effect.gen(function*() {
             const userId = yield* authService.getUserId(request)
             const apiKeyWithSecret = yield* apiKeysRepo.generate(projectId, userId, payload)
@@ -35,6 +35,6 @@ export const ApiKeysGroupLive = HttpApiBuilder.group(
             }
           }))
         // DELETE /api/v1/projects/:projectId/api-keys/:apiKeyId
-        .handle("revokeApiKey", ({ path: { apiKeyId } }) => apiKeysRepo.revoke(apiKeyId))
+        .handle("revokeApiKey", ({ params: { apiKeyId } }) => apiKeysRepo.revoke(apiKeyId))
     })
 )

@@ -1,9 +1,12 @@
 import { EnvironmentId } from "@dtapline/domain/Environment"
 import { DatabaseError, ProjectAlreadyExists, ProjectNotFound } from "@dtapline/domain/Errors"
-import type { CreateProjectInput, Project, UpdateProjectInput } from "@dtapline/domain/Project"
-import { ProjectId } from "@dtapline/domain/Project"
+import { Project, ProjectId } from "@dtapline/domain/Project"
+import type { CreateProjectInput, UpdateProjectInput } from "@dtapline/domain/Project"
 import type { UserId } from "@dtapline/domain/User"
-import { Context, Effect, Layer, Schema } from "effect"
+import * as Effect from "effect/Effect"
+import * as Layer from "effect/Layer"
+import * as Schema from "effect/Schema"
+import * as ServiceMap from "effect/ServiceMap"
 import type { ObjectId } from "mongodb"
 import { MongoClientTag, MongoDatabase } from "../MongoDB.js"
 import { toObjectId } from "../ObjectIdSchema.js"
@@ -26,54 +29,52 @@ interface ProjectDocument {
 /**
  * Projects Repository interface
  */
-export class ProjectsRepository extends Context.Tag("ProjectsRepository")<
-  ProjectsRepository,
-  {
-    readonly create: (
-      userId: string,
-      input: typeof CreateProjectInput.Type
-    ) => Effect.Effect<Project, ProjectAlreadyExists | DatabaseError>
+export class ProjectsRepository extends ServiceMap.Service<ProjectsRepository, {
+  readonly create: (
+    userId: string,
+    input: typeof CreateProjectInput.Type
+  ) => Effect.Effect<Project, ProjectAlreadyExists | DatabaseError>
 
-    readonly findById: (
-      projectId: string
-    ) => Effect.Effect<Project, ProjectNotFound | DatabaseError>
+  readonly findById: (
+    projectId: string
+  ) => Effect.Effect<Project, ProjectNotFound | DatabaseError>
 
-    readonly findByUserId: (
-      userId: string
-    ) => Effect.Effect<ReadonlyArray<Project>, DatabaseError>
+  readonly findByUserId: (
+    userId: string
+  ) => Effect.Effect<ReadonlyArray<Project>, DatabaseError>
 
-    readonly update: (
-      projectId: string,
-      input: typeof UpdateProjectInput.Type
-    ) => Effect.Effect<Project, ProjectNotFound | DatabaseError>
+  readonly update: (
+    projectId: string,
+    input: typeof UpdateProjectInput.Type
+  ) => Effect.Effect<Project, ProjectNotFound | DatabaseError>
 
-    readonly delete: (
-      projectId: string
-    ) => Effect.Effect<void, ProjectNotFound | DatabaseError>
+  readonly delete: (
+    projectId: string
+  ) => Effect.Effect<void, ProjectNotFound | DatabaseError>
 
-    readonly exists: (
-      userId: string,
-      name: string
-    ) => Effect.Effect<boolean, DatabaseError>
-  }
->() {}
+  readonly exists: (
+    userId: string,
+    name: string
+  ) => Effect.Effect<boolean, DatabaseError>
+}>()("ProjectsRepository") {}
 
 /**
  * Helper to convert MongoDB document to Project
  */
-const docToProject = (doc: ProjectDocument): any => ({
-  id: Schema.decodeSync(ProjectId)(doc._id.toHexString()),
-  userId: doc.userId as unknown as UserId,
-  name: doc.name,
-  description: doc.description ?? undefined,
-  gitRepoUrl: doc.gitRepoUrl ?? undefined,
-  selectedEnvironmentIds: doc.selectedEnvironmentIds
-    ? doc.selectedEnvironmentIds.map((id) => Schema.decodeSync(EnvironmentId)(id))
-    : undefined,
-  tier: doc.tier,
-  createdAt: doc.createdAt,
-  updatedAt: doc.updatedAt
-})
+const docToProject = (doc: ProjectDocument) =>
+  new Project({
+    id: Schema.decodeSync(ProjectId)(doc._id.toHexString()),
+    userId: doc.userId as unknown as UserId,
+    name: doc.name,
+    ...(doc.description != null && { description: doc.description }),
+    ...(doc.gitRepoUrl != null && { gitRepoUrl: doc.gitRepoUrl }),
+    ...(doc.selectedEnvironmentIds != null && {
+      selectedEnvironmentIds: doc.selectedEnvironmentIds.map((id) => Schema.decodeSync(EnvironmentId)(id))
+    }),
+    tier: doc.tier,
+    createdAt: doc.createdAt,
+    updatedAt: doc.updatedAt
+  })
 
 /**
  * Live implementation of ProjectsRepository

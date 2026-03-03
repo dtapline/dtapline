@@ -1,7 +1,9 @@
 import type { Unauthorized } from "@dtapline/domain/Errors"
-import { Forbidden } from "@dtapline/domain/Errors"
-import type { HttpServerRequest } from "@effect/platform"
-import { Context, Effect, Layer } from "effect"
+import * as Effect from "effect/Effect"
+import * as Layer from "effect/Layer"
+import * as ServiceMap from "effect/ServiceMap"
+import type { HttpServerRequest } from "effect/unstable/http"
+import { Forbidden } from "effect/unstable/httpapi/HttpApiError"
 import { AuthService } from "./AuthService.js"
 
 /**
@@ -20,7 +22,7 @@ export interface AuthorizationService {
   ) => Effect.Effect<void, Forbidden | Unauthorized>
 }
 
-export const AuthorizationService = Context.GenericTag<AuthorizationService>("AuthorizationService")
+export const AuthorizationService = ServiceMap.Service<AuthorizationService>("AuthorizationService")
 
 export const AuthorizationServiceLive = Layer.effect(
   AuthorizationService,
@@ -34,12 +36,7 @@ export const AuthorizationServiceLive = Layer.effect(
         const user = yield* authService.getCurrentUser(request)
 
         if (user.role === "demoUser") {
-          return yield* Effect.fail(
-            new Forbidden({
-              resource: "write_operations",
-              message: "Demo users have read-only access. Sign up to create and modify resources."
-            })
-          )
+          return yield* Effect.fail(new Forbidden({}))
         }
       })
 

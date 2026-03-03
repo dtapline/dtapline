@@ -1,4 +1,7 @@
-import { Config, Context, Effect, Layer } from "effect"
+import * as Config from "effect/Config"
+import * as Effect from "effect/Effect"
+import * as Layer from "effect/Layer"
+import * as ServiceMap from "effect/ServiceMap"
 
 /**
  * Server configuration interface
@@ -16,10 +19,10 @@ export interface ServerConfig {
 /**
  * Service tag for server configuration
  */
-export class ServerConfigService extends Context.Tag("ServerConfig")<
+export class ServerConfigService extends ServiceMap.Service<
   ServerConfigService,
   ServerConfig
->() {}
+>()("ServerConfig") {}
 
 /**
  * Live implementation that reads configuration from environment variables

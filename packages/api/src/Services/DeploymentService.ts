@@ -10,7 +10,9 @@ import type {
 import type { Project } from "@dtapline/domain/Project"
 import type { Service } from "@dtapline/domain/Service"
 import { extractVersion } from "@dtapline/domain/Utils/VersionExtractor"
-import { Context, Effect, Layer } from "effect"
+import * as Effect from "effect/Effect"
+import * as Layer from "effect/Layer"
+import * as ServiceMap from "effect/ServiceMap"
 import { DeploymentsRepository } from "../Repositories/DeploymentsRepository.js"
 import { EnvironmentsRepository } from "../Repositories/EnvironmentsRepository.js"
 import { ProjectsRepository } from "../Repositories/ProjectsRepository.js"
@@ -23,41 +25,38 @@ import { generateDiffUrl } from "../Utils/DiffUrlGenerator.js"
  * Deployment Service
  * Handles webhook processing, auto-creation of environments/services, and version extraction
  */
-export class DeploymentService extends Context.Tag("DeploymentService")<
-  DeploymentService,
-  {
-    /**
-     * Process a deployment webhook
-     * - Auto-creates environment if it doesn't exist
-     * - Auto-creates service if it doesn't exist
-     * - Extracts version from git tag using configured patterns
-     * - Records deployment
-     */
-    readonly processWebhook: (
-      projectId: string,
-      input: typeof CreateDeploymentInput.Type
-    ) => Effect.Effect<Deployment, ProjectNotFound | DatabaseError | PlanLimitExceeded>
+export class DeploymentService extends ServiceMap.Service<DeploymentService, {
+  /**
+   * Process a deployment webhook
+   * - Auto-creates environment if it doesn't exist
+   * - Auto-creates service if it doesn't exist
+   * - Extracts version from git tag using configured patterns
+   * - Records deployment
+   */
+  readonly processWebhook: (
+    projectId: string,
+    input: typeof CreateDeploymentInput.Type
+  ) => Effect.Effect<Deployment, ProjectNotFound | DatabaseError | PlanLimitExceeded>
 
-    /**
-     * Record a deployment manually (from API, not webhook)
-     * Assumes environment and service already exist
-     */
-    readonly recordDeployment: (
-      projectId: string,
-      environmentId: string,
-      serviceId: string,
-      input: typeof CreateDeploymentInput.Type
-    ) => Effect.Effect<Deployment, ProjectNotFound | EnvironmentNotFound | ServiceNotFound | DatabaseError>
+  /**
+   * Record a deployment manually (from API, not webhook)
+   * Assumes environment and service already exist
+   */
+  readonly recordDeployment: (
+    projectId: string,
+    environmentId: string,
+    serviceId: string,
+    input: typeof CreateDeploymentInput.Type
+  ) => Effect.Effect<Deployment, ProjectNotFound | EnvironmentNotFound | ServiceNotFound | DatabaseError>
 
-    /**
-     * Calculate diff URL for a deployment on-the-fly
-     * Useful when deployment doesn't have a stored diffUrl
-     */
-    readonly calculateDiffUrl: (
-      deployment: Deployment
-    ) => Effect.Effect<string | undefined, ProjectNotFound | EnvironmentNotFound | ServiceNotFound | DatabaseError>
-  }
->() {}
+  /**
+   * Calculate diff URL for a deployment on-the-fly
+   * Useful when deployment doesn't have a stored diffUrl
+   */
+  readonly calculateDiffUrl: (
+    deployment: Deployment
+  ) => Effect.Effect<string | undefined, ProjectNotFound | EnvironmentNotFound | ServiceNotFound | DatabaseError>
+}>()("DeploymentService") {}
 
 /**
  * Live implementation of DeploymentService
@@ -129,7 +128,7 @@ export const DeploymentServiceLive = Layer.effect(
             .getLatestForEnvironmentService(nextEnvironment.id, service.id)
             .pipe(
               // Ignore errors - if there's no deployment in next env, that's ok
-              Effect.catchAll(() => Effect.succeed(null))
+              Effect.catch(() => Effect.succeed(null))
             )
 
           // Generate diff URL if we have a deployment in the next environment
@@ -202,7 +201,7 @@ export const DeploymentServiceLive = Layer.effect(
             const iconUrl = getCICDIcon(input.cicdPlatform)
             if (iconUrl) {
               // Best-effort: ignore errors if icon update fails
-              yield* servicesRepo.update(service.id, { iconUrl }).pipe(Effect.catchAll(() => Effect.void))
+              yield* servicesRepo.update(service.id, { iconUrl }).pipe(Effect.catch(() => Effect.void))
             }
           }
 

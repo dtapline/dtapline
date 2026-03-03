@@ -20,20 +20,18 @@
     "access": "public"
   },
   "scripts": {
-    "build": "bun run script/build.ts",
+    "build": "bun run script/build.ts --single",
     "clean": "rm -rf dist",
     "check": "tsc -b tsconfig.json",
     "test": "vitest"
   },
   "dependencies": {
     "@dtapline/domain": "workspace:*",
-    "@effect/cli": "^0.73.1",
-    "@effect/platform": "^0.94.2",
-    "@effect/platform-node": "^0.104.1",
+    "@effect/platform-bun": "catalog:",
     "@opentui/core": "^0.1.82",
     "@opentui/react": "^0.1.82",
     "date-fns": "^4.1.0",
-    "effect": "^3.19.15",
+    "effect": "catalog:",
     "react": "^19.0.0"
   },
   "devDependencies": {

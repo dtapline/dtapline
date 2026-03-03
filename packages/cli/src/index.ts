@@ -1,10 +1,15 @@
 import { DtaplineApi } from "@dtapline/domain/Api"
-import { Args, CliConfig, Command, Options } from "@effect/cli"
-import { HttpApiClient, HttpClient, HttpClientRequest } from "@effect/platform"
-import { NodeContext, NodeHttpClient, NodeRuntime } from "@effect/platform-node"
+import { BunHttpClient, BunRuntime, BunServices } from "@effect/platform-bun"
 import { createCliRenderer } from "@opentui/core"
 import { createRoot } from "@opentui/react"
-import { Config, Console, Effect, Layer, Option } from "effect"
+import * as Config from "effect/Config"
+import * as Console from "effect/Console"
+import * as Effect from "effect/Effect"
+import * as Layer from "effect/Layer"
+import * as Option from "effect/Option"
+import { Argument as Args, Command, Flag as Options } from "effect/unstable/cli"
+import { HttpClient, HttpClientRequest } from "effect/unstable/http"
+import { HttpApiClient } from "effect/unstable/httpapi"
 import React from "react"
 import { detectCICD, getGitCommitSha } from "./cicd-detect.js"
 import { signIn } from "./dashboard/api-client.js"
@@ -31,15 +36,15 @@ function getVersion(): string {
 // CLI Arguments
 // ============================================================================
 
-const environmentArg = Args.text({ name: "environment" }).pipe(
+const environmentArg = Args.string("environment").pipe(
   Args.withDescription("The deployment environment (e.g., dev, staging, production)")
 )
 
-const serviceArg = Args.text({ name: "service" }).pipe(
+const serviceArg = Args.string("service").pipe(
   Args.withDescription("The service name being deployed")
 )
 
-const commitShaArg = Args.text({ name: "commitSha" }).pipe(
+const commitShaArg = Args.string("commitSha").pipe(
   Args.withDescription("Git commit SHA (auto-detected in CI/CD or from git)"),
   Args.optional
 )
@@ -48,28 +53,28 @@ const commitShaArg = Args.text({ name: "commitSha" }).pipe(
 // CLI Options
 // ============================================================================
 
-const apiKeyOption = Options.text("api-key").pipe(
+const apiKeyOption = Options.string("api-key").pipe(
   Options.withDescription("Dtapline API key (or set DTAPLINE_API_KEY env var)"),
   Options.withFallbackConfig(Config.string("DTAPLINE_API_KEY"))
 )
 
-const serverUrlOption = Options.text("server-url").pipe(
+const serverUrlOption = Options.string("server-url").pipe(
   Options.withDescription("Dtapline API server URL (or set DTAPLINE_SERVER_URL env var)"),
   Options.withFallbackConfig(Config.string("DTAPLINE_SERVER_URL")),
   Options.withDefault("https://api.dtapline.com")
 )
 
-const gitTagOption = Options.text("git-tag").pipe(
+const gitTagOption = Options.string("git-tag").pipe(
   Options.withDescription("Git tag for this deployment (e.g., v1.2.3)"),
   Options.optional
 )
 
-const prUrlOption = Options.text("pr-url").pipe(
+const prUrlOption = Options.string("pr-url").pipe(
   Options.withDescription("Pull request URL"),
   Options.optional
 )
 
-const deployedByOption = Options.text("deployed-by").pipe(
+const deployedByOption = Options.string("deployed-by").pipe(
   Options.withDescription("Who/what triggered the deployment"),
   Options.optional
 )
@@ -79,17 +84,17 @@ const statusOption = Options.choice("status", ["success", "failed", "in_progress
   Options.withDefault("success" as const)
 )
 
-const buildUrlOption = Options.text("build-url").pipe(
+const buildUrlOption = Options.string("build-url").pipe(
   Options.withDescription("Build/CI pipeline URL"),
   Options.optional
 )
 
-const releaseNotesOption = Options.text("release-notes").pipe(
+const releaseNotesOption = Options.string("release-notes").pipe(
   Options.withDescription("Release notes or changelog"),
   Options.optional
 )
 
-const deployedVersionOption = Options.text("deployed-version").pipe(
+const deployedVersionOption = Options.string("deployed-version").pipe(
   Options.withDescription("Semantic version for this deployment (e.g., 1.2.3)"),
   Options.optional
 )
@@ -187,7 +192,7 @@ const deployCommand = Command.make(
           })
         }
       }).pipe(
-        Effect.catchAll((error) =>
+        Effect.catch((error) =>
           Effect.gen(function*() {
             yield* Console.error("❌ Failed to report deployment:")
             yield* Console.error(String(error))
@@ -320,18 +325,16 @@ const rootCommand = Command.make("dtapline").pipe(
 // ============================================================================
 
 const cli = Command.run(rootCommand, {
-  name: "Dtapline CLI",
   version: getVersion()
 })
 
 const MainLayer = Layer.mergeAll(
-  NodeContext.layer,
-  NodeHttpClient.layer,
-  CliConfig.layer({ showBuiltIns: false })
+  BunHttpClient.layer,
+  BunServices.layer
 )
 
-Effect.suspend(() => cli(process.argv)).pipe(
+cli.pipe(
   Effect.provide(MainLayer),
-  Effect.tapErrorCause(Effect.logError),
-  NodeRuntime.runMain
+  Effect.tapCause(Effect.logError),
+  BunRuntime.runMain
 )

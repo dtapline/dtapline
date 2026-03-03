@@ -1,15 +1,13 @@
-import type {
-  CreateDeploymentInput,
-  Deployment,
-  DeploymentFilters,
-  DeploymentStatus
-} from "@dtapline/domain/Deployment"
-import { DeploymentId } from "@dtapline/domain/Deployment"
+import { Deployment, DeploymentId } from "@dtapline/domain/Deployment"
+import type { CreateDeploymentInput, DeploymentFilters, DeploymentStatus } from "@dtapline/domain/Deployment"
 import type { EnvironmentId } from "@dtapline/domain/Environment"
 import { DatabaseError, DeploymentNotFound } from "@dtapline/domain/Errors"
 import type { ProjectId } from "@dtapline/domain/Project"
 import type { ServiceId } from "@dtapline/domain/Service"
-import { Context, Effect, Layer, Schema } from "effect"
+import * as Effect from "effect/Effect"
+import * as Layer from "effect/Layer"
+import * as Schema from "effect/Schema"
+import * as ServiceMap from "effect/ServiceMap"
 import type { ObjectId } from "mongodb"
 import { createHash } from "node:crypto"
 import { MongoDatabase } from "../MongoDB.js"
@@ -80,52 +78,49 @@ export interface CurrentDeployment {
 /**
  * Deployments Repository interface
  */
-export class DeploymentsRepository extends Context.Tag("DeploymentsRepository")<
-  DeploymentsRepository,
-  {
-    readonly create: (
-      projectId: string,
-      environmentId: string,
-      serviceId: string,
-      version: string,
-      input: typeof CreateDeploymentInput.Type
-    ) => Effect.Effect<Deployment, DatabaseError>
+export class DeploymentsRepository extends ServiceMap.Service<DeploymentsRepository, {
+  readonly create: (
+    projectId: string,
+    environmentId: string,
+    serviceId: string,
+    version: string,
+    input: typeof CreateDeploymentInput.Type
+  ) => Effect.Effect<Deployment, DatabaseError>
 
-    readonly findById: (
-      deploymentId: string
-    ) => Effect.Effect<Deployment, DeploymentNotFound | DatabaseError>
+  readonly findById: (
+    deploymentId: string
+  ) => Effect.Effect<Deployment, DeploymentNotFound | DatabaseError>
 
-    readonly findByFilters: (
-      projectId: string,
-      filters: typeof DeploymentFilters.Type
-    ) => Effect.Effect<ReadonlyArray<Deployment>, DatabaseError>
+  readonly findByFilters: (
+    projectId: string,
+    filters: typeof DeploymentFilters.Type
+  ) => Effect.Effect<ReadonlyArray<Deployment>, DatabaseError>
 
-    readonly getCurrentState: (
-      projectId: string
-    ) => Effect.Effect<ReadonlyArray<CurrentDeployment>, DatabaseError>
+  readonly getCurrentState: (
+    projectId: string
+  ) => Effect.Effect<ReadonlyArray<CurrentDeployment>, DatabaseError>
 
-    readonly getLatestForEnvironmentService: (
-      environmentId: string,
-      serviceId: string
-    ) => Effect.Effect<Deployment | null, DatabaseError>
+  readonly getLatestForEnvironmentService: (
+    environmentId: string,
+    serviceId: string
+  ) => Effect.Effect<Deployment | null, DatabaseError>
 
-    readonly countByFilters: (
-      projectId: string,
-      filters: typeof DeploymentFilters.Type
-    ) => Effect.Effect<number, DatabaseError>
-  }
->() {}
+  readonly countByFilters: (
+    projectId: string,
+    filters: typeof DeploymentFilters.Type
+  ) => Effect.Effect<number, DatabaseError>
+}>()("DeploymentsRepository") {}
 
 /**
  * Helper to convert MongoDB document to Deployment
  * Handles backward compatibility for old deployments without deploymentHash
  */
-const docToDeployment = (doc: DeploymentDocument): any => {
+const docToDeployment = (doc: DeploymentDocument) => {
   // Lazy migration: generate hash for old deployments
   const deploymentHash = doc.deploymentHash ||
     generateDeploymentHash(doc.projectId, doc.environmentId, doc.serviceId, doc.commitSha, doc.version)
 
-  return {
+  return new Deployment({
     id: Schema.decodeSync(DeploymentId)(doc._id.toHexString()),
     deploymentHash,
     projectId: doc.projectId as unknown as ProjectId,
@@ -133,26 +128,26 @@ const docToDeployment = (doc: DeploymentDocument): any => {
     serviceId: doc.serviceId as unknown as ServiceId,
     version: doc.version,
     commitSha: doc.commitSha,
-    gitTag: doc.gitTag ?? undefined,
-    pullRequestUrl: doc.pullRequestUrl ?? undefined,
-    deployedBy: doc.deployedBy ?? undefined,
+    ...(doc.gitTag != null && { gitTag: doc.gitTag }),
+    ...(doc.pullRequestUrl != null && { pullRequestUrl: doc.pullRequestUrl }),
+    ...(doc.deployedBy != null && { deployedBy: doc.deployedBy }),
     deployedAt: doc.deployedAt,
     status: doc.status,
     // Backward compatibility: empty array for old deployments
     statusHistory: (doc.statusHistory || []).map((entry) => ({
       status: entry.status,
       timestamp: entry.timestamp,
-      cicdBuildId: entry.cicdBuildId ?? undefined,
-      cicdBuildUrl: entry.cicdBuildUrl ?? undefined
+      ...(entry.cicdBuildId != null && { cicdBuildId: entry.cicdBuildId }),
+      ...(entry.cicdBuildUrl != null && { cicdBuildUrl: entry.cicdBuildUrl })
     })),
-    buildUrl: doc.buildUrl ?? undefined,
-    diffUrl: doc.diffUrl ?? undefined,
-    releaseNotes: doc.releaseNotes ?? undefined,
-    metadata: doc.metadata ?? undefined,
-    cicdPlatform: doc.cicdPlatform ?? undefined,
-    cicdBuildUrl: doc.cicdBuildUrl ?? undefined,
-    cicdBuildId: doc.cicdBuildId ?? undefined
-  }
+    ...(doc.buildUrl != null && { buildUrl: doc.buildUrl }),
+    ...(doc.diffUrl != null && { diffUrl: doc.diffUrl }),
+    ...(doc.releaseNotes != null && { releaseNotes: doc.releaseNotes }),
+    ...(doc.metadata != null && { metadata: doc.metadata }),
+    ...(doc.cicdPlatform != null && { cicdPlatform: doc.cicdPlatform }),
+    ...(doc.cicdBuildUrl != null && { cicdBuildUrl: doc.cicdBuildUrl }),
+    ...(doc.cicdBuildId != null && { cicdBuildId: doc.cicdBuildId })
+  })
 }
 
 /**

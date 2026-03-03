@@ -1,7 +1,8 @@
-import { HttpApi, HttpApiEndpoint, HttpApiGroup, HttpApiMiddleware } from "@effect/platform"
-import { Forbidden } from "@effect/platform/HttpApiError"
-import { Schema } from "effect"
+import * as Schema from "effect/Schema"
+import { HttpApi, HttpApiEndpoint, HttpApiGroup, HttpApiMiddleware, HttpApiSchema } from "effect/unstable/httpapi"
+import { Forbidden } from "effect/unstable/httpapi/HttpApiError"
 import { ApiKeyResponse, CreateApiKeyInput } from "./ApiKey.js"
+import { DateFromString } from "./DateFromString.js"
 import { CreateDeploymentInput, Deployment, DeploymentFilters, DeploymentId } from "./Deployment.js"
 import { CreateEnvironmentInput, Environment, EnvironmentId, UpdateEnvironmentInput } from "./Environment.js"
 import * as Errors from "./Errors.js"
@@ -11,10 +12,10 @@ import { User } from "./User.js"
 import { TestPatternRequest, TestPatternResponse, UpdateVersionPatternInput, VersionPattern } from "./VersionPattern.js"
 
 // Convert branded types to string for path params
-const ProjectIdFromString = Schema.String.pipe(Schema.compose(ProjectId))
-const EnvironmentIdFromString = Schema.String.pipe(Schema.compose(EnvironmentId))
-const ServiceIdFromString = Schema.String.pipe(Schema.compose(ServiceId))
-const DeploymentIdFromString = Schema.String.pipe(Schema.compose(DeploymentId))
+const ProjectIdFromString = Schema.String.pipe(Schema.decodeTo(ProjectId))
+const EnvironmentIdFromString = Schema.String.pipe(Schema.decodeTo(EnvironmentId))
+const ServiceIdFromString = Schema.String.pipe(Schema.decodeTo(ServiceId))
+const DeploymentIdFromString = Schema.String.pipe(Schema.decodeTo(DeploymentId))
 
 // ============================================================================
 // Webhook API (Public - requires API key)
@@ -22,22 +23,23 @@ const DeploymentIdFromString = Schema.String.pipe(Schema.compose(DeploymentId))
 
 export class DeploymentsWebhookGroup extends HttpApiGroup.make("deploymentsWebhook")
   .add(
-    HttpApiEndpoint.post("createDeployment", "/api/v1/deployments")
-      .setPayload(CreateDeploymentInput)
-      .addSuccess(
-        Schema.Struct({
-          id: DeploymentId,
-          version: Schema.String,
-          message: Schema.String
-        })
-      )
-      .addError(Errors.UnauthorizedApiKey, { status: 401 })
-      .addError(Errors.InvalidApiKey, { status: 401 })
-      .addError(Errors.ApiKeyExpired, { status: 401 })
-      .addError(Errors.ProjectNotFound, { status: 404 })
-      .addError(Errors.PlanLimitExceeded, { status: 403 })
-      .addError(Errors.ValidationError, { status: 400 })
-      .addError(Errors.DatabaseError, { status: 500 })
+    HttpApiEndpoint.post("createDeployment", "/api/v1/deployments", {
+      payload: CreateDeploymentInput,
+      success: Schema.Struct({
+        id: DeploymentId,
+        version: Schema.String,
+        message: Schema.String
+      }),
+      error: [
+        Errors.UnauthorizedApiKey.pipe(HttpApiSchema.status(401)),
+        Errors.InvalidApiKey.pipe(HttpApiSchema.status(401)),
+        Errors.ApiKeyExpired.pipe(HttpApiSchema.status(401)),
+        Errors.ProjectNotFound.pipe(HttpApiSchema.status(404)),
+        Errors.PlanLimitExceeded.pipe(HttpApiSchema.status(403)),
+        Errors.ValidationError.pipe(HttpApiSchema.status(400)),
+        Errors.DatabaseError.pipe(HttpApiSchema.status(500))
+      ]
+    })
   )
 {}
 
@@ -47,177 +49,188 @@ export class DeploymentsWebhookGroup extends HttpApiGroup.make("deploymentsWebho
 
 export class ProjectsGroup extends HttpApiGroup.make("projects")
   .add(
-    HttpApiEndpoint.get("listProjects", "/api/v1/projects")
-      .addSuccess(
-        Schema.Struct({
-          projects: Schema.Array(Project)
-        })
-      )
-      .addError(Errors.Unauthorized, { status: 401 })
-      .addError(Errors.DatabaseError, { status: 500 })
+    HttpApiEndpoint.get("listProjects", "/api/v1/projects", {
+      success: Schema.Struct({
+        projects: Schema.Array(Project)
+      }),
+      error: [
+        Errors.Unauthorized.pipe(HttpApiSchema.status(401)),
+        Errors.DatabaseError.pipe(HttpApiSchema.status(500))
+      ]
+    })
   )
   .add(
-    HttpApiEndpoint.post("createProject", "/api/v1/projects")
-      .setPayload(CreateProjectInput)
-      .addSuccess(
-        Schema.Struct({
-          project: Project
-        })
-      )
-      .addError(Errors.Unauthorized, { status: 401 })
-      .addError(Errors.Forbidden, { status: 403 })
-      .addError(Errors.PlanLimitExceeded, { status: 403 })
-      .addError(Errors.ProjectAlreadyExists, { status: 409 })
-      .addError(Errors.ValidationError, { status: 400 })
-      .addError(Errors.DatabaseError, { status: 500 })
+    HttpApiEndpoint.post("createProject", "/api/v1/projects", {
+      payload: CreateProjectInput,
+      success: Schema.Struct({
+        project: Project
+      }),
+      error: [
+        Errors.Unauthorized.pipe(HttpApiSchema.status(401)),
+        Errors.Forbidden.pipe(HttpApiSchema.status(403)),
+        Errors.PlanLimitExceeded.pipe(HttpApiSchema.status(403)),
+        Errors.ProjectAlreadyExists.pipe(HttpApiSchema.status(409)),
+        Errors.ValidationError.pipe(HttpApiSchema.status(400)),
+        Errors.DatabaseError.pipe(HttpApiSchema.status(500))
+      ]
+    })
   )
   .add(
-    HttpApiEndpoint.get("getProject", "/api/v1/projects/:projectId")
-      .setPath(Schema.Struct({ projectId: ProjectIdFromString }))
-      .addSuccess(Project)
-      .addError(Errors.Unauthorized, { status: 401 })
-      .addError(Errors.ProjectNotFound, { status: 404 })
-      .addError(Errors.DatabaseError, { status: 500 })
+    HttpApiEndpoint.get("getProject", "/api/v1/projects/:projectId", {
+      params: ({ projectId: ProjectIdFromString }),
+      success: Project,
+      error: [
+        Errors.Unauthorized.pipe(HttpApiSchema.status(401)),
+        Errors.ProjectNotFound.pipe(HttpApiSchema.status(404)),
+        Errors.DatabaseError.pipe(HttpApiSchema.status(500))
+      ]
+    })
   )
   .add(
-    HttpApiEndpoint.put("updateProject", "/api/v1/projects/:projectId")
-      .setPath(Schema.Struct({ projectId: ProjectIdFromString }))
-      .setPayload(UpdateProjectInput)
-      .addSuccess(
-        Schema.Struct({
-          project: Project
-        })
-      )
-      .addError(Errors.Unauthorized, { status: 401 })
-      .addError(Errors.Forbidden, { status: 403 })
-      .addError(Errors.ProjectNotFound, { status: 404 })
-      .addError(Errors.ValidationError, { status: 400 })
-      .addError(Errors.DatabaseError, { status: 500 })
+    HttpApiEndpoint.put("updateProject", "/api/v1/projects/:projectId", {
+      params: ({ projectId: ProjectIdFromString }),
+      payload: UpdateProjectInput,
+      success: Schema.Struct({
+        project: Project
+      }),
+      error: [
+        Errors.Unauthorized.pipe(HttpApiSchema.status(401)),
+        Errors.Forbidden.pipe(HttpApiSchema.status(403)),
+        Errors.ProjectNotFound.pipe(HttpApiSchema.status(404)),
+        Errors.ValidationError.pipe(HttpApiSchema.status(400)),
+        Errors.DatabaseError.pipe(HttpApiSchema.status(500))
+      ]
+    })
   )
   .add(
-    HttpApiEndpoint.del("deleteProject", "/api/v1/projects/:projectId")
-      .setPath(Schema.Struct({ projectId: ProjectIdFromString }))
-      .addSuccess(Schema.Void)
-      .addError(Errors.Unauthorized, { status: 401 })
-      .addError(Errors.Forbidden, { status: 403 })
-      .addError(Errors.ProjectNotFound, { status: 404 })
-      .addError(Errors.DatabaseError, { status: 500 })
+    HttpApiEndpoint.delete("deleteProject", "/api/v1/projects/:projectId", {
+      params: ({ projectId: ProjectIdFromString }),
+      success: Schema.Void,
+      error: [
+        Errors.Unauthorized.pipe(HttpApiSchema.status(401)),
+        Errors.Forbidden.pipe(HttpApiSchema.status(403)),
+        Errors.ProjectNotFound.pipe(HttpApiSchema.status(404)),
+        Errors.DatabaseError.pipe(HttpApiSchema.status(500))
+      ]
+    })
   )
   .add(
-    HttpApiEndpoint.get("getMatrix", "/api/v1/projects/:projectId/matrix")
-      .setPath(Schema.Struct({ projectId: ProjectIdFromString }))
-      .addSuccess(
-        Schema.Struct({
-          environments: Schema.Array(Environment),
-          services: Schema.Array(Service),
-          deployments: Schema.Record({
-            key: Schema.String,
-            value: Schema.Record({
-              key: Schema.String,
-              value: Schema.NullOr(Deployment)
-            })
-          })
-        })
-      )
-      .addError(Errors.Unauthorized, { status: 401 })
-      .addError(Errors.ProjectNotFound, { status: 404 })
-      .addError(Errors.DatabaseError, { status: 500 })
-  )
-  .add(
-    HttpApiEndpoint.get("getDeployments", "/api/v1/projects/:projectId/deployments")
-      .setPath(Schema.Struct({ projectId: ProjectIdFromString }))
-      .setUrlParams(DeploymentFilters)
-      .addSuccess(
-        Schema.Struct({
-          deployments: Schema.Array(
-            Schema.Struct({
-              id: DeploymentId,
-              projectId: ProjectId,
-              environmentId: EnvironmentId,
-              serviceId: ServiceId,
-              version: Schema.String,
-              commitSha: Schema.String,
-              gitTag: Schema.optional(Schema.String),
-              pullRequestUrl: Schema.optional(Schema.String),
-              deployedBy: Schema.optional(Schema.String),
-              deployedAt: Schema.Date,
-              status: Schema.Literal("success", "failed", "in_progress", "rolled_back"),
-              buildUrl: Schema.optional(Schema.String),
-              releaseNotes: Schema.optional(Schema.String),
-              metadata: Schema.optional(Schema.Record({ key: Schema.String, value: Schema.Unknown })),
-              environment: Environment,
-              service: Service
-            })
-          ),
-          total: Schema.Number,
-          limit: Schema.Number,
-          offset: Schema.Number
-        })
-      )
-      .addError(Errors.Unauthorized, { status: 401 })
-      .addError(Errors.ProjectNotFound, { status: 404 })
-      .addError(Errors.EnvironmentNotFound, { status: 404 })
-      .addError(Errors.ServiceNotFound, { status: 404 })
-      .addError(Errors.DatabaseError, { status: 500 })
-  )
-  .add(
-    HttpApiEndpoint.get("getDeployment", "/api/v1/projects/:projectId/deployments/:deploymentId")
-      .setPath(
-        Schema.Struct({
-          projectId: ProjectIdFromString,
-          deploymentId: DeploymentIdFromString
-        })
-      )
-      .addSuccess(Deployment)
-      .addError(Errors.Unauthorized, { status: 401 })
-      .addError(Errors.DeploymentNotFound, { status: 404 })
-      .addError(Errors.ProjectNotFound, { status: 404 })
-      .addError(Errors.DatabaseError, { status: 500 })
-  )
-  .add(
-    HttpApiEndpoint.get("compareEnvironments", "/api/v1/projects/:projectId/compare")
-      .setPath(Schema.Struct({ projectId: ProjectIdFromString }))
-      .setUrlParams(
-        Schema.Struct({
-          env1: EnvironmentIdFromString,
-          env2: EnvironmentIdFromString
-        })
-      )
-      .addSuccess(
-        Schema.Struct({
-          env1: Environment,
-          env2: Environment,
-          differences: Schema.Array(
-            Schema.Struct({
-              service: Service,
-              env1Deployment: Schema.NullOr(
-                Schema.Struct({
-                  version: Schema.String,
-                  commitSha: Schema.String,
-                  deployedAt: Schema.Date,
-                  gitTag: Schema.optional(Schema.String),
-                  pullRequestUrl: Schema.optional(Schema.String)
-                })
-              ),
-              env2Deployment: Schema.NullOr(
-                Schema.Struct({
-                  version: Schema.String,
-                  commitSha: Schema.String,
-                  deployedAt: Schema.Date,
-                  gitTag: Schema.optional(Schema.String),
-                  pullRequestUrl: Schema.optional(Schema.String)
-                })
-              ),
-              status: Schema.Literal("same", "different", "only_in_env1", "only_in_env2"),
-              compareUrl: Schema.optional(Schema.String)
-            })
+    HttpApiEndpoint.get("getMatrix", "/api/v1/projects/:projectId/matrix", {
+      params: ({ projectId: ProjectIdFromString }),
+      success: Schema.Struct({
+        environments: Schema.Array(Environment),
+        services: Schema.Array(Service),
+        deployments: Schema.Record(
+          Schema.String,
+          Schema.Record(
+            Schema.String,
+            Schema.NullOr(Deployment)
           )
-        })
-      )
-      .addError(Errors.Unauthorized, { status: 401 })
-      .addError(Errors.ProjectNotFound, { status: 404 })
-      .addError(Errors.EnvironmentNotFound, { status: 404 })
-      .addError(Errors.DatabaseError, { status: 500 })
+        )
+      }),
+      error: [
+        Errors.Unauthorized.pipe(HttpApiSchema.status(401)),
+        Errors.ProjectNotFound.pipe(HttpApiSchema.status(404)),
+        Errors.DatabaseError.pipe(HttpApiSchema.status(500))
+      ]
+    })
+  )
+  .add(
+    HttpApiEndpoint.get("getDeployments", "/api/v1/projects/:projectId/deployments", {
+      params: ({ projectId: ProjectIdFromString }),
+      query: DeploymentFilters.fields,
+      success: Schema.Struct({
+        deployments: Schema.Array(
+          Schema.Struct({
+            id: DeploymentId,
+            projectId: ProjectId,
+            environmentId: EnvironmentId,
+            serviceId: ServiceId,
+            version: Schema.String,
+            commitSha: Schema.String,
+            gitTag: Schema.optional(Schema.String),
+            pullRequestUrl: Schema.optional(Schema.String),
+            deployedBy: Schema.optional(Schema.String),
+            deployedAt: DateFromString,
+            status: Schema.Literals(["success", "failed", "in_progress", "rolled_back"]),
+            buildUrl: Schema.optional(Schema.String),
+            releaseNotes: Schema.optional(Schema.String),
+            metadata: Schema.optional(Schema.Record(Schema.String, Schema.Unknown)),
+            environment: Environment,
+            service: Service
+          })
+        ),
+        total: Schema.Number,
+        limit: Schema.Number,
+        offset: Schema.Number
+      }),
+      error: [
+        Errors.Unauthorized.pipe(HttpApiSchema.status(401)),
+        Errors.ProjectNotFound.pipe(HttpApiSchema.status(404)),
+        Errors.EnvironmentNotFound.pipe(HttpApiSchema.status(404)),
+        Errors.ServiceNotFound.pipe(HttpApiSchema.status(404)),
+        Errors.DatabaseError.pipe(HttpApiSchema.status(500))
+      ]
+    })
+  )
+  .add(
+    HttpApiEndpoint.get("getDeployment", "/api/v1/projects/:projectId/deployments/:deploymentId", {
+      params: ({
+        projectId: ProjectIdFromString,
+        deploymentId: DeploymentIdFromString
+      }),
+      success: Deployment,
+      error: [
+        Errors.Unauthorized.pipe(HttpApiSchema.status(401)),
+        Errors.DeploymentNotFound.pipe(HttpApiSchema.status(404)),
+        Errors.ProjectNotFound.pipe(HttpApiSchema.status(404)),
+        Errors.DatabaseError.pipe(HttpApiSchema.status(500))
+      ]
+    })
+  )
+  .add(
+    HttpApiEndpoint.get("compareEnvironments", "/api/v1/projects/:projectId/compare", {
+      params: ({ projectId: ProjectIdFromString }),
+      query: {
+        env1: EnvironmentIdFromString,
+        env2: EnvironmentIdFromString
+      },
+      success: Schema.Struct({
+        env1: Environment,
+        env2: Environment,
+        differences: Schema.Array(
+          Schema.Struct({
+            service: Service,
+            env1Deployment: Schema.NullOr(
+              Schema.Struct({
+                version: Schema.String,
+                commitSha: Schema.String,
+                deployedAt: DateFromString,
+                gitTag: Schema.optional(Schema.String),
+                pullRequestUrl: Schema.optional(Schema.String)
+              })
+            ),
+            env2Deployment: Schema.NullOr(
+              Schema.Struct({
+                version: Schema.String,
+                commitSha: Schema.String,
+                deployedAt: DateFromString,
+                gitTag: Schema.optional(Schema.String),
+                pullRequestUrl: Schema.optional(Schema.String)
+              })
+            ),
+            status: Schema.Literals(["same", "different", "only_in_env1", "only_in_env2"]),
+            compareUrl: Schema.optional(Schema.String)
+          })
+        )
+      }),
+      error: [
+        Errors.Unauthorized.pipe(HttpApiSchema.status(401)),
+        Errors.ProjectNotFound.pipe(HttpApiSchema.status(404)),
+        Errors.EnvironmentNotFound.pipe(HttpApiSchema.status(404)),
+        Errors.DatabaseError.pipe(HttpApiSchema.status(500))
+      ]
+    })
   )
 {}
 
@@ -227,84 +240,86 @@ export class ProjectsGroup extends HttpApiGroup.make("projects")
 
 export class EnvironmentsGroup extends HttpApiGroup.make("environments")
   .add(
-    HttpApiEndpoint.get("listEnvironments", "/api/v1/environments")
-      .addSuccess(
-        Schema.Struct({
-          environments: Schema.Array(Environment)
-        })
-      )
-      .addError(Errors.Unauthorized, { status: 401 })
-      .addError(Errors.DatabaseError, { status: 500 })
+    HttpApiEndpoint.get("listEnvironments", "/api/v1/environments", {
+      success: Schema.Struct({
+        environments: Schema.Array(Environment)
+      }),
+      error: [
+        Errors.Unauthorized.pipe(HttpApiSchema.status(401)),
+        Errors.DatabaseError.pipe(HttpApiSchema.status(500))
+      ]
+    })
   )
   .add(
-    HttpApiEndpoint.post("createEnvironment", "/api/v1/environments")
-      .setPayload(CreateEnvironmentInput)
-      .addSuccess(
-        Schema.Struct({
-          environment: Environment
-        })
-      )
-      .addError(Errors.Unauthorized, { status: 401 })
-      .addError(Errors.Forbidden, { status: 403 })
-      .addError(Errors.EnvironmentAlreadyExists, { status: 409 })
-      .addError(Errors.ValidationError, { status: 400 })
-      .addError(Errors.DatabaseError, { status: 500 })
+    HttpApiEndpoint.post("createEnvironment", "/api/v1/environments", {
+      payload: CreateEnvironmentInput,
+      success: Schema.Struct({
+        environment: Environment
+      }),
+      error: [
+        Errors.Unauthorized.pipe(HttpApiSchema.status(401)),
+        Errors.Forbidden.pipe(HttpApiSchema.status(403)),
+        Errors.EnvironmentAlreadyExists.pipe(HttpApiSchema.status(409)),
+        Errors.ValidationError.pipe(HttpApiSchema.status(400)),
+        Errors.DatabaseError.pipe(HttpApiSchema.status(500))
+      ]
+    })
   )
   .add(
-    HttpApiEndpoint.put("updateEnvironment", "/api/v1/environments/:environmentId")
-      .setPath(Schema.Struct({
-        environmentId: EnvironmentIdFromString
-      }))
-      .setPayload(UpdateEnvironmentInput)
-      .addSuccess(
-        Schema.Struct({
-          environment: Environment
-        })
-      )
-      .addError(Errors.Unauthorized, { status: 401 })
-      .addError(Errors.Forbidden, { status: 403 })
-      .addError(Errors.EnvironmentNotFound, { status: 404 })
-      .addError(Errors.ValidationError, { status: 400 })
-      .addError(Errors.DatabaseError, { status: 500 })
+    HttpApiEndpoint.put("updateEnvironment", "/api/v1/environments/:environmentId", {
+      params: { environmentId: EnvironmentIdFromString },
+      payload: UpdateEnvironmentInput,
+      success: Schema.Struct({
+        environment: Environment
+      }),
+      error: [
+        Errors.Unauthorized.pipe(HttpApiSchema.status(401)),
+        Errors.Forbidden.pipe(HttpApiSchema.status(403)),
+        Errors.EnvironmentNotFound.pipe(HttpApiSchema.status(404)),
+        Errors.ValidationError.pipe(HttpApiSchema.status(400)),
+        Errors.DatabaseError.pipe(HttpApiSchema.status(500))
+      ]
+    })
   )
   .add(
-    HttpApiEndpoint.del("archiveEnvironment", "/api/v1/environments/:environmentId")
-      .setPath(Schema.Struct({
-        environmentId: EnvironmentIdFromString
-      }))
-      .addSuccess(Schema.Void)
-      .addError(Errors.Unauthorized, { status: 401 })
-      .addError(Errors.Forbidden, { status: 403 })
-      .addError(Errors.EnvironmentNotFound, { status: 404 })
-      .addError(Errors.DatabaseError, { status: 500 })
+    HttpApiEndpoint.delete("archiveEnvironment", "/api/v1/environments/:environmentId", {
+      params: { environmentId: EnvironmentIdFromString },
+      success: Schema.Void,
+      error: [
+        Errors.Unauthorized.pipe(HttpApiSchema.status(401)),
+        Errors.Forbidden.pipe(HttpApiSchema.status(403)),
+        Errors.EnvironmentNotFound.pipe(HttpApiSchema.status(404)),
+        Errors.DatabaseError.pipe(HttpApiSchema.status(500))
+      ]
+    })
   )
   .add(
-    HttpApiEndpoint.put("reorderEnvironment", "/api/v1/environments/:environmentId/reorder")
-      .setPath(Schema.Struct({
-        environmentId: EnvironmentIdFromString
-      }))
-      .setPayload(
-        Schema.Struct({
-          newOrder: Schema.Number.pipe(Schema.int(), Schema.greaterThanOrEqualTo(0))
-        })
-      )
-      .addSuccess(Schema.Void)
-      .addError(Errors.Unauthorized, { status: 401 })
-      .addError(Errors.Forbidden, { status: 403 })
-      .addError(Errors.EnvironmentNotFound, { status: 404 })
-      .addError(Errors.DatabaseError, { status: 500 })
+    HttpApiEndpoint.put("reorderEnvironment", "/api/v1/environments/:environmentId/reorder", {
+      params: { environmentId: EnvironmentIdFromString },
+      payload: Schema.Struct({
+        newOrder: Schema.Int.check(Schema.isGreaterThanOrEqualTo(0))
+      }),
+      success: Schema.Void,
+      error: [
+        Errors.Unauthorized.pipe(HttpApiSchema.status(401)),
+        Errors.Forbidden.pipe(HttpApiSchema.status(403)),
+        Errors.EnvironmentNotFound.pipe(HttpApiSchema.status(404)),
+        Errors.DatabaseError.pipe(HttpApiSchema.status(500))
+      ]
+    })
   )
   .add(
-    HttpApiEndpoint.del("deleteEnvironment", "/api/v1/environments/:environmentId/hard")
-      .setPath(Schema.Struct({
-        environmentId: EnvironmentIdFromString
-      }))
-      .addSuccess(Schema.Void)
-      .addError(Errors.Unauthorized, { status: 401 })
-      .addError(Errors.Forbidden, { status: 403 })
-      .addError(Errors.EnvironmentNotFound, { status: 404 })
-      .addError(Errors.EnvironmentHasDeployments, { status: 409 })
-      .addError(Errors.DatabaseError, { status: 500 })
+    HttpApiEndpoint.delete("deleteEnvironment", "/api/v1/environments/:environmentId/hard", {
+      params: { environmentId: EnvironmentIdFromString },
+      success: Schema.Void,
+      error: [
+        Errors.Unauthorized.pipe(HttpApiSchema.status(401)),
+        Errors.Forbidden.pipe(HttpApiSchema.status(403)),
+        Errors.EnvironmentNotFound.pipe(HttpApiSchema.status(404)),
+        Errors.EnvironmentHasDeployments.pipe(HttpApiSchema.status(409)),
+        Errors.DatabaseError.pipe(HttpApiSchema.status(500))
+      ]
+    })
   )
 {}
 
@@ -314,76 +329,85 @@ export class EnvironmentsGroup extends HttpApiGroup.make("environments")
 
 export class ServicesGroup extends HttpApiGroup.make("services")
   .add(
-    HttpApiEndpoint.get("listServices", "/api/v1/projects/:projectId/services")
-      .setPath(Schema.Struct({ projectId: ProjectIdFromString }))
-      .addSuccess(
-        Schema.Struct({
-          services: Schema.Array(Service)
-        })
-      )
-      .addError(Errors.Unauthorized, { status: 401 })
-      .addError(Errors.ProjectNotFound, { status: 404 })
-      .addError(Errors.DatabaseError, { status: 500 })
+    HttpApiEndpoint.get("listServices", "/api/v1/projects/:projectId/services", {
+      params: { projectId: ProjectIdFromString },
+      success: Schema.Struct({
+        services: Schema.Array(Service)
+      }),
+      error: [
+        Errors.Unauthorized.pipe(HttpApiSchema.status(401)),
+        Errors.ProjectNotFound.pipe(HttpApiSchema.status(404)),
+        Errors.DatabaseError.pipe(HttpApiSchema.status(500))
+      ]
+    })
   )
   .add(
-    HttpApiEndpoint.post("createService", "/api/v1/projects/:projectId/services")
-      .setPath(Schema.Struct({ projectId: ProjectIdFromString }))
-      .setPayload(CreateServiceInput)
-      .addSuccess(
-        Schema.Struct({
-          service: Service
-        })
-      )
-      .addError(Errors.Unauthorized, { status: 401 })
-      .addError(Errors.Forbidden, { status: 403 })
-      .addError(Errors.PlanLimitExceeded, { status: 403 })
-      .addError(Errors.ProjectNotFound, { status: 404 })
-      .addError(Errors.ServiceAlreadyExists, { status: 409 })
-      .addError(Errors.ValidationError, { status: 400 })
-      .addError(Errors.DatabaseError, { status: 500 })
+    HttpApiEndpoint.post("createService", "/api/v1/projects/:projectId/services", {
+      params: { projectId: ProjectIdFromString },
+      payload: CreateServiceInput,
+      success: Schema.Struct({
+        service: Service
+      }),
+      error: [
+        Errors.Unauthorized.pipe(HttpApiSchema.status(401)),
+        Errors.Forbidden.pipe(HttpApiSchema.status(403)),
+        Errors.PlanLimitExceeded.pipe(HttpApiSchema.status(403)),
+        Errors.ProjectNotFound.pipe(HttpApiSchema.status(404)),
+        Errors.ServiceAlreadyExists.pipe(HttpApiSchema.status(409)),
+        Errors.ValidationError.pipe(HttpApiSchema.status(400)),
+        Errors.DatabaseError.pipe(HttpApiSchema.status(500))
+      ]
+    })
   )
   .add(
-    HttpApiEndpoint.put("updateService", "/api/v1/projects/:projectId/services/:serviceId")
-      .setPath(Schema.Struct({
+    HttpApiEndpoint.put("updateService", "/api/v1/projects/:projectId/services/:serviceId", {
+      params: {
         projectId: ProjectIdFromString,
         serviceId: ServiceIdFromString
-      }))
-      .setPayload(UpdateServiceInput)
-      .addSuccess(
-        Schema.Struct({
-          service: Service
-        })
-      )
-      .addError(Errors.Unauthorized, { status: 401 })
-      .addError(Errors.Forbidden, { status: 403 })
-      .addError(Errors.ServiceNotFound, { status: 404 })
-      .addError(Errors.ValidationError, { status: 400 })
-      .addError(Errors.DatabaseError, { status: 500 })
+      },
+      payload: UpdateServiceInput,
+      success: Schema.Struct({
+        service: Service
+      }),
+      error: [
+        Errors.Unauthorized.pipe(HttpApiSchema.status(401)),
+        Errors.Forbidden.pipe(HttpApiSchema.status(403)),
+        Errors.ServiceNotFound.pipe(HttpApiSchema.status(404)),
+        Errors.ValidationError.pipe(HttpApiSchema.status(400)),
+        Errors.DatabaseError.pipe(HttpApiSchema.status(500))
+      ]
+    })
   )
   .add(
-    HttpApiEndpoint.del("archiveService", "/api/v1/projects/:projectId/services/:serviceId")
-      .setPath(Schema.Struct({
+    HttpApiEndpoint.delete("archiveService", "/api/v1/projects/:projectId/services/:serviceId", {
+      params: {
         projectId: ProjectIdFromString,
         serviceId: ServiceIdFromString
-      }))
-      .addSuccess(Schema.Void)
-      .addError(Errors.Unauthorized, { status: 401 })
-      .addError(Errors.Forbidden, { status: 403 })
-      .addError(Errors.ServiceNotFound, { status: 404 })
-      .addError(Errors.DatabaseError, { status: 500 })
+      },
+      success: Schema.Void,
+      error: [
+        Errors.Unauthorized.pipe(HttpApiSchema.status(401)),
+        Errors.Forbidden.pipe(HttpApiSchema.status(403)),
+        Errors.ServiceNotFound.pipe(HttpApiSchema.status(404)),
+        Errors.DatabaseError.pipe(HttpApiSchema.status(500))
+      ]
+    })
   )
   .add(
-    HttpApiEndpoint.del("deleteService", "/api/v1/projects/:projectId/services/:serviceId/hard")
-      .setPath(Schema.Struct({
+    HttpApiEndpoint.delete("deleteService", "/api/v1/projects/:projectId/services/:serviceId/hard", {
+      params: {
         projectId: ProjectIdFromString,
         serviceId: ServiceIdFromString
-      }))
-      .addSuccess(Schema.Void)
-      .addError(Errors.Unauthorized, { status: 401 })
-      .addError(Errors.Forbidden, { status: 403 })
-      .addError(Errors.ServiceNotFound, { status: 404 })
-      .addError(Errors.ServiceHasDeployments, { status: 409 })
-      .addError(Errors.DatabaseError, { status: 500 })
+      },
+      success: Schema.Void,
+      error: [
+        Errors.Unauthorized.pipe(HttpApiSchema.status(401)),
+        Errors.Forbidden.pipe(HttpApiSchema.status(403)),
+        Errors.ServiceNotFound.pipe(HttpApiSchema.status(404)),
+        Errors.ServiceHasDeployments.pipe(HttpApiSchema.status(409)),
+        Errors.DatabaseError.pipe(HttpApiSchema.status(500))
+      ]
+    })
   )
 {}
 
@@ -393,39 +417,46 @@ export class ServicesGroup extends HttpApiGroup.make("services")
 
 export class ApiKeysGroup extends HttpApiGroup.make("apiKeys")
   .add(
-    HttpApiEndpoint.get("listApiKeys", "/api/v1/projects/:projectId/api-keys")
-      .setPath(Schema.Struct({ projectId: ProjectIdFromString }))
-      .addSuccess(
-        Schema.Struct({
-          apiKeys: Schema.Array(ApiKeyResponse)
-        })
-      )
-      .addError(Errors.Unauthorized, { status: 401 })
-      .addError(Errors.ProjectNotFound, { status: 404 })
-      .addError(Errors.DatabaseError, { status: 500 })
+    HttpApiEndpoint.get("listApiKeys", "/api/v1/projects/:projectId/api-keys", {
+      params: { projectId: ProjectIdFromString },
+      success: Schema.Struct({
+        apiKeys: Schema.Array(ApiKeyResponse)
+      }),
+      error: [
+        Errors.Unauthorized.pipe(HttpApiSchema.status(401)),
+        Errors.ProjectNotFound.pipe(HttpApiSchema.status(404)),
+        Errors.DatabaseError.pipe(HttpApiSchema.status(500))
+      ]
+    })
   )
   .add(
-    HttpApiEndpoint.post("createApiKey", "/api/v1/projects/:projectId/api-keys")
-      .setPath(Schema.Struct({ projectId: ProjectIdFromString }))
-      .setPayload(CreateApiKeyInput)
-      .addSuccess(ApiKeyResponse)
-      .addError(Errors.Unauthorized, { status: 401 })
-      .addError(Errors.Forbidden, { status: 403 })
-      .addError(Errors.ProjectNotFound, { status: 404 })
-      .addError(Errors.ValidationError, { status: 400 })
-      .addError(Errors.DatabaseError, { status: 500 })
+    HttpApiEndpoint.post("createApiKey", "/api/v1/projects/:projectId/api-keys", {
+      params: { projectId: ProjectIdFromString },
+      payload: CreateApiKeyInput,
+      success: ApiKeyResponse,
+      error: [
+        Errors.Unauthorized.pipe(HttpApiSchema.status(401)),
+        Errors.Forbidden.pipe(HttpApiSchema.status(403)),
+        Errors.ProjectNotFound.pipe(HttpApiSchema.status(404)),
+        Errors.ValidationError.pipe(HttpApiSchema.status(400)),
+        Errors.DatabaseError.pipe(HttpApiSchema.status(500))
+      ]
+    })
   )
   .add(
-    HttpApiEndpoint.del("revokeApiKey", "/api/v1/projects/:projectId/api-keys/:apiKeyId")
-      .setPath(Schema.Struct({
+    HttpApiEndpoint.delete("revokeApiKey", "/api/v1/projects/:projectId/api-keys/:apiKeyId", {
+      params: {
         projectId: ProjectIdFromString,
         apiKeyId: Schema.String
-      }))
-      .addSuccess(Schema.Void)
-      .addError(Errors.Unauthorized, { status: 401 })
-      .addError(Errors.Forbidden, { status: 403 })
-      .addError(Errors.ApiKeyNotFound, { status: 404 })
-      .addError(Errors.DatabaseError, { status: 500 })
+      },
+      success: Schema.Void,
+      error: [
+        Errors.Unauthorized.pipe(HttpApiSchema.status(401)),
+        Errors.Forbidden.pipe(HttpApiSchema.status(403)),
+        Errors.ApiKeyNotFound.pipe(HttpApiSchema.status(404)),
+        Errors.DatabaseError.pipe(HttpApiSchema.status(500))
+      ]
+    })
   )
 {}
 
@@ -435,31 +466,40 @@ export class ApiKeysGroup extends HttpApiGroup.make("apiKeys")
 
 export class VersionPatternsGroup extends HttpApiGroup.make("versionPatterns")
   .add(
-    HttpApiEndpoint.get("getVersionPattern", "/api/v1/projects/:projectId/version-patterns")
-      .setPath(Schema.Struct({ projectId: ProjectIdFromString }))
-      .addSuccess(VersionPattern)
-      .addError(Errors.Unauthorized, { status: 401 })
-      .addError(Errors.ProjectNotFound, { status: 404 })
-      .addError(Errors.DatabaseError, { status: 500 })
+    HttpApiEndpoint.get("getVersionPattern", "/api/v1/projects/:projectId/version-patterns", {
+      params: { projectId: ProjectIdFromString },
+      success: VersionPattern,
+      error: [
+        Errors.Unauthorized.pipe(HttpApiSchema.status(401)),
+        Errors.ProjectNotFound.pipe(HttpApiSchema.status(404)),
+        Errors.DatabaseError.pipe(HttpApiSchema.status(500))
+      ]
+    })
   )
   .add(
-    HttpApiEndpoint.put("updateVersionPattern", "/api/v1/projects/:projectId/version-patterns")
-      .setPath(Schema.Struct({ projectId: ProjectIdFromString }))
-      .setPayload(UpdateVersionPatternInput)
-      .addSuccess(VersionPattern)
-      .addError(Errors.Unauthorized, { status: 401 })
-      .addError(Errors.Forbidden, { status: 403 })
-      .addError(Errors.ProjectNotFound, { status: 404 })
-      .addError(Errors.ValidationError, { status: 400 })
-      .addError(Errors.DatabaseError, { status: 500 })
+    HttpApiEndpoint.put("updateVersionPattern", "/api/v1/projects/:projectId/version-patterns", {
+      params: { projectId: ProjectIdFromString },
+      payload: UpdateVersionPatternInput,
+      success: VersionPattern,
+      error: [
+        Errors.Unauthorized.pipe(HttpApiSchema.status(401)),
+        Errors.Forbidden.pipe(HttpApiSchema.status(403)),
+        Errors.ProjectNotFound.pipe(HttpApiSchema.status(404)),
+        Errors.ValidationError.pipe(HttpApiSchema.status(400)),
+        Errors.DatabaseError.pipe(HttpApiSchema.status(500))
+      ]
+    })
   )
   .add(
-    HttpApiEndpoint.post("testPattern", "/api/v1/projects/:projectId/version-patterns/test")
-      .setPath(Schema.Struct({ projectId: ProjectIdFromString }))
-      .setPayload(TestPatternRequest)
-      .addSuccess(TestPatternResponse)
-      .addError(Errors.Unauthorized, { status: 401 })
-      .addError(Errors.ValidationError, { status: 400 })
+    HttpApiEndpoint.post("testPattern", "/api/v1/projects/:projectId/version-patterns/test", {
+      params: { projectId: ProjectIdFromString },
+      payload: TestPatternRequest,
+      success: TestPatternResponse,
+      error: [
+        Errors.Unauthorized.pipe(HttpApiSchema.status(401)),
+        Errors.ValidationError.pipe(HttpApiSchema.status(400))
+      ]
+    })
   )
 {}
 
@@ -469,10 +509,13 @@ export class VersionPatternsGroup extends HttpApiGroup.make("versionPatterns")
 
 export class UserGroup extends HttpApiGroup.make("user")
   .add(
-    HttpApiEndpoint.get("getCurrentUser", "/api/v1/user/me")
-      .addSuccess(User)
-      .addError(Errors.Unauthorized, { status: 401 })
-      .addError(Errors.DatabaseError, { status: 500 })
+    HttpApiEndpoint.get("getCurrentUser", "/api/v1/user/me", {
+      success: User,
+      error: [
+        Errors.Unauthorized.pipe(HttpApiSchema.status(401)),
+        Errors.DatabaseError.pipe(HttpApiSchema.status(500))
+      ]
+    })
   )
 {}
 
@@ -490,14 +533,18 @@ export class UserGroup extends HttpApiGroup.make("user")
  */
 export class AuthGroup extends HttpApiGroup.make("auth")
   .add(
-    HttpApiEndpoint.get("handleAuth", "/api/auth/*")
-      // Better Auth returns raw HTTP responses, so we don't define a success schema
-      // The response is handled directly by the Better Auth handler
-      .addError(Errors.DatabaseError, { status: 500 })
+    HttpApiEndpoint.get("handleAuth", "/api/auth/*", {
+      error: [
+        Errors.DatabaseError.pipe(HttpApiSchema.status(500))
+      ]
+    })
   )
   .add(
-    HttpApiEndpoint.post("handleAuthPost", "/api/auth/*")
-      .addError(Errors.DatabaseError, { status: 500 })
+    HttpApiEndpoint.post("handleAuthPost", "/api/auth/*", {
+      error: [
+        Errors.DatabaseError.pipe(HttpApiSchema.status(500))
+      ]
+    })
   )
 {}
 
@@ -514,8 +561,8 @@ export class AuthGroup extends HttpApiGroup.make("auth")
  * This provides a cleaner authorization approach than checking `requireWriteAccess`
  * in every single endpoint handler.
  */
-export class DemoUserMiddleware extends HttpApiMiddleware.Tag<DemoUserMiddleware>()("DemoUserMiddleware", {
-  failure: Forbidden
+export class DemoUserMiddleware extends HttpApiMiddleware.Service<DemoUserMiddleware>()("DemoUserMiddleware", {
+  error: Forbidden
 }) {}
 
 // ============================================================================

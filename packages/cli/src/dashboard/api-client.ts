@@ -9,12 +9,12 @@
 import { DtaplineApi } from "@dtapline/domain/Api"
 import type { Deployment } from "@dtapline/domain/Deployment"
 import type { Environment } from "@dtapline/domain/Environment"
-import { ProjectId } from "@dtapline/domain/Project"
-import type { Project } from "@dtapline/domain/Project"
+import type { Project, ProjectId } from "@dtapline/domain/Project"
 import type { Service } from "@dtapline/domain/Service"
-import { HttpApiClient, HttpClient, HttpClientRequest } from "@effect/platform"
-import { NodeHttpClient } from "@effect/platform-node"
-import { Effect, Schema } from "effect"
+import { BunHttpClient } from "@effect/platform-bun"
+import * as Effect from "effect/Effect"
+import { HttpClient, HttpClientRequest } from "effect/unstable/http"
+import { HttpApiClient } from "effect/unstable/httpapi"
 
 export { type Deployment, type Environment, type Project, type Service }
 
@@ -69,12 +69,12 @@ function makeSessionClient(serverUrl: string, token: string) {
 }
 
 /**
- * Run an Effect that requires HttpClient with NodeHttpClient.layer provided,
+ * Run an Effect that requires HttpClient with BunHttpClient.layer provided,
  * translating 401/403 errors into AuthExpiredError and other failures into ApiError.
  */
 async function runWithClient<A>(effect: Effect.Effect<A, unknown, HttpClient.HttpClient>): Promise<A> {
   const program = effect.pipe(
-    Effect.provide(NodeHttpClient.layer)
+    Effect.provide(BunHttpClient.layer)
   )
   const result = await Effect.runPromise(program as Effect.Effect<A, unknown, never>).catch((err) => {
     // Check for HttpClientError with status 401/403
@@ -148,13 +148,13 @@ export async function getProjects(
 export async function getMatrix(
   serverUrl: string,
   token: string,
-  projectId: string
+  projectId: ProjectId
 ): Promise<ProjectMatrix> {
   return runWithClient(
     Effect.gen(function*() {
       const client = yield* makeSessionClient(serverUrl, token)
       return yield* client.projects.getMatrix({
-        path: { projectId: Schema.decodeSync(ProjectId)(projectId) }
+        params: { projectId }
       })
     })
   )

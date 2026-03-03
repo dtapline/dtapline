@@ -1,10 +1,13 @@
-import type { ApiKey, ApiKeyScope, CreateApiKeyInput } from "@dtapline/domain/ApiKey"
-import { ApiKeyId } from "@dtapline/domain/ApiKey"
+import { ApiKey, ApiKeyId } from "@dtapline/domain/ApiKey"
+import type { ApiKeyScope, CreateApiKeyInput } from "@dtapline/domain/ApiKey"
 import * as Errors from "@dtapline/domain/Errors"
 import type { ProjectId } from "@dtapline/domain/Project"
 import type { UserId } from "@dtapline/domain/User"
 import * as bcrypt from "bcryptjs"
-import { Context, Effect, Layer, Schema } from "effect"
+import * as Effect from "effect/Effect"
+import * as Layer from "effect/Layer"
+import * as Schema from "effect/Schema"
+import * as ServiceMap from "effect/ServiceMap"
 import type { ObjectId } from "mongodb"
 import { MongoDatabase } from "../MongoDB.js"
 import { toObjectId } from "../ObjectIdSchema.js"
@@ -35,52 +38,50 @@ export interface ApiKeyWithSecret extends ApiKey {
 /**
  * API Keys Repository interface
  */
-export class ApiKeysRepository extends Context.Tag("ApiKeysRepository")<
-  ApiKeysRepository,
-  {
-    readonly generate: (
-      projectId: string,
-      userId: string,
-      input: typeof CreateApiKeyInput.Type
-    ) => Effect.Effect<ApiKeyWithSecret, Errors.DatabaseError>
+export class ApiKeysRepository extends ServiceMap.Service<ApiKeysRepository, {
+  readonly generate: (
+    projectId: string,
+    userId: string,
+    input: typeof CreateApiKeyInput.Type
+  ) => Effect.Effect<ApiKeyWithSecret, Errors.DatabaseError>
 
-    readonly findById: (
-      apiKeyId: string
-    ) => Effect.Effect<ApiKey, Errors.ApiKeyNotFound | Errors.DatabaseError>
+  readonly findById: (
+    apiKeyId: string
+  ) => Effect.Effect<ApiKey, Errors.ApiKeyNotFound | Errors.DatabaseError>
 
-    readonly findByProjectId: (
-      projectId: string
-    ) => Effect.Effect<ReadonlyArray<ApiKey>, Errors.DatabaseError>
+  readonly findByProjectId: (
+    projectId: string
+  ) => Effect.Effect<ReadonlyArray<ApiKey>, Errors.DatabaseError>
 
-    readonly validate: (
-      plainKey: string
-    ) => Effect.Effect<ApiKey, Errors.InvalidApiKey | Errors.ApiKeyExpired | Errors.DatabaseError>
+  readonly validate: (
+    plainKey: string
+  ) => Effect.Effect<ApiKey, Errors.InvalidApiKey | Errors.ApiKeyExpired | Errors.DatabaseError>
 
-    readonly updateLastUsed: (
-      apiKeyId: string
-    ) => Effect.Effect<void, Errors.DatabaseError>
+  readonly updateLastUsed: (
+    apiKeyId: string
+  ) => Effect.Effect<void, Errors.DatabaseError>
 
-    readonly revoke: (
-      apiKeyId: string
-    ) => Effect.Effect<void, Errors.ApiKeyNotFound | Errors.DatabaseError>
-  }
->() {}
+  readonly revoke: (
+    apiKeyId: string
+  ) => Effect.Effect<void, Errors.ApiKeyNotFound | Errors.DatabaseError>
+}>()("ApiKeysRepository") {}
 
 /**
  * Helper to convert MongoDB document to ApiKey
  */
-const docToApiKey = (doc: ApiKeyDocument): any => ({
-  id: Schema.decodeSync(ApiKeyId)(doc._id.toHexString()),
-  projectId: doc.projectId as unknown as ProjectId,
-  userId: doc.userId as unknown as UserId,
-  keyHash: doc.keyHash,
-  keyPrefix: doc.keyPrefix,
-  name: doc.name,
-  scopes: doc.scopes,
-  createdAt: doc.createdAt,
-  lastUsedAt: doc.lastUsedAt ?? undefined,
-  expiresAt: doc.expiresAt ?? undefined
-})
+const docToApiKey = (doc: ApiKeyDocument) =>
+  new ApiKey({
+    id: Schema.decodeSync(ApiKeyId)(doc._id.toHexString()),
+    projectId: doc.projectId as unknown as ProjectId,
+    userId: doc.userId as unknown as UserId,
+    keyHash: doc.keyHash,
+    keyPrefix: doc.keyPrefix,
+    name: doc.name,
+    scopes: doc.scopes,
+    createdAt: doc.createdAt,
+    ...(doc.lastUsedAt != null && { lastUsedAt: doc.lastUsedAt }),
+    ...(doc.expiresAt != null && { expiresAt: doc.expiresAt })
+  })
 
 /**
  * Generate a secure random API key

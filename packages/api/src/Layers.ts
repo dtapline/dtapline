@@ -1,4 +1,5 @@
-import { Config, Layer } from "effect"
+import * as Config from "effect/Config"
+import * as Layer from "effect/Layer"
 import { DtaplineApiLive } from "./Api/DtaplineApiLive.js"
 import { BetterAuthLive } from "./Auth.js"
 import { ServerConfigLive } from "./Config.js"
@@ -66,12 +67,11 @@ export const ServicesLive = Layer.mergeAll(
  * Uses the real AWS implementation when WS_API_URL and WS_CONNECTIONS_TABLE
  * are configured, falls back to noop when not configured (local dev)
  */
-const BroadcastLayerLive = Layer.unwrapEffect(
-  Config.string("WS_API_URL").pipe(
-    Config.zip(Config.string("WS_CONNECTIONS_TABLE")),
+const BroadcastLayerLive = Layer.unwrap(
+  Config.all([Config.string("WS_API_URL"), Config.string("WS_CONNECTIONS_TABLE")]).pipe(
     Config.map(() => BroadcastLive),
     Config.withDefault(BroadcastServiceNoop)
-  )
+  ).asEffect()
 )
 
 /**
